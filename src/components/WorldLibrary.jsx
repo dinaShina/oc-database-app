@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from "react";
+import EmptyState from "./EmptyState.jsx";
 import { INITIAL_WORLD, WORLD_TYPES } from "../data/worldSchema.js";
 import { createWorld, deleteWorld, saveWorlds, updateWorld } from "../storage/worldRepository.js";
 import { getWorldTitle } from "./OCList.jsx";
@@ -56,17 +57,17 @@ export default function WorldLibrary({ ocs, onWorldsChange, timelineData, worlds
   }
 
   return (
-    <section className="panel list-panel world-library-panel">
-      <div className="library-topbar">
+    <section className="panel list-panel world-library-panel library-page-panel">
+      <div className="library-topbar library-topbar-integrated">
         <div>
           <p className="eyebrow">Worlds</p>
           <h2>World Library</h2>
-          <p className="muted-text">World cards gather characters, timelines, and lore/reference counts into one calm overview.</p>
+          <p className="muted-text">Browse your connected worlds, settings, timelines, and story spaces.</p>
         </div>
-        <button className="primary-button inline-primary" type="button" onClick={startCreate}>+ New World</button>
+        <button className="primary-button inline-primary library-create-button" type="button" onClick={startCreate}>+ New World</button>
       </div>
 
-      <div className="list-controls library-controls">
+      <div className="list-controls library-controls compact-library-controls">
         <label className="filter-field wide-field">
           <span>Search worlds</span>
           <input value={searchTerm} placeholder="Search by name, type, or description..." onChange={(event) => setSearchTerm(event.target.value)} />
@@ -74,10 +75,10 @@ export default function WorldLibrary({ ocs, onWorldsChange, timelineData, worlds
       </div>
 
       <div className="world-grid spacious-world-grid">
-        {visibleWorlds.length === 0 ? <p className="empty-state">No worlds yet.</p> : visibleWorlds.map((world) => (
-          <article className="world-card spacious-world-card" key={world.key}>
+        {visibleWorlds.length === 0 ? <EmptyState actionLabel="Create your first world" icon="world" title="No worlds yet." message="Create a world to give your characters a place to belong." onAction={startCreate} /> : visibleWorlds.map((world) => (
+          <article className="world-card spacious-world-card polished-world-card" key={world.key}>
             <div><h3>{world.name}</h3><p className="muted-text">{world.worldType}</p></div>
-            <p>{world.description || "No description yet."}</p>
+            <p className="world-card-description">{world.description || "No description yet."}</p>
             <dl className="fact-list compact-facts"><Fact label="Characters" value={world.ocCount} /><Fact label="Timelines" value={world.timelineCount} /><Fact label="Lore / References" value={world.loreCount} /></dl>
             <div className="card-actions">
               {world.id ? <button className="secondary-button" type="button" onClick={() => startEdit(world)}>Edit</button> : null}
@@ -133,3 +134,5 @@ function getWorldDescription(oc) {
 function Fact({ label, value }) {
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
 }
+
+

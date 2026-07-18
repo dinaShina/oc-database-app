@@ -1,4 +1,5 @@
-﻿import { getWorldTitle } from "../OCList.jsx";
+﻿import EmptyState from "../EmptyState.jsx";
+import { getWorldTitle } from "../OCList.jsx";
 import { buildWorldSummaries } from "../WorldLibrary.jsx";
 
 export default function DashboardMobile({ ocs, onCreateOC, onCreateTimeline, onCreateWorld, onCreateStory, onOpenOC, timelineData, worlds }) {
@@ -10,14 +11,14 @@ export default function DashboardMobile({ ocs, onCreateOC, onCreateTimeline, onC
   const continueItems = recentlyOpened.length > 0 ? recentlyOpened : recentlyEditedOCs.slice(0, 4);
 
   return (
-    <section className="mobile-page mobile-dashboard-page">
+    <section className="mobile-page mobile-dashboard-page polished-dashboard-mobile">
       <section className="panel mobile-hero-panel">
         <p className="eyebrow">Creative desk</p>
         <h2>Dashboard</h2>
         <p className="muted-text">Quick access to the characters, worlds, and story pieces you touched recently.</p>
       </section>
 
-      <MobileSection title="Continue Working" empty="Open or create a character to start." items={continueItems} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
+      <MobileSection title="Continue Working" empty="Nothing open yet." items={continueItems} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
 
       <section className="panel dashboard-panel mobile-quick-create">
         <h2>Quick Create</h2>
@@ -31,7 +32,7 @@ export default function DashboardMobile({ ocs, onCreateOC, onCreateTimeline, onC
 
       <MobileSection title="Recent Characters" empty="No characters yet." items={recentlyEditedOCs} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
       <MobileSection title="Recent Worlds" empty="No worlds yet." items={recentWorlds} render={(world) => <WorldCard world={world} />} />
-      <MobileSection title="Favorites" empty="No favorites yet." items={favoriteOCs} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
+      <MobileSection title="Favorites" empty="Nothing bookmarked yet." items={favoriteOCs} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
       <MobileSection title="Recent Activity" empty="No timeline activity yet." items={recentEvents} render={(event) => <EventCard event={event} />} />
     </section>
   );
@@ -41,7 +42,7 @@ function MobileSection({ empty, items, render, title }) {
   return (
     <section className="panel dashboard-panel mobile-stack-section">
       <h2>{title}</h2>
-      <div className="mobile-card-strip">{items.length === 0 ? <p className="empty-state">{empty}</p> : items.map((item) => <div className="mobile-section-item" key={item.id || item.key}>{render(item)}</div>)}</div>
+      <div className="mobile-card-strip">{items.length === 0 ? <EmptyState icon="spark" title={empty} message="Create something new and this area will fill itself with your recent work." /> : items.map((item) => <div className="mobile-section-item" key={item.id || item.key}>{render(item)}</div>)}</div>
     </section>
   );
 }
@@ -67,6 +68,3 @@ function EventCard({ event }) {
 function QuickCreateButton({ label, onClick }) {
   return <button className="quick-create-card" type="button" onClick={onClick}><span>+</span><strong>{label}</strong></button>;
 }
-
-
-

@@ -19,6 +19,7 @@ import { deleteReferencesForOC, getReferenceItems, saveReferenceItems } from "./
 import { deleteRelationshipMapForOC, getRelationshipMaps, saveRelationshipMaps } from "./storage/relationshipMapRepository.js";
 import { deleteRelationshipsForOC, getRelationships, saveRelationships } from "./storage/relationshipRepository.js";
 import { deleteTimelineReferencesForOC, getTimelineData, saveTimelineData } from "./storage/timelineRepository.js";
+import { getStorageManifest, loadFromStorage, saveToStorage, STORAGE_ENGINE } from "./storage/localStorage.js";
 
 const CLEAN_UNSAVED_STATE = { isDirty: false, save: null };
 const APP_SETTINGS_KEY = "oc-database-app:app-settings";
@@ -288,6 +289,9 @@ function UnsavedChangesDialog({ onCancel, onDiscard, onSave, open }) {
 }
 
 function GlobalSettings({ appSettings, onSettingsChange }) {
+  const storageManifest = getStorageManifest();
+  const storedAreaCount = Object.keys(storageManifest.keys || {}).length;
+
   function updateNightMood(event) {
     onSettingsChange({ ...appSettings, nightMood: event.target.checked });
   }
@@ -296,7 +300,56 @@ function GlobalSettings({ appSettings, onSettingsChange }) {
     onSettingsChange({ ...appSettings, previewMode: event.target.value });
   }
 
-  return <section className="panel list-panel settings-page"><div className="library-topbar"><div><p className="eyebrow">App mood</p><h2>Settings</h2><p className="muted-text">Global app settings for the whole studio.</p></div></div><article className="settings-option-card"><div><h3>Night Mood</h3><p className="muted-text">A darker, calmer interface for late writing sessions.</p></div><label className="toggle-switch"><input type="checkbox" checked={Boolean(appSettings.nightMood)} onChange={updateNightMood} /><span>Night Mood</span></label></article><article className="settings-option-card"><div><h3>Development Preview</h3><p className="muted-text">Temporarily force desktop or mobile layouts while building.</p></div><label className="field settings-select-field"><span>Preview mode</span><select value={appSettings.previewMode || "auto"} onChange={updatePreviewMode}><option value="auto">Auto</option><option value="desktop">Desktop Preview</option><option value="mobile">Mobile Preview</option></select></label></article></section>;
+  return (
+    <section className="settings-page settings-grouped-page">
+      <section className="panel settings-group-card">
+        <div>
+          <p className="eyebrow">Appearance</p>
+          <h2>Look and Mood</h2>
+          <p className="muted-text">Keep the whole studio comfortable while you write and plan.</p>
+        </div>
+        <article className="settings-option-card compact-setting-row">
+          <div>
+            <h3>Night Mode</h3>
+            <p className="muted-text">A darker, calmer interface for late writing sessions.</p>
+          </div>
+          <label className="toggle-switch"><input type="checkbox" checked={Boolean(appSettings.nightMood)} onChange={updateNightMood} /><span>Night Mood</span></label>
+        </article>
+        <article className="settings-preview-card">
+          <div className="accent-swatch-row" aria-hidden="true"><span /><span /><span /></div>
+          <div>
+            <h3>Accent Color</h3>
+            <p className="muted-text">Prepared for custom palettes. The current accent is used on buttons, active states, and focus rings.</p>
+          </div>
+        </article>
+      </section>
+
+      <section className="panel settings-group-card">
+        <div>
+          <p className="eyebrow">Development</p>
+          <h2>Preview</h2>
+          <p className="muted-text">Temporarily force desktop or mobile layouts while building.</p>
+        </div>
+        <label className="field settings-select-field"><span>Preview mode</span><select value={appSettings.previewMode || "auto"} onChange={updatePreviewMode}><option value="auto">Auto</option><option value="desktop">Desktop Preview</option><option value="mobile">Mobile Preview</option></select></label>
+      </section>
+
+      <section className="panel settings-group-card">
+        <div>
+          <p className="eyebrow">Future</p>
+          <h2>Storage and Backups</h2>
+          <p className="muted-text">Your current data is stored in this browser and survives refreshes, restarts, and redeploys on the same site URL.</p>
+        </div>
+        <div className="storage-status-grid">
+          <article><strong>{STORAGE_ENGINE}</strong><span>Current storage</span></article>
+          <article><strong>{storedAreaCount}</strong><span>Saved app areas</span></article>
+          <article><strong>{storageManifest.updatedAt ? new Date(storageManifest.updatedAt).toLocaleDateString() : "Ready"}</strong><span>Last storage activity</span></article>
+        </div>
+        <div className="prepared-grid compact-prepared-grid">
+          {["Export", "Backup", "Backend sync", "Import from file"].map((item) => <article className="prepared-card future-setting-card" key={item}><h3>{item}</h3><p className="muted-text">Prepared for a later step.</p></article>)}
+        </div>
+      </section>
+    </section>
+  );
 }
 
 function getSectionTitle(section) {
@@ -308,24 +361,10 @@ function getSectionTitle(section) {
 }
 
 function getAppSettings() {
-  try {
-    const stored = localStorage.getItem(APP_SETTINGS_KEY);
-    return stored ? { nightMood: false, previewMode: "auto", ...JSON.parse(stored) } : { nightMood: false, previewMode: "auto" };
-  } catch (error) {
-    console.error("Could not load app settings:", error);
-    return { nightMood: false, previewMode: "auto" };
-  }
+  return loadFromStorage(APP_SETTINGS_KEY, { nightMood: false, previewMode: "auto" });
 }
 
 function saveAppSettings(settings) {
-  try {
-    localStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(settings));
-  } catch (error) {
-    console.error("Could not save app settings:", error);
-  }
+  saveToStorage(APP_SETTINGS_KEY, settings);
 }
-
-
-
-
 

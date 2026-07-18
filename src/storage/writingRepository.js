@@ -1,5 +1,5 @@
 ﻿import { INITIAL_STORY_ENTRY } from "../data/writingSchema.js";
-import { loadFromStorage, saveToStorage } from "./localStorage.js";
+import { loadFromStorage, removeFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:writing-entries";
 const DRAFT_PREFIX = "oc-database-app:story-draft:";
@@ -50,11 +50,7 @@ export function getRecoveredDraft(ocId) {
 }
 
 export function clearRecoveredDraft(ocId) {
-  try {
-    localStorage.removeItem(`${DRAFT_PREFIX}${ocId}`);
-  } catch (error) {
-    console.error("Could not clear recovered story draft:", error);
-  }
+  removeFromStorage(`${DRAFT_PREFIX}${ocId}`);
 }
 
 function normalizeWritingEntry(entry) {
@@ -106,3 +102,4 @@ function keepText(value) {
 function cleanToken(value) {
   return typeof value === "string" ? value.trim() : "";
 }
+

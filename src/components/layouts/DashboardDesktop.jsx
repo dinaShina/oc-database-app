@@ -1,4 +1,5 @@
 ﻿import { useState } from "react";
+import EmptyState from "../EmptyState.jsx";
 import { getWorldTitle } from "../OCList.jsx";
 import { buildWorldSummaries } from "../WorldLibrary.jsx";
 
@@ -17,7 +18,7 @@ export default function DashboardDesktop({ ocs, onCreateOC, onCreateTimeline, on
   }
 
   return (
-    <section className="dashboard-home dashboard-home-clean">
+    <section className="dashboard-home dashboard-home-clean polished-dashboard">
       <section className="dashboard-topline">
         <div>
           <p className="eyebrow">Creative desk</p>
@@ -37,10 +38,10 @@ export default function DashboardDesktop({ ocs, onCreateOC, onCreateTimeline, on
         </div>
       </section>
 
-      <DashboardSection className="wide-dashboard-section" title="Continue Working" empty="Open or create a character to start your workspace." items={continueItems} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
+      <DashboardSection className="wide-dashboard-section continue-section" title="Continue Working" empty="Nothing open yet." items={continueItems} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
       <DashboardSection title="Recent Characters" empty="No characters yet." items={recentlyEditedOCs} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
       <DashboardSection title="Recent Worlds" empty="No worlds yet." items={recentWorlds} render={(world) => <WorldCard world={world} />} />
-      <DashboardSection title="Favorites" empty="No favorites yet." items={favoriteOCs} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
+      <DashboardSection title="Favorites" empty="Nothing bookmarked yet." items={favoriteOCs} render={(oc) => <CharacterCard oc={oc} onOpenOC={onOpenOC} />} />
       <DashboardSection title="Recent Activity" empty="No timeline activity yet." items={recentEvents} render={(event) => <EventCard event={event} />} />
     </section>
   );
@@ -50,7 +51,7 @@ function DashboardSection({ className = "", empty, items, render, title }) {
   return (
     <section className={`panel dashboard-panel ${className}`}>
       <div className="section-heading-row"><h2>{title}</h2></div>
-      <div className="dashboard-card-grid">{items.length === 0 ? <p className="empty-state">{empty}</p> : items.map((item) => <div className="dashboard-section-item" key={item.id || item.key}>{render(item)}</div>)}</div>
+      <div className="dashboard-card-grid">{items.length === 0 ? <EmptyState icon="spark" title={empty} message="Create something new and this space will become your quick way back." /> : items.map((item) => <div className="dashboard-section-item" key={item.id || item.key}>{render(item)}</div>)}</div>
     </section>
   );
 }
@@ -73,5 +74,3 @@ function WorldCard({ world }) {
 function EventCard({ event }) {
   return <article className="desk-card"><div className="card-copy"><strong title={event.title}>{event.title}</strong><span>{event.dateFull || event.dateYear || event.eventType || "Timeline event"}</span><small>{event.connectedWorld || event.eventType || "event"}</small></div></article>;
 }
-
-
