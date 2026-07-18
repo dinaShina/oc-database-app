@@ -39,13 +39,14 @@ const PRESET_NAMES = Object.keys(STYLE_PRESETS);
 
 function serializeForm(formData) { return JSON.stringify(formData); }
 
-export default function SettingsModule({ mode = "appearance", oc, onDeleteOC, onUnsavedStateChange, onUpdateOC }) {
-  const isMobile = useIsMobile();
+export default function SettingsModule({ forceMobile = false, mode = "appearance", oc, onDeleteOC, onUnsavedStateChange, onUpdateOC }) {
+  const detectedMobile = useIsMobile();
+  const isMobile = forceMobile || detectedMobile;
   const [formData, setFormData] = useState(() => normalizeCustomizeData(oc));
   const [fontError, setFontError] = useState("");
   const [fullscreenPreview, setFullscreenPreview] = useState(false);
   const [previewMode, setPreviewMode] = useState("light");
-  const [openMobileSections, setOpenMobileSections] = useState([]);
+  const [openMobileSections, setOpenMobileSections] = useState(["Style"]);
   const initialSnapshotRef = useRef(serializeForm(normalizeCustomizeData(oc)));
   const isDirty = serializeForm(formData) !== initialSnapshotRef.current;
 
@@ -132,7 +133,7 @@ export default function SettingsModule({ mode = "appearance", oc, onDeleteOC, on
 
   if (isMobile) {
     const mobileSections = [["Style", styleControls], ["Colors", colorControls], ["Typography", typographyControls], ["Images", imageControls], ["Decorations", decorationControls], ["Advanced", advancedControls]];
-    return <WorkspacePanel title="Customize"><form className="customize-mobile-flow" onSubmit={submit}><header className="customize-mobile-header"><div><p className="eyebrow">Customize</p><h3>{formData.name || "Character"}</h3></div><button className="primary-button inline-primary" type="submit">Save</button></header><div className="mobile-preview-mode-row"><button className={previewMode === "light" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("light")}>Preview Light</button><button className={previewMode === "dark" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("dark")}>Preview Dark</button></div><MobilePreviewCard formData={formData} style={previewStyle} warnings={warnings} /><button className="secondary-button mobile-full-preview-button" type="button" onClick={() => setFullscreenPreview(true)}>Open Full Preview</button><div className="mobile-customize-sections">{mobileSections.map(([title, content]) => <section className="mobile-customize-section" key={title}><button className="mobile-customize-section-toggle" type="button" onClick={() => toggleMobileSection(title, setOpenMobileSections)}><strong>{title}</strong><span>{openMobileSections.includes(title) ? "Close" : "Open"}</span></button>{openMobileSections.includes(title) ? <div className="mobile-customize-section-body">{content}</div> : null}</section>)}</div><div className="form-actions customize-actions mobile-customize-actions"><button className="primary-button inline-primary" type="submit">Save Changes</button><button className="secondary-button" type="button" onClick={cancelChanges}>Cancel</button><button className="secondary-button" type="button" onClick={resetChanges}>Reset</button><button className="danger-outline-button" type="button" onClick={restoreDefault}>Restore Default</button></div></form>{fullscreenPreview ? <div className="dialog-backdrop" role="presentation"><section className="customize-fullscreen-preview"><div className="modal-heading-row"><h2>Preview</h2><button className="secondary-button" type="button" onClick={() => setFullscreenPreview(false)}>Close</button></div><div className="mobile-preview-mode-row"><button className={previewMode === "light" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("light")}>Light</button><button className={previewMode === "dark" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("dark")}>Dark</button></div><LivePreview formData={formData} style={previewStyle} warnings={warnings} /></section></div> : null}</WorkspacePanel>;
+    return <WorkspacePanel title="Customize"><form className="customize-mobile-flow" onSubmit={submit}><header className="customize-mobile-header"><div><p className="eyebrow">Customize</p><h3>{formData.name || "Character"}</h3></div><button className="primary-button inline-primary" type="submit">Save</button></header><MobileCustomizePreviewSummary formData={formData} style={previewStyle} warnings={warnings} /><button className="secondary-button mobile-full-preview-button" type="button" onClick={() => setFullscreenPreview(true)}>Open Full Preview</button><div className="mobile-customize-sections">{mobileSections.map(([title, content]) => <section className="mobile-customize-section" key={title}><button className="mobile-customize-section-toggle" type="button" onClick={() => toggleMobileSection(title, setOpenMobileSections)}><strong>{title}</strong><span>{openMobileSections.includes(title) ? "Close" : "Open"}</span></button>{openMobileSections.includes(title) ? <div className="mobile-customize-section-body">{content}</div> : null}</section>)}</div><div className="form-actions customize-actions mobile-customize-actions"><button className="primary-button inline-primary" type="submit">Save Changes</button><button className="secondary-button" type="button" onClick={cancelChanges}>Cancel</button><button className="secondary-button" type="button" onClick={resetChanges}>Reset</button><button className="danger-outline-button" type="button" onClick={restoreDefault}>Restore Default</button></div></form>{fullscreenPreview ? <div className="dialog-backdrop" role="presentation"><section className="customize-fullscreen-preview"><div className="modal-heading-row"><h2>Preview</h2><button className="secondary-button" type="button" onClick={() => setFullscreenPreview(false)}>Close</button></div><div className="mobile-preview-mode-row"><button className={previewMode === "light" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("light")}>Light</button><button className={previewMode === "dark" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("dark")}>Dark</button></div><LivePreview formData={formData} style={previewStyle} warnings={warnings} /></section></div> : null}</WorkspacePanel>;
   }
 
   return <WorkspacePanel title="Customize"><form className="customize-layout" onSubmit={submit}><div className="customize-controls">{imageControls}{styleControls}{colorControls}{typographyControls}{advancedControls}</div><aside className="customize-preview-column"><div className="mobile-preview-mode-row desktop-preview-mode-row"><button className={previewMode === "light" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("light")}>Preview Light</button><button className={previewMode === "dark" ? "theme-mode-card active" : "theme-mode-card"} type="button" onClick={() => setPreviewMode("dark")}>Preview Dark</button></div><button className="secondary-button mobile-full-preview-button" type="button" onClick={() => setFullscreenPreview(true)}>Preview Fullscreen</button><LivePreview formData={formData} style={previewStyle} warnings={warnings} /><div className="form-actions customize-actions"><button className="primary-button inline-primary" type="submit">Save Changes</button><button className="secondary-button" type="button" onClick={cancelChanges}>Cancel</button><button className="secondary-button" type="button" onClick={resetChanges}>Reset Changes</button><button className="danger-outline-button" type="button" onClick={restoreDefault}>Restore Default</button></div></aside></form>{fullscreenPreview ? <div className="dialog-backdrop" role="presentation"><section className="customize-fullscreen-preview"><div className="modal-heading-row"><h2>Preview</h2><button className="secondary-button" type="button" onClick={() => setFullscreenPreview(false)}>Close</button></div><LivePreview formData={formData} style={previewStyle} warnings={warnings} /></section></div> : null}</WorkspacePanel>;
@@ -148,28 +149,24 @@ function FontSelect({ label, name, onChange, value }) { return <label className=
 function FontPreview({ label, sample, value }) { return <div className="font-preview"><small>{label}</small><p style={{ fontFamily: resolveFont(value) }}>{sample}</p></div>; }
 function FontControl(props) { return <div className="font-control-block"><FontSelect {...props} /><FontPreview label={props.label} value={props.value} sample={props.sample} /></div>; }
 
-function MobilePreviewCard({ formData, style, warnings = [] }) {
+function MobileCustomizePreviewSummary({ formData, style, warnings = [] }) {
   const image = formData.profilePictureData || formData.profilePictureUrl;
   const banner = formData.bannerImageData || formData.bannerImageUrl;
   return (
-    <section className={`mobile-style-preview-card theme-${slugifyTheme(formData.visualTheme || "Modern")}`} style={style} aria-label="Small style preview">
+    <section className={`mobile-customize-preview-summary theme-${slugifyTheme(formData.visualTheme || "Modern")}`} style={style} aria-label="Compact customize preview">
       {formData.customFontData ? <style>{`@font-face{font-family:${JSON.stringify(getCustomFontFamily(formData))};src:url(${JSON.stringify(formData.customFontData)});}`}</style> : null}
-      <div className="mobile-style-preview-banner">
+      <div className="mobile-summary-banner">
         {banner ? <img src={banner} alt="Preview banner" /> : null}
-        <div className="mobile-style-preview-identity">
-          <div className="preview-avatar mobile-preview-avatar">{image ? <img src={image} alt="Preview profile" /> : <span>{getInitials(formData.name)}</span>}</div>
-          <div>
-            <h3>{formData.name || "Character Name"}</h3>
-            <p>{formData.visualTheme || "Modern"}</p>
-          </div>
-        </div>
       </div>
-      <article className="mobile-style-preview-sample">
-        <h4>Sample Heading</h4>
-        <p>Short sample text for colors and fonts.</p>
-        <button className="theme-preview-button" type="button">Button</button>
-      </article>
-      {warnings.length ? <p className="contrast-warning mobile-preview-warning">Adjusted for readability.</p> : null}
+      <div className="mobile-summary-content">
+        <div className="preview-avatar mobile-summary-avatar">{image ? <img src={image} alt="Preview profile" /> : <span>{getInitials(formData.name)}</span>}</div>
+        <div className="mobile-summary-copy">
+          <h3>{formData.name || "Character Name"}</h3>
+          <p>{formData.visualTheme || "Modern"} · {formData.headingFont || "Modern Sans"}</p>
+        </div>
+        <span className="mobile-summary-accent" style={{ background: formData.paletteColorOne || formData.accentColor || "#2f6652" }} title="Selected accent color" />
+      </div>
+      {warnings.length ? <p className="mobile-summary-warning">Preview adjusted for readability.</p> : null}
     </section>
   );
 }
@@ -199,6 +196,9 @@ function stripPresetMeta(preset = {}) { const { description: _description, ...va
 function toggleMobileSection(title, setOpenMobileSections) { setOpenMobileSections((current) => current.includes(title) ? current.filter((item) => item !== title) : [...current.slice(-1), title]); }
 function areCustomColorsValid(formData) { return ["paletteColorOne", "paletteColorTwo", "workspaceBackgroundColor", "workspaceCardColor", "workspaceTextColor", "workspaceBorderColor"].every((key) => isValidHex(formData[key])); }
 function getColorWarnings(formData) { const warnings = []; if (isValidHex(formData.workspaceTextColor) && isValidHex(formData.workspaceCardColor) && contrastRatio(formData.workspaceTextColor, formData.workspaceCardColor) < 4.5) warnings.push("Text contrast adjusted"); if (isValidHex(formData.workspaceBorderColor) && isValidHex(formData.workspaceCardColor) && contrastRatio(formData.workspaceBorderColor, formData.workspaceCardColor) < 3) warnings.push("Border contrast adjusted"); return warnings; }
+
+
+
 
 
 

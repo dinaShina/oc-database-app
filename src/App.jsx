@@ -16,12 +16,12 @@ import WorldLibrary from "./components/WorldLibrary.jsx";
 import { getWorlds, saveWorlds, updateWorld } from "./storage/worldRepository.js";
 import { deleteFamilyForOC, getFamilyMembers, saveFamilyMembers } from "./storage/familyRepository.js";
 import { deleteInspirationForOC, getInspirationItems, saveInspirationItems } from "./storage/inspirationRepository.js";
-import { createOC, deleteOC, getOCs, saveOCs, updateOC } from "./storage/ocRepository.js";
+import { CHARACTER_STORAGE_KEY, createOC, deleteOC, discoverCharacterSources, getOCs, restoreCharactersFromSource, saveOCs, updateOC } from "./storage/ocRepository.js";
 import { deleteReferencesForOC, getReferenceItems, saveReferenceItems } from "./storage/referenceRepository.js";
 import { deleteRelationshipMapForOC, getRelationshipMaps, saveRelationshipMaps } from "./storage/relationshipMapRepository.js";
 import { deleteRelationshipsForOC, getRelationships, saveRelationships } from "./storage/relationshipRepository.js";
 import { deleteTimelineReferencesForOC, getTimelineData, saveTimelineData } from "./storage/timelineRepository.js";
-import { getStorageManifest, loadFromStorage, saveToStorage, STORAGE_ENGINE } from "./storage/localStorage.js";
+import { getRecoverableStorageSources, getStorageManifest, getStorageSnapshot, getStorageStatusForKey, loadFromStorage, saveToStorage, STORAGE_ENGINE } from "./storage/localStorage.js";
 import { getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
 import { APP_PALETTES, getAppThemeStyle } from "./utils/themeContrast.js";
 import { clearSession, createUserCharacter, deleteUserCharacter, downloadJson, fetchUserCharacters, getCurrentUser, getStoredSession, isSupabaseConfigured, requestAccountDeletion, signOut, updateUserCharacter } from "./services/supabaseBeta.js";
@@ -35,7 +35,7 @@ export default function App() {
   const [authSession, setAuthSession] = useState(() => betaEnabled ? getStoredSession() : null);
   const [authReady, setAuthReady] = useState(!betaEnabled);
   const [betaStatus, setBetaStatus] = useState("");
-  const [ocs, setOcs] = useState(() => betaEnabled ? [] : getOCs());
+  const [ocs, setOcs] = useState(() => getOCs());
   const [familyMembers, setFamilyMembers] = useState(() => getFamilyMembers());
   const [relationships, setRelationships] = useState(() => getRelationships());
   const [relationshipMaps, setRelationshipMaps] = useState(() => getRelationshipMaps());
@@ -53,6 +53,7 @@ export default function App() {
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [appSettings, setAppSettings] = useState(() => getAppSettings());
   const [workspaceConfigs, setWorkspaceConfigs] = useState(() => getWorkspaceConfigs());
+  const [isStorageHydrated, setIsStorageHydrated] = useState(false);
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => getSystemPrefersDark());
   const detectedMobile = useIsMobile();
   const resolvedThemeMode = appSettings.themeMode === "system" ? (systemPrefersDark ? "dark" : "light") : appSettings.themeMode || (appSettings.nightMood ? "dark" : "light");
@@ -61,6 +62,10 @@ export default function App() {
   const DashboardLayout = isMobile ? DashboardMobile : DashboardDesktop;
   const CharactersLayout = isMobile ? CharactersMobile : CharactersDesktop;
   const CharacterWorkspaceLayout = isMobile ? CharacterWorkspaceMobile : CharacterWorkspaceDesktop;
+
+  useEffect(() => {
+    setIsStorageHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return undefined;
@@ -91,14 +96,14 @@ export default function App() {
         const betaCharacters = await fetchUserCharacters(nextSession);
         if (!cancelled) {
           setAuthSession(nextSession);
-          setOcs(betaCharacters);
+          setOcs(betaCharacters.length > 0 ? betaCharacters : getOCs());
           setAuthReady(true);
         }
       } catch {
         clearSession();
         if (!cancelled) {
           setAuthSession(null);
-          setOcs([]);
+          setOcs(getOCs());
           setAuthReady(true);
         }
       }
@@ -128,14 +133,15 @@ export default function App() {
 
   function persistOCs(nextOCs) {
     setOcs(nextOCs);
-    if (!betaEnabled) saveOCs(nextOCs);
+    if (!betaEnabled && isStorageHydrated) saveOCs(nextOCs);
   }
 
   async function loadBetaCharacters(session = authSession) {
     if (!betaEnabled || !session) return;
     setBetaStatus("Loading private workspace...");
     try {
-      setOcs(await fetchUserCharacters(session));
+      const betaCharacters = await fetchUserCharacters(session);
+      setOcs(betaCharacters.length > 0 ? betaCharacters : getOCs());
       setBetaStatus("");
     } catch (error) {
       setBetaStatus(error.message || "Could not load beta data.");
@@ -218,7 +224,7 @@ export default function App() {
     setOcs((currentOCs) => {
       const oc = currentOCs.find((item) => item.id === ocId);
       const nextOCs = oc ? updateOC(currentOCs, ocId, { ...oc, lastOpenedAt: now }) : currentOCs;
-      if (!betaEnabled) saveOCs(nextOCs);
+      if (!betaEnabled && isStorageHydrated) saveOCs(nextOCs);
       return nextOCs;
     });
     setActiveOCId(ocId);
@@ -339,10 +345,27 @@ export default function App() {
     });
   }
 
+  function downloadEmergencyBackup() {
+    downloadJson("atlas-archive-emergency-backup.json", {
+      exportedAt: new Date().toISOString(),
+      storageSnapshot: getStorageSnapshot(),
+      characterSources: discoverCharacterSources(),
+      recoverableSources: getRecoverableStorageSources()
+    });
+  }
+
+  function restoreLocalCharacters(sourceKey) {
+    const confirmed = window.confirm(`Restore and merge characters from ${sourceKey}? A backup of current characters will be created first.`);
+    if (!confirmed) return;
+    const restored = restoreCharactersFromSource(sourceKey, ocs);
+    setOcs(restored);
+    window.alert(`Restore complete. Characters now in library: ${restored.length}`);
+  }
+
   async function handleSignOut() {
     await signOut(authSession);
     setAuthSession(null);
-    setOcs([]);
+    setOcs(getOCs());
     navigateToSection("dashboard");
   }
 
@@ -391,7 +414,7 @@ export default function App() {
         ) : activeSection === "favorites" ? (
           <FavoritesView ocs={ocs} onOpenOC={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} onToggleOCFavorite={toggleOCFavorite} onToggleWorldFavorite={toggleWorldFavorite} timelineData={timelineData} worlds={worldRecords} />
         ) : activeSection === "settings" ? (
-          <SettingsErrorBoundary><GlobalSettings appSettings={appSettings} authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onAccountDeletionRequest={handleAccountDeletionRequest} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onSettingsChange={setAndSaveAppSettings} onSignOut={handleSignOut} /></SettingsErrorBoundary>
+          <SettingsErrorBoundary><GlobalSettings appSettings={appSettings} authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onAccountDeletionRequest={handleAccountDeletionRequest} onEmergencyBackup={downloadEmergencyBackup} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onRestoreCharacters={restoreLocalCharacters} onSettingsChange={setAndSaveAppSettings} onSignOut={handleSignOut} /></SettingsErrorBoundary>
         ) : (
           <CharactersLayout fandomFilter={fandomFilter} fandoms={worlds} ocs={visibleOCs} searchTerm={searchTerm} totalCount={ocs.length} onCreateCharacter={openCharacterCreation} onFandomFilterChange={(nextFilter) => requestNavigation(() => setFandomFilter(nextFilter))} onOpenWorkspace={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} onSearchTermChange={setSearchTerm} />
         )}
@@ -489,12 +512,14 @@ class SettingsErrorBoundary extends Component {
   }
 }
 
-function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onAccountDeletionRequest, onExportAccountData, onSettingsChange, onSignOut }) {
+function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onAccountDeletionRequest, onEmergencyBackup, onExportAccountData, onRestoreCharacters, onSettingsChange, onSignOut }) {
   const isSettingsMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState(() => getSettingsCategoryFromLocation() || "appearance");
   const storageManifest = getStorageManifest();
   const storedAreaCount = Object.keys(storageManifest.keys || {}).length;
   const paletteNames = Object.keys(APP_PALETTES);
+  const characterSources = discoverCharacterSources();
+  const characterStorageStatus = getStorageStatusForKey(CHARACTER_STORAGE_KEY);
 
   useEffect(() => {
     function handleRouteChange() {
@@ -556,11 +581,20 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
       content: (
         <>
           <div className="storage-status-grid">
-            <article><strong>{betaEnabled ? "Supabase" : STORAGE_ENGINE}</strong><span>Current storage</span></article>
+            <article><strong>{betaEnabled ? "Supabase + local recovery" : STORAGE_ENGINE}</strong><span>Current storage</span></article>
+            <article><strong>{exportData?.ocs?.length || 0}</strong><span>Characters loaded now</span></article>
             <article><strong>{storedAreaCount}</strong><span>Saved app areas</span></article>
-            <article><strong>{storageManifest.updatedAt ? new Date(storageManifest.updatedAt).toLocaleDateString() : "Ready"}</strong><span>Last storage activity</span></article>
+            <article><strong>{characterStorageStatus.lastSuccessfulSave ? new Date(characterStorageStatus.lastSuccessfulSave).toLocaleString() : "Not saved yet"}</strong><span>Last character save</span></article>
+            <article><strong>{characterStorageStatus.lastBackup ? new Date(characterStorageStatus.lastBackup).toLocaleString() : "No backup yet"}</strong><span>Last character backup</span></article>
+            <article><strong>{characterStorageStatus.error || "None"}</strong><span>Storage error</span></article>
           </div>
-          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button></div>
+          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button><button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button></div>
+          <section className="recovery-panel">
+            <div><h3>Recover Local Data</h3><p className="muted-text">Found Atlas Archive and legacy browser-storage sources. Restoring merges by character ID and creates a backup first.</p></div>
+            <div className="recovery-source-list">
+              {characterSources.length ? characterSources.map((source) => <article className="recovery-source-card" key={source.key}><div><strong>{source.key}</strong><span>{source.ok ? `${source.characterCount} characters found` : `Unreadable data preserved: ${source.error}`}</span></div><button className="secondary-button" type="button" disabled={!source.ok || source.characterCount === 0} onClick={() => onRestoreCharacters(source.key)}>Restore / Merge</button></article>) : <p className="muted-text">No local character backups or legacy keys were found in this browser.</p>}
+            </div>
+          </section>
         </>
       )
     },
@@ -785,6 +819,14 @@ function getLegalTitle(page) {
   if (page === "terms") return "Terms / Beta Rules";
   return "Contact";
 }
+
+
+
+
+
+
+
+
 
 
 

@@ -1,67 +1,154 @@
 ﻿import { INITIAL_OC_FORM, WORLD_TYPES } from "../data/ocFields.js";
-import { loadFromStorage, saveToStorage } from "./localStorage.js";
+import { loadFromStorage, parseStoredValue, readRawStorage, saveToStorage } from "./localStorage.js";
 
-const STORAGE_KEY = "oc-database-app:ocs";
+export const CHARACTER_STORAGE_KEY = "atlasArchive.characters";
+export const LEGACY_CHARACTER_KEYS = ["oc-database-app:ocs", "atlasArchive.ocs", "ocs", "characters"];
 
 // Keep OC-specific storage behavior here. Later this module can call Supabase,
 // Firebase, or an API while the UI keeps using the same functions.
 export function getOCs() {
-  return loadFromStorage(STORAGE_KEY, []).map(migrateOC);
+  return loadCharactersFromStableStorage().map(migrateOC);
 }
 
-export function saveOCs(ocs) {
-  saveToStorage(STORAGE_KEY, ocs);
+export function saveOCs(ocs, options = {}) {
+  if (!Array.isArray(ocs)) return false;
+  const current = loadFromStorage(CHARACTER_STORAGE_KEY, []);
+  if (!options.allowEmpty && ocs.length === 0 && Array.isArray(current) && current.length > 0) {
+    console.warn("Blocked an empty character overwrite. Use allowEmpty only for an explicit user-confirmed reset.");
+    return false;
+  }
+  return saveToStorage(CHARACTER_STORAGE_KEY, ocs.map(migrateOC));
+}
+
+export function getCharacterStorageStatus() {
+  const sources = discoverCharacterSources();
+  return {
+    key: CHARACTER_STORAGE_KEY,
+    characterCount: getOCs().length,
+    sources
+  };
+}
+
+export function discoverCharacterSources() {
+  const keys = [CHARACTER_STORAGE_KEY, ...LEGACY_CHARACTER_KEYS, ...getCharacterBackupKeys()];
+  return Array.from(new Set(keys)).map((key) => {
+    const parsed = parseStoredValue(key);
+    const characters = extractCharacters(parsed.value, key);
+    return {
+      key,
+      exists: readRawStorage(key) !== null,
+      ok: parsed.ok,
+      characterCount: characters.length,
+      characters,
+      raw: parsed.raw,
+      error: parsed.error || ""
+    };
+  }).filter((source) => source.exists || source.characterCount > 0);
+}
+
+export function restoreCharactersFromSource(sourceKey, currentCharacters = []) {
+  const source = discoverCharacterSources().find((item) => item.key === sourceKey);
+  if (!source || source.characterCount === 0) return currentCharacters;
+  const merged = mergeCharacters(currentCharacters, source.characters);
+  saveToStorage(`${CHARACTER_STORAGE_KEY}.restoreBackup.${Date.now()}`, currentCharacters);
+  saveOCs(merged, { allowEmpty: false });
+  return merged;
 }
 
 export function createOC(formData) {
   const now = new Date().toISOString();
-
-  return {
-    ...normalizeOC(formData),
-    id: crypto.randomUUID(),
-    createdAt: now,
-    updatedAt: now
-  };
+  return { ...normalizeOC(formData), id: crypto.randomUUID(), createdAt: now, updatedAt: now };
 }
 
 export function updateOC(ocs, id, formData) {
   const updatedOC = normalizeOC(formData);
-
-  return ocs.map((oc) =>
-    oc.id === id
-      ? {
-          ...oc,
-          ...updatedOC,
-          updatedAt: new Date().toISOString()
-        }
-      : oc
-  );
+  return ocs.map((oc) => oc.id === id ? { ...oc, ...updatedOC, updatedAt: new Date().toISOString() } : oc);
 }
 
 export function deleteOC(ocs, id) {
   return ocs.filter((oc) => oc.id !== id);
 }
 
-function normalizeOC(formData) {
-  const normalized = Object.fromEntries(
-    Object.entries({ ...INITIAL_OC_FORM, ...formData }).map(([key, value]) => [
-      key,
-      typeof value === "string" ? value : value
-    ])
-  );
+function loadCharactersFromStableStorage() {
+  const current = loadFromStorage(CHARACTER_STORAGE_KEY, null);
+  if (Array.isArray(current) && current.length > 0) return current;
+  if (Array.isArray(current) && current.length === 0) {
+    const legacy = getBestLegacyCharacters();
+    if (legacy.length > 0) {
+      saveToStorage(`${CHARACTER_STORAGE_KEY}.preMigrationBackup.${Date.now()}`, current);
+      saveToStorage(CHARACTER_STORAGE_KEY, mergeCharacters(current, legacy));
+      return legacy;
+    }
+    return current;
+  }
+  const legacy = getBestLegacyCharacters();
+  if (legacy.length > 0) {
+    saveToStorage(CHARACTER_STORAGE_KEY, legacy);
+    return legacy;
+  }
+  return [];
+}
 
+function getBestLegacyCharacters() {
+  return discoverCharacterSources()
+    .filter((source) => source.key !== CHARACTER_STORAGE_KEY && source.characterCount > 0)
+    .sort((a, b) => b.characterCount - a.characterCount)[0]?.characters || [];
+}
+
+function getCharacterBackupKeys() {
+  try {
+    return Object.keys(localStorage).filter((key) => key.includes("characters") || key.includes("ocs"));
+  } catch {
+    return [];
+  }
+}
+
+function extractCharacters(value, key) {
+  if (Array.isArray(value)) return value.filter(isCharacterLike).map(migrateOC);
+  if (value && typeof value === "object") {
+    if (Array.isArray(value.characters)) return value.characters.filter(isCharacterLike).map(migrateOC);
+    if (value.rawValue) {
+      try { return extractCharacters(JSON.parse(value.rawValue), key); } catch { return []; }
+    }
+    if (value.values) {
+      return Object.entries(value.values).flatMap(([entryKey, raw]) => {
+        try { return extractCharacters(JSON.parse(raw), entryKey); } catch { return []; }
+      });
+    }
+  }
+  return [];
+}
+
+function isCharacterLike(item) {
+  return item && typeof item === "object" && (item.id || item.name || item.fullName || item.firstName || item.nickname);
+}
+
+function mergeCharacters(currentCharacters, restoredCharacters) {
+  const merged = new Map();
+  [...currentCharacters, ...restoredCharacters].forEach((character) => {
+    const migrated = migrateOC(character);
+    const key = migrated.id || `${migrated.name}-${migrated.createdAt}`;
+    const existing = merged.get(key);
+    if (!existing || String(migrated.updatedAt || "") > String(existing.updatedAt || "")) merged.set(key, migrated);
+  });
+  return Array.from(merged.values());
+}
+
+function normalizeOC(formData) {
+  const normalized = Object.fromEntries(Object.entries({ ...INITIAL_OC_FORM, ...formData }).map(([key, value]) => [key, typeof value === "string" ? value : value]));
   normalized.worldType = WORLD_TYPES.includes(normalized.worldType) ? normalized.worldType : "Canon Universe";
   normalized.fandom = getLegacyFandomValue(normalized);
   normalized.ownWorld = normalized.worldType === "Own World";
-
   return normalized;
 }
 
 function migrateOC(oc) {
-  const worldType = getMigratedWorldType(oc);
-
+  const worldType = getMigratedWorldType(oc || {});
   return normalizeOC({
     ...oc,
+    id: oc.id || crypto.randomUUID(),
+    createdAt: oc.createdAt || new Date().toISOString(),
+    updatedAt: oc.updatedAt || oc.lastEditedAt || oc.createdAt || new Date().toISOString(),
     profilePictureUrl: oc.profilePictureUrl || oc.imageUrl || "",
     profilePictureData: oc.profilePictureData || "",
     ethnicities: oc.ethnicities || "",
@@ -125,15 +212,6 @@ function getLegacyFandomValue(oc) {
   return oc.worldCanonName || oc.fandom || "";
 }
 
-function getDayFromLegacyDate(date) {
-  return date ? date.split("-")[2] || "" : "";
-}
-
-function getMonthFromLegacyDate(date) {
-  return date ? date.split("-")[1] || "" : "";
-}
-
-function getYearFromLegacyDate(date) {
-  return date ? date.split("-")[0] || "" : "";
-}
-
+function getDayFromLegacyDate(date) { return date ? date.split("-")[2] || "" : ""; }
+function getMonthFromLegacyDate(date) { return date ? date.split("-")[1] || "" : ""; }
+function getYearFromLegacyDate(date) { return date ? date.split("-")[0] || "" : ""; }

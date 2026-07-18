@@ -145,8 +145,8 @@ export default function CharacterWorkspaceMobile({
       {activeTab === "Timeline" ? <TimelineMobile embedded ocs={ocs} onBack={onBack} onTimelineDataChange={onTimelineDataChange} timelineData={timelineData} workspaceOcId={oc.id} /> : null}
       {activeTab === "Story" ? <StoryWorkspace oc={oc} /> : null}
       {activeTab === "Inspiration" ? <InspirationModule inspirationItems={inspirationItems} oc={oc} onInspirationItemsChange={onInspirationItemsChange} onReferenceItemsChange={onReferenceItemsChange} referenceItems={referenceItems} /> : null}
-      {activeTab === "Appearance" ? <SettingsModule mode="appearance" oc={oc} onDeleteOC={onDeleteOC} onUnsavedStateChange={onUnsavedStateChange} onUpdateOC={onOCUpdate} /> : null}
-      {activeTab === "Settings" ? <SettingsModule mode="settings" oc={oc} onDeleteOC={onDeleteOC} onUnsavedStateChange={onUnsavedStateChange} onUpdateOC={onOCUpdate} /> : null}
+      {activeTab === "Appearance" ? <SettingsModule forceMobile mode="appearance" oc={oc} onDeleteOC={onDeleteOC} onUnsavedStateChange={onUnsavedStateChange} onUpdateOC={onOCUpdate} /> : null}
+      {activeTab === "Settings" ? <SettingsModule forceMobile mode="settings" oc={oc} onDeleteOC={onDeleteOC} onUnsavedStateChange={onUnsavedStateChange} onUpdateOC={onOCUpdate} /> : null}
 
       {customizingWorkspace ? <WorkspaceCustomizer configs={workspaceConfigs} ocId={oc.id} onChange={onWorkspaceConfigsChange} onClose={() => setCustomizingWorkspace(false)} sections={sections} /> : null}
       <ExportDialog context="character" data={{ familyMembers, inspirationItems, oc, ocs, relationshipMaps, relationships, timelineData }} open={exportOpen} onClose={() => setExportOpen(false)} />
@@ -194,3 +194,4 @@ function getInitials(name = "") {
 function slugifyTheme(theme) {
   return String(theme || "Modern").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "modern";
 }
+
