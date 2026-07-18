@@ -22,7 +22,7 @@ export default function DashboardDesktop({ ocs, onCreateOC, onCreateTimeline, on
       <section className="dashboard-topline">
         <div>
           <p className="eyebrow">Creative desk</p>
-          <h2>Dashboard</h2>
+          <h2>Welcome back</h2>
           <p className="muted-text">A quiet starting point for characters, worlds, timelines, and stories.</p>
         </div>
         <div className="create-menu">
@@ -74,3 +74,6 @@ function WorldCard({ world }) {
 function EventCard({ event }) {
   return <article className="desk-card"><div className="card-copy"><strong title={event.title}>{event.title}</strong><span>{event.dateFull || event.dateYear || event.eventType || "Timeline event"}</span><small>{event.connectedWorld || event.eventType || "event"}</small></div></article>;
 }
+
+
+

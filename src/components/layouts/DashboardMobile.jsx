@@ -14,7 +14,7 @@ export default function DashboardMobile({ ocs, onCreateOC, onCreateTimeline, onC
     <section className="mobile-page mobile-dashboard-page polished-dashboard-mobile">
       <section className="panel mobile-hero-panel">
         <p className="eyebrow">Creative desk</p>
-        <h2>Dashboard</h2>
+        <h2>Welcome back</h2>
         <p className="muted-text">Quick access to the characters, worlds, and story pieces you touched recently.</p>
       </section>
 
@@ -68,3 +68,6 @@ function EventCard({ event }) {
 function QuickCreateButton({ label, onClick }) {
   return <button className="quick-create-card" type="button" onClick={onClick}><span>+</span><strong>{label}</strong></button>;
 }
+
+
+

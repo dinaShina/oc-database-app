@@ -29,5 +29,8 @@ export function deleteReferencesForOC(items, ocId) {
 }
 
 function normalizeItem(item) {
-  return Object.fromEntries(Object.entries({ ...INITIAL_REFERENCE_ITEM, ...item }).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]));
+  const normalized = Object.fromEntries(Object.entries({ ...INITIAL_REFERENCE_ITEM, ...item }).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]));
+  normalized.imageUrl = normalized.imageUrl || "";
+  return normalized;
 }
+

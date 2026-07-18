@@ -9,6 +9,7 @@ import {
   WORLD_TYPE_FIELDS,
   WORLD_TYPES
 } from "../data/ocFields.js";
+import MediaInput from "./MediaInput.jsx";
 
 const CLEAN_UNSAVED_STATE = { isDirty: false, save: null };
 const EDITABLE_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
@@ -59,23 +60,8 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
     }));
   }
 
-  function handleImageUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormData((current) => ({
-        ...current,
-        profilePictureData: String(reader.result || ""),
-        profilePictureUrl: ""
-      }));
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function clearProfilePicture() {
-    setFormData((current) => ({ ...current, profilePictureData: "", profilePictureUrl: "" }));
+  function updateProfilePicture({ data, url }) {
+    setFormData((current) => ({ ...current, profilePictureData: data, profilePictureUrl: url }));
   }
 
   const saveCurrentForm = useCallback(() => {
@@ -136,22 +122,7 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
         {editingOC ? <button className="secondary-button" type="button" onClick={onCancelEdit}>Cancel</button> : null}
       </div>
 
-      <div className="profile-picture-row">
-        <div className="profile-picture-preview">
-          {profilePicture ? <img src={profilePicture} alt="Profile preview" /> : <span>No picture</span>}
-        </div>
-        <div className="profile-picture-fields">
-          <label className="field">
-            <span>Profile picture URL</span>
-            <input name="profilePictureUrl" type="url" value={formData.profilePictureUrl} placeholder="https://..." onChange={updateField} />
-          </label>
-          <label className="field">
-            <span>Upload profile picture</span>
-            <input type="file" accept="image/*" onChange={handleImageUpload} />
-          </label>
-          {profilePicture ? <button className="secondary-button" type="button" onClick={clearProfilePicture}>Remove picture</button> : null}
-        </div>
-      </div>
+      <MediaInput label="Profile Picture" dataValue={formData.profilePictureData} urlValue={formData.profilePictureUrl} onChange={updateProfilePicture} />
 
       <label className="field">
         <span>Character name *</span>
@@ -298,5 +269,6 @@ function NumberInput({ label, max, min, name, onChange, value }) {
     </label>
   );
 }
+
 
 

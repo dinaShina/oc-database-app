@@ -1,4 +1,4 @@
-export const WORLD_TYPES = [
+﻿export const WORLD_TYPES = [
   "Canon Universe",
   "Own World",
   "Alternative Universe / AU",
@@ -160,6 +160,7 @@ export const DIVERSE_GENDER_OPTIONS = [
   "Agender",
   "Specific description"
 ];
+
 
 
 

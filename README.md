@@ -252,3 +252,73 @@ These modules have starter schemas and localStorage helpers, but no full UI yet:
 
 
 
+
+## Private Beta Phase 1: Supabase Setup
+
+Phase 1 adds optional Supabase private-beta mode for authentication and user-owned private characters.
+If the Supabase environment variables are not set, the app continues to run in localStorage development mode.
+
+Required GitHub Pages / Vite environment variables:
+
+```text
+VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR-SUPABASE-ANON-PUBLIC-KEY
+```
+
+Important:
+
+- Use the anon public key only.
+- Never commit or expose the Supabase service-role key.
+- Configure these variables in your deployment environment, not inside source code.
+
+Database setup:
+
+1. Open your Supabase project.
+2. Go to SQL Editor.
+3. Paste and run:
+
+```text
+supabase/phase1_private_beta.sql
+```
+
+What Phase 1 creates:
+
+- `characters`
+- `worlds`
+- `stories`
+- `timelines`
+- `inspiration_items`
+- `account_deletion_requests`
+
+Each table has:
+
+- `id`
+- `user_id`
+- `visibility` with default `private`
+- `data` as JSONB for safe early beta storage
+- `created_at`
+- `updated_at`
+- limited debug metadata such as app version and last successful save
+
+Row Level Security:
+
+- Users can only select rows where `auth.uid() = user_id`.
+- Users can only insert rows for their own `user_id`.
+- Users can only update/delete their own rows.
+- Public visibility is prepared but not enabled for editing by anyone except the owner.
+
+Phase 1 frontend behavior:
+
+- Sign up, sign in, sign out, and password reset use Supabase Auth REST endpoints.
+- In Supabase mode, the app does not show the shared local character list before login.
+- New characters are saved with the authenticated user's `user_id` and `visibility: private`.
+- Character reads/updates/deletes go through RLS-protected Supabase rows.
+- Worlds, stories, timelines, and inspiration tables are prepared in SQL, but full migration of those modules is Phase 2.
+
+Manual two-account test:
+
+1. Create tester A and add a character.
+2. Sign out.
+3. Create tester B and confirm tester A's character is not visible.
+4. Try to manually fetch/update tester A's character with tester B's session; Supabase should reject it through RLS.
+5. Sign back in as tester A and confirm the character is still there.

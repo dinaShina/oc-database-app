@@ -1,4 +1,5 @@
 import { useState } from "react";
+import MediaInput from "../MediaInput.jsx";
 import WorkspacePanel from "./WorkspacePanel.jsx";
 
 export default function WorkspaceItemsModule({ createItem, deleteItem, emptyItem, itemTypes, items, oc, onItemsChange, saveItems, title, typeKey, updateItem }) {
@@ -16,12 +17,8 @@ export default function WorkspaceItemsModule({ createItem, deleteItem, emptyItem
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
-  function uploadImage(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setFormData((current) => ({ ...current, imageData: String(reader.result || ""), url: "" }));
-    reader.readAsDataURL(file);
+  function updateImage({ data, url }) {
+    setFormData((current) => ({ ...current, imageData: data, imageUrl: url }));
   }
 
   function submit(event) {
@@ -46,22 +43,23 @@ export default function WorkspaceItemsModule({ createItem, deleteItem, emptyItem
           <label className="field"><span>Section / Type</span><select name={typeKey} value={formData[typeKey]} onChange={updateField}>{itemTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
           <TextInput label="Title" name="title" value={formData.title} onChange={updateField} />
           <TextInput label="Link URL" name="url" value={formData.url} onChange={updateField} />
-          <label className="field"><span>Upload image</span><input type="file" accept="image/*" onChange={uploadImage} /></label>
+          <MediaInput label="Image" dataValue={formData.imageData} urlValue={formData.imageUrl} onChange={updateImage} />
         </div>
         <label className="field"><span>Quote</span><textarea name="quote" value={formData.quote || ""} rows="2" onChange={updateField} /></label>
         <label className="field"><span>Notes</span><textarea name="notes" value={formData.notes} rows="3" onChange={updateField} /></label>
         <div className="form-actions"><button className="primary-button inline-primary" type="submit">{editingId ? "Save item" : "Add item"}</button>{editingId ? <button className="secondary-button" type="button" onClick={() => { setEditingId(null); setFormData(emptyItem); }}>Cancel</button> : null}</div>
       </form>
-      <div className="prepared-grid">{visibleItems.length === 0 ? <p className="empty-state">No items yet.</p> : visibleItems.map((item) => <article className="prepared-card" key={item.id}>{item.imageData || item.url ? <PreviewMedia item={item} /> : null}<p className="eyebrow">{item[typeKey]}</p><h3>{item.title || item.quote || "Untitled"}</h3>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">Open link</a> : null}{item.notes ? <p className="muted-text">{item.notes}</p> : null}<div className="card-actions"><button className="secondary-button" type="button" onClick={() => startEdit(item)}>Edit</button><button className="delete-button" type="button" onClick={() => persist(deleteItem(items, item.id))}>Delete</button></div></article>)}</div>
+      <div className="prepared-grid">{visibleItems.length === 0 ? <p className="empty-state">No items yet.</p> : visibleItems.map((item) => <article className="prepared-card" key={item.id}>{item.imageData || item.imageUrl ? <PreviewMedia item={item} /> : null}<p className="eyebrow">{item[typeKey]}</p><h3>{item.title || item.quote || "Untitled"}</h3>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">Open link</a> : null}{item.notes ? <p className="muted-text">{item.notes}</p> : null}<div className="card-actions"><button className="secondary-button" type="button" onClick={() => startEdit(item)}>Edit</button><button className="delete-button" type="button" onClick={() => persist(deleteItem(items, item.id))}>Delete</button></div></article>)}</div>
     </WorkspacePanel>
   );
 }
 
 function PreviewMedia({ item }) {
-  const source = item.imageData || item.url;
+  const source = item.imageData || item.imageUrl;
   return <div className="workspace-media-preview"><img src={source} alt={item.title || "Reference"} /></div>;
 }
 
 function TextInput({ label, name, onChange, value }) {
   return <label className="field"><span>{label}</span><input name={name} value={value || ""} onChange={onChange} /></label>;
 }
+

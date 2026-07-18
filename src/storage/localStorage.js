@@ -1,13 +1,15 @@
-﻿const STORAGE_MANIFEST_KEY = "oc-database-app:storage-manifest";
-
+const STORAGE_MANIFEST_KEY = "oc-database-app:storage-manifest";
+const STORAGE_BACKUP_PREFIX = "oc-database-app:storage-backup:";
+export const APP_STORAGE_VERSION = 2;
 export const STORAGE_ENGINE = "localStorage";
 
 export function loadFromStorage(key, fallbackValue) {
   try {
+    ensureStorageVersion();
     const storedValue = localStorage.getItem(key);
     if (!storedValue) return fallbackValue;
     touchStorageManifest(key, "read");
-    return JSON.parse(storedValue);
+    return normalizeStoredValue(JSON.parse(storedValue));
   } catch (error) {
     console.error(`Could not load ${key}:`, error);
     return fallbackValue;
@@ -16,7 +18,8 @@ export function loadFromStorage(key, fallbackValue) {
 
 export function saveToStorage(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    ensureStorageVersion();
+    localStorage.setItem(key, JSON.stringify(normalizeStoredValue(value)));
     touchStorageManifest(key, "write");
   } catch (error) {
     console.error(`Could not save ${key}:`, error);
@@ -81,9 +84,64 @@ function createEmptyManifest() {
   return {
     appId: "oc-database-app",
     engine: STORAGE_ENGINE,
-    version: 1,
+    version: APP_STORAGE_VERSION,
     createdAt: new Date().toISOString(),
     updatedAt: "",
     keys: {}
   };
+}
+
+function ensureStorageVersion() {
+  try {
+    const manifest = getStorageManifest();
+    const currentVersion = Number(manifest.version || 1);
+    if (currentVersion >= APP_STORAGE_VERSION) return;
+
+    createMigrationBackup(currentVersion);
+    const nextManifest = {
+      ...manifest,
+      engine: STORAGE_ENGINE,
+      version: APP_STORAGE_VERSION,
+      migratedFrom: currentVersion,
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_MANIFEST_KEY, JSON.stringify(nextManifest));
+  } catch (error) {
+    console.error("Could not run storage migration:", error);
+  }
+}
+
+function createMigrationBackup(fromVersion) {
+  const backupKey = `${STORAGE_BACKUP_PREFIX}${new Date().toISOString()}`;
+  const values = Object.fromEntries(
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("oc-database-app:") && !key.startsWith(STORAGE_BACKUP_PREFIX))
+      .map((key) => [key, localStorage.getItem(key)])
+  );
+
+  localStorage.setItem(backupKey, JSON.stringify({
+    appId: "oc-database-app",
+    fromVersion,
+    toVersion: APP_STORAGE_VERSION,
+    createdAt: new Date().toISOString(),
+    values
+  }));
+}
+
+function normalizeStoredValue(value) {
+  if (typeof value === "string") return normalizeStoredString(value);
+  if (Array.isArray(value)) return value.map((item) => normalizeStoredValue(item));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, normalizeStoredValue(entry)]));
+  }
+  return value;
+}
+
+function normalizeStoredString(value) {
+  return value
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
 }

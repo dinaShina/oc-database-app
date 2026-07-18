@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { FAMILY_RELATION_TYPES, INITIAL_FAMILY_MEMBER } from "../data/relationshipSchema.js";
+import MediaInput from "./MediaInput.jsx";
 import {
   createFamilyMember,
   deleteFamilyMember,
@@ -26,23 +27,8 @@ export default function FamilyTreeEditor({ embedded = false, familyMembers, oc, 
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
-  function handleImageUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormData((current) => ({
-        ...current,
-        profilePictureData: String(reader.result || ""),
-        profilePictureUrl: ""
-      }));
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function clearMemberPicture() {
-    setFormData((current) => ({ ...current, profilePictureData: "", profilePictureUrl: "" }));
+  function updateMemberPicture({ data, url }) {
+    setFormData((current) => ({ ...current, profilePictureData: data, profilePictureUrl: url }));
   }
 
   function handleSubmit(event) {
@@ -124,22 +110,8 @@ export default function FamilyTreeEditor({ embedded = false, familyMembers, oc, 
               {FAMILY_RELATION_TYPES.map((type) => <option key={type} value={type} />)}
             </datalist>
           </label>
-          <label className="field">
-            <span>Profile picture URL</span>
-            <input name="profilePictureUrl" type="url" value={formData.profilePictureUrl} placeholder="https://..." onChange={updateField} />
-          </label>
-          <label className="field">
-            <span>Upload profile picture</span>
-            <input type="file" accept="image/*" onChange={handleImageUpload} />
-          </label>
+          <MediaInput label="Profile Picture" dataValue={formData.profilePictureData} urlValue={formData.profilePictureUrl} onChange={updateMemberPicture} />
         </div>
-
-        {memberPicture ? (
-          <div className="inline-preview-row">
-            <ProfileImage item={formData} />
-            <button className="secondary-button" type="button" onClick={clearMemberPicture}>Remove picture</button>
-          </div>
-        ) : null}
 
         <label className="field">
           <span>Notes</span>
@@ -167,3 +139,4 @@ function TextInput({ label, name, onChange, required = false, value }) {
     </label>
   );
 }
+

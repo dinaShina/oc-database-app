@@ -14,5 +14,7 @@ export const INITIAL_REFERENCE_ITEM = {
   title: "",
   url: "",
   imageData: "",
+  imageUrl: "",
   notes: ""
 };
+

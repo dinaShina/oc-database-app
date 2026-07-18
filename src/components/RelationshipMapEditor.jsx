@@ -1,10 +1,11 @@
-import { useMemo, useRef, useState } from "react";
+﻿import { useMemo, useRef, useState } from "react";
 import {
   INITIAL_RELATIONSHIP_EDGE,
   INITIAL_RELATIONSHIP_NODE,
   RELATIONSHIP_DIRECTIONS,
   RELATIONSHIP_LABELS
 } from "../data/relationshipSchema.js";
+import MediaInput from "./MediaInput.jsx";
 import { saveRelationshipMaps, upsertRelationshipMap } from "../storage/relationshipMapRepository.js";
 
 const CANVAS_HEIGHT = 680;
@@ -64,19 +65,8 @@ export default function RelationshipMapEditor({
     setEdgeForm((current) => ({ ...current, [name]: value }));
   }
 
-  function handleNodeImageUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setNodeForm((current) => ({ ...current, profilePictureData: String(reader.result || ""), profilePictureUrl: "" }));
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function clearNodeImage() {
-    setNodeForm((current) => ({ ...current, profilePictureData: "", profilePictureUrl: "" }));
+  function updateNodeImage({ data, url }) {
+    setNodeForm((current) => ({ ...current, profilePictureData: data, profilePictureUrl: url }));
   }
 
   function handleNodeSubmit(event) {
@@ -237,19 +227,8 @@ export default function RelationshipMapEditor({
             ) : null}
 
             <TextInput label="Character name" name="name" value={nodeForm.name} onChange={updateNodeForm} />
-            <TextInput label="Profile picture URL" name="profilePictureUrl" value={nodeForm.profilePictureUrl} placeholder="https://..." onChange={updateNodeForm} />
-            <label className="field">
-              <span>Upload profile picture</span>
-              <input type="file" accept="image/*" onChange={handleNodeImageUpload} />
-            </label>
+            <MediaInput label="Profile Picture" dataValue={nodeForm.profilePictureData} urlValue={nodeForm.profilePictureUrl} onChange={updateNodeImage} />
           </div>
-
-          {nodeImage ? (
-            <div className="inline-preview-row">
-              <ProfileImage source={nodeImage} name={nodeForm.name} />
-              <button className="secondary-button" type="button" onClick={clearNodeImage}>Remove image</button>
-            </div>
-          ) : null}
 
           <label className="field">
             <span>Notes</span>
@@ -483,6 +462,7 @@ function getNodeTypeLabel(type) {
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
 
 
 
