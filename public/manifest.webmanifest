@@ -2,9 +2,10 @@
   "name": "OC Studio",
   "short_name": "OC Studio",
   "description": "A local creative workspace for characters, worlds, timelines, and stories.",
-  "start_url": "/",
+  "start_url": "/oc-database-app/",
+  "scope": "/oc-database-app/",
   "display": "standalone",
-  "background_color": "#f5f2ec",
-  "theme_color": "#2f6652",
+  "background_color": "#f6f3ee",
+  "theme_color": "#356b58",
   "orientation": "any"
 }
