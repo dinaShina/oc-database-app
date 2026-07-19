@@ -23,6 +23,7 @@ import { deleteRelationshipsForOC, getRelationships, saveRelationships } from ".
 import { deleteTimelineReferencesForOC, getTimelineData, saveTimelineData } from "./storage/timelineRepository.js";
 import { getRecoverableStorageSources, getStorageManifest, getStorageSnapshot, getStorageStatusForKey, loadFromStorage, saveToStorage, STORAGE_ENGINE } from "./storage/localStorage.js";
 import { getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
+import { enableOwnerSeedModeFromUrl, markOwnerSeedsInstalled, restoreMissingOwnerSeeds, shouldInstallOwnerSeeds } from "./storage/ownerSeedRepository.js";
 import { APP_PALETTES, getAppThemeStyle } from "./utils/themeContrast.js";
 import { formatDateTime } from "./utils/dateFormat.js";
 import { clearSession, createUserCharacter, deleteUserCharacter, downloadJson, fetchUserCharacters, getCurrentUser, getStoredSession, isSupabaseConfigured, requestAccountDeletion, signOut, updateUserCharacter } from "./services/supabaseBeta.js";
@@ -53,6 +54,7 @@ export default function App() {
   const [unsavedEditor, setUnsavedEditor] = useState(CLEAN_UNSAVED_STATE);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [appSettings, setAppSettings] = useState(() => getAppSettings());
+  const [ownerSeedMode] = useState(() => enableOwnerSeedModeFromUrl() || true);
   const [workspaceConfigs, setWorkspaceConfigs] = useState(() => getWorkspaceConfigs());
   const [isStorageHydrated, setIsStorageHydrated] = useState(false);
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => getSystemPrefersDark());
@@ -67,6 +69,20 @@ export default function App() {
   useEffect(() => {
     setIsStorageHydrated(true);
   }, []);
+  useEffect(() => {
+    if (!isStorageHydrated || !ownerSeedMode || betaEnabled || !shouldInstallOwnerSeeds()) return;
+    const result = restoreMissingOwnerSeeds({ inspirationItems, ocs, relationships, timelineData, worlds: worldRecords });
+    persistOCs(result.ocs);
+    setWorldRecords(result.worlds);
+    setRelationships(result.relationships);
+    setTimelineData(result.timelineData);
+    setInspirationItems(result.inspirationItems);
+    saveWorlds(result.worlds);
+    saveRelationships(result.relationships);
+    saveTimelineData(result.timelineData);
+    saveInspirationItems(result.inspirationItems);
+    markOwnerSeedsInstalled(result);
+  }, [isStorageHydrated, ownerSeedMode, betaEnabled]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return undefined;
@@ -359,6 +375,20 @@ export default function App() {
     });
   }
 
+  function restoreMyCharacters() {
+    const result = restoreMissingOwnerSeeds({ inspirationItems, ocs, relationships, timelineData, worlds: worldRecords });
+    persistOCs(result.ocs);
+    setWorldRecords(result.worlds);
+    setRelationships(result.relationships);
+    setTimelineData(result.timelineData);
+    setInspirationItems(result.inspirationItems);
+    saveWorlds(result.worlds);
+    saveRelationships(result.relationships);
+    saveTimelineData(result.timelineData);
+    saveInspirationItems(result.inspirationItems);
+    markOwnerSeedsInstalled(result);
+    window.alert(`Restore complete. Added ${result.addedCharacters} characters, ${result.addedWorlds} worlds, ${result.addedTimelines} timelines, ${result.addedTimelineEvents} timeline events, ${result.addedRelationships} relationships, ${result.addedInspirationItems} inspiration items, and ${result.addedWritingEntries} story notes. Existing edited records were not overwritten.`);
+  }
   function restoreLocalCharacters(sourceKey) {
     const confirmed = window.confirm(`Restore and merge characters from ${sourceKey}? A backup of current characters will be created first.`);
     if (!confirmed) return;
@@ -419,7 +449,7 @@ export default function App() {
         ) : activeSection === "favorites" ? (
           <FavoritesView ocs={ocs} onOpenOC={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} onToggleOCFavorite={toggleOCFavorite} onToggleWorldFavorite={toggleWorldFavorite} timelineData={timelineData} worlds={worldRecords} />
         ) : activeSection === "settings" ? (
-          <SettingsErrorBoundary><GlobalSettings appSettings={appSettings} authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onAccountDeletionRequest={handleAccountDeletionRequest} onEmergencyBackup={downloadEmergencyBackup} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onRestoreCharacters={restoreLocalCharacters} onSettingsChange={setAndSaveAppSettings} onSignOut={handleSignOut} /></SettingsErrorBoundary>
+          <SettingsErrorBoundary><GlobalSettings appSettings={appSettings} authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onAccountDeletionRequest={handleAccountDeletionRequest} onEmergencyBackup={downloadEmergencyBackup} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onRestoreCharacters={restoreLocalCharacters} onRestoreMyCharacters={restoreMyCharacters} ownerSeedMode={ownerSeedMode} onSettingsChange={setAndSaveAppSettings} onSignOut={handleSignOut} /></SettingsErrorBoundary>
         ) : (
           <CharactersLayout fandomFilter={fandomFilter} fandoms={worlds} ocs={visibleOCs} searchTerm={searchTerm} totalCount={ocs.length} onCreateCharacter={openCharacterCreation} onFandomFilterChange={(nextFilter) => requestNavigation(() => setFandomFilter(nextFilter))} onOpenWorkspace={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} onSearchTermChange={setSearchTerm} />
         )}
@@ -531,7 +561,7 @@ class SettingsErrorBoundary extends Component {
   }
 }
 
-function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onAccountDeletionRequest, onEmergencyBackup, onExportAccountData, onRestoreCharacters, onSettingsChange, onSignOut }) {
+function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onAccountDeletionRequest, onEmergencyBackup, onExportAccountData, onRestoreCharacters, onRestoreMyCharacters, onSettingsChange, onSignOut, ownerSeedMode }) {
   const isSettingsMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState(() => getSettingsCategoryFromLocation() || "appearance");
   const storageManifest = getStorageManifest();
@@ -611,7 +641,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
             <article><strong>{characterStorageStatus.lastBackup ? formatDateTime(characterStorageStatus.lastBackup) : "No backup yet"}</strong><span>Last character backup</span></article>
             <article><strong>{characterStorageStatus.error || "None"}</strong><span>Storage error</span></article>
           </div>
-          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button><button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button></div>
+          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button>{ownerSeedMode ? <button className="secondary-button inline-primary" type="button" onClick={onRestoreMyCharacters}>Restore My Characters</button> : null}<button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button></div>
           <section className="recovery-panel">
             <div><h3>Recover Local Data</h3><p className="muted-text">Found Atlas Archive and legacy browser-storage sources. Restoring merges by character ID and creates a backup first.</p></div>
             <div className="recovery-source-list">
