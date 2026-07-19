@@ -5,8 +5,7 @@
   DEFAULT_CHARACTER_EXPORT_OPTIONS,
   exportCharacterArchivePdf,
   exportCharacterPdf,
-  exportWorldArchivePdf,
-  printCurrentPageToPdf
+  exportWorldArchivePdf
 } from "../export/pdfExport.js";
 
 export default function ExportDialog({ context, data, onClose, open }) {
@@ -34,9 +33,9 @@ export default function ExportDialog({ context, data, onClose, open }) {
           <div>
             <p className="eyebrow">Export</p>
             <h2 id="export-dialog-title">{getTitle(context)}</h2>
-            <p className="muted-text">Create a clean A4 print document, then choose Save as PDF in your browser print dialog.</p>
+            <p className="muted-text">Create a clean A4 PDF file for your archive.</p>
           </div>
-          <button className="secondary-button" type="button" onClick={onClose}>Close</button>
+          <button className="icon-close-button" type="button" onClick={onClose} aria-label="Close export dialog">x</button>
         </div>
 
         <form className="export-form" onSubmit={submit}>
@@ -59,9 +58,8 @@ export default function ExportDialog({ context, data, onClose, open }) {
           </section>
 
           <div className="dialog-actions export-actions">
-            <button className="primary-button" type="submit">Export PDF</button>
-            <button className="secondary-button" type="button" onClick={printCurrentPageToPdf}>Print to PDF</button>
             <button className="secondary-button" type="button" onClick={onClose}>Cancel</button>
+            <button className="primary-button" type="submit">Export</button>
           </div>
         </form>
       </section>
@@ -74,4 +72,6 @@ function getTitle(context) {
   if (context === "worldArchive") return "Export World Archive";
   return "Export Character Archive";
 }
+
+
 

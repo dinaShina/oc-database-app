@@ -3,6 +3,7 @@
   ["library", "Characters", CharacterIcon],
   ["worlds", "Worlds", WorldsIcon],
   ["favorites", "Favorites", FavoritesIcon],
+  ["account", "Account", AccountIcon],
   ["settings", "Settings", SettingsIcon]
 ];
 
@@ -63,6 +64,16 @@ function FavoritesIcon() {
   );
 }
 
+
+function AccountIcon() {
+  return (
+    <svg viewBox="0 0 32 32" role="img">
+      <circle cx="16" cy="11" r="5.8" />
+      <path d="M6.2 27c1.2-5.7 4.7-8.7 9.8-8.7s8.6 3 9.8 8.7" />
+      <path d="M22.8 6.5c1.9 1.4 3.1 3.6 3.1 6.1" />
+    </svg>
+  );
+}
 function SettingsIcon() {
   return (
     <svg viewBox="0 0 32 32" role="img">
@@ -71,3 +82,4 @@ function SettingsIcon() {
     </svg>
   );
 }
+

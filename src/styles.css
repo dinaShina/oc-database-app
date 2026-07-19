@@ -8631,3 +8631,482 @@ textarea.writing-area {
   }
 }
 
+
+/* Account preparation and cleaner settings structure. */
+.account-page {
+  display: grid;
+  gap: var(--space-6, 24px);
+}
+
+.account-hero {
+  align-items: center;
+  display: grid;
+  gap: var(--space-5, 16px);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.account-avatar-placeholder {
+  align-items: center;
+  background: linear-gradient(135deg, var(--app-accent-soft, #eef7f3), var(--app-surface-strong, #fffaf2));
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: 24px;
+  color: var(--app-accent, #2f6652);
+  display: flex;
+  font-size: 1.15rem;
+  font-weight: 900;
+  height: 76px;
+  justify-content: center;
+  width: 76px;
+}
+
+.coming-soon-pill {
+  background: color-mix(in srgb, var(--app-accent, #2f6652) 12%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--app-accent, #2f6652) 28%, transparent);
+  border-radius: 999px;
+  color: var(--app-accent, #2f6652);
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
+.account-section-grid {
+  display: grid;
+  gap: var(--space-5, 16px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-info-card {
+  display: grid;
+  gap: 12px;
+}
+
+.account-wide-card {
+  grid-column: 1 / -1;
+}
+
+.account-fact-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.account-fact-list div {
+  border-top: 1px solid color-mix(in srgb, var(--app-border, #ded8cf) 70%, transparent);
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+}
+
+.account-fact-list dt {
+  color: var(--app-muted, #596273);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.account-fact-list dd {
+  color: var(--app-text, #1e2329);
+  font-weight: 800;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.settings-accordion-page {
+  display: grid;
+  gap: var(--space-5, 16px);
+}
+
+.settings-clean-header {
+  display: grid;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.settings-accordion-card {
+  padding: 0;
+}
+
+.settings-accordion-card summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  list-style: none;
+  padding: clamp(16px, 2vw, 24px);
+}
+
+.settings-accordion-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-accordion-card summary span:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.settings-accordion-card summary small {
+  color: var(--app-muted, #596273);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.settings-accordion-chevron {
+  align-items: center;
+  background: var(--app-surface-strong, #fffaf2);
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: 999px;
+  color: var(--app-muted, #596273);
+  display: flex;
+  flex: 0 0 auto;
+  font-weight: 900;
+  height: 32px;
+  justify-content: center;
+  transition: transform 160ms ease, color 160ms ease;
+  width: 32px;
+}
+
+.settings-accordion-card[open] .settings-accordion-chevron {
+  color: var(--app-accent, #2f6652);
+  transform: rotate(90deg);
+}
+
+.settings-accordion-content {
+  border-top: 1px solid color-mix(in srgb, var(--app-border, #ded8cf) 75%, transparent);
+  display: grid;
+  gap: var(--space-5, 16px);
+  padding: 0 clamp(16px, 2vw, 24px) clamp(16px, 2vw, 24px);
+}
+
+.mobile-nav-icon.settings::before {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  content: "";
+  height: 18px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+}
+
+.mobile-nav-icon.settings::after {
+  background: currentColor;
+  border-radius: 999px;
+  box-shadow: 0 -12px 0 currentColor, 0 12px 0 currentColor, 12px 0 0 currentColor, -12px 0 0 currentColor;
+  content: "";
+  height: 4px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+}
+
+@media (max-width: 760px) {
+  .account-page {
+    gap: 14px;
+  }
+
+  .account-hero {
+    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .account-hero .coming-soon-pill {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .account-avatar-placeholder {
+    border-radius: 18px;
+    height: 58px;
+    width: 58px;
+  }
+
+  .account-section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-accordion-card summary {
+    padding: 15px;
+  }
+
+  .settings-accordion-content {
+    padding: 0 15px 15px;
+  }
+}
+
+/* Content-first editing tools and modal consistency. */
+.content-first-panel,
+.tree-focus-wrap,
+.map-focus-wrap {
+  position: relative;
+}
+
+.tree-focus-wrap,
+.map-focus-wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.floating-add-button {
+  align-items: center;
+  background: var(--workspace-accent, var(--app-accent, #2f6652));
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 14px 28px rgba(36, 28, 22, 0.18);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  font-size: 1.6rem;
+  font-weight: 800;
+  height: 48px;
+  justify-content: center;
+  line-height: 1;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  width: 48px;
+  z-index: 4;
+}
+
+.floating-add-button:hover {
+  box-shadow: 0 18px 36px rgba(36, 28, 22, 0.22);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.map-add-button {
+  top: 72px;
+}
+
+.tree-empty-state {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 18px;
+  text-align: center;
+}
+
+.relationship-edit-dialog,
+.delete-character-dialog,
+.export-dialog,
+.large-modal,
+.confirm-dialog,
+.workspace-customizer-dialog,
+.customize-fullscreen-preview {
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(20, 16, 12, 0.26);
+}
+
+.relationship-edit-dialog {
+  max-height: min(86vh, 760px);
+  max-width: 920px;
+  overflow: auto;
+  width: min(920px, calc(100vw - 32px));
+}
+
+.icon-close-button {
+  align-items: center;
+  background: var(--app-surface-strong, #fffaf2);
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: 999px;
+  color: var(--app-muted, #596273);
+  cursor: pointer;
+  display: flex;
+  font-size: 1.1rem;
+  font-weight: 900;
+  height: 34px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  text-transform: uppercase;
+  width: 34px;
+}
+
+.icon-close-button:hover {
+  border-color: var(--app-accent, #2f6652);
+  color: var(--app-accent, #2f6652);
+}
+
+.dialog-actions.horizontal-actions,
+.export-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.export-actions .primary-button,
+.export-actions .secondary-button,
+.dialog-actions.horizontal-actions .primary-button,
+.dialog-actions.horizontal-actions .secondary-button,
+.dialog-actions.horizontal-actions .delete-button {
+  margin-top: 0;
+  width: auto;
+}
+
+.export-dialog .modal-heading-row {
+  align-items: start;
+}
+
+.graph-view-toolbar {
+  justify-content: space-between;
+}
+
+.graph-view-toolbar .secondary-button {
+  flex: 0 0 auto;
+}
+
+.graph-view-toolbar span {
+  margin-left: 0;
+  text-align: right;
+}
+
+.graph-canvas {
+  overscroll-behavior: contain;
+}
+
+/* Compact customize workspace. */
+.customize-layout {
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+}
+
+.customize-controls,
+.customize-preview-column {
+  gap: 12px;
+}
+
+.customize-card {
+  gap: 10px;
+  padding: 14px;
+}
+
+.customize-card h3 {
+  font-size: 1rem;
+}
+
+.preset-card-grid {
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.preset-choice-card {
+  min-height: 92px;
+  padding: 10px;
+}
+
+.customize-live-preview {
+  max-height: 520px;
+  overflow: auto;
+}
+
+.customize-actions {
+  gap: 8px;
+}
+
+.customize-actions .primary-button,
+.customize-actions .secondary-button,
+.customize-actions .danger-outline-button {
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
+.workspace-customizer-dialog {
+  max-width: 700px;
+  padding: 18px;
+}
+
+.workspace-customizer-list {
+  gap: 8px;
+}
+
+/* Workspace accents should follow the selected character theme. */
+.workspace-shell .primary-button,
+.workspace-shell .workspace-tab.active,
+.workspace-shell .theme-preview-button,
+.workspace-shell .floating-add-button,
+.workspace-shell .mobile-customize-section-toggle[aria-expanded="true"] {
+  background: var(--workspace-accent, var(--app-accent, #2f6652));
+  border-color: var(--workspace-accent, var(--app-accent, #2f6652));
+  color: #ffffff;
+}
+
+.workspace-shell .secondary-button:hover,
+.workspace-shell .workspace-tab:hover,
+.workspace-shell .timeline-node-arrow,
+.workspace-shell .timeline-flow-title,
+.workspace-shell .text-link-button {
+  color: var(--workspace-accent, var(--app-accent, #2f6652));
+}
+
+.workspace-shell .secondary-button:hover,
+.workspace-shell .timeline-flow-event.selected,
+.workspace-shell .timeline-switch.active,
+.workspace-shell .preset-choice-card.active,
+.workspace-shell .palette-choice-card.active,
+.workspace-shell .theme-mode-card.active {
+  border-color: var(--workspace-accent, var(--app-accent, #2f6652));
+}
+
+.workspace-shell .timeline-flow-row::before {
+  background: linear-gradient(90deg, var(--workspace-accent-2, var(--workspace-accent, #2f6652)), var(--workspace-accent, #2f6652), var(--workspace-accent-4, var(--workspace-accent, #2f6652)));
+}
+
+.workspace-shell .timeline-flow-row:not(:last-child)::after,
+.workspace-shell .timeline-flow::before {
+  background: linear-gradient(180deg, var(--workspace-accent, #2f6652), var(--workspace-accent-2, var(--workspace-accent, #2f6652)));
+}
+
+.workspace-shell .precision-month {
+  background: color-mix(in srgb, var(--workspace-accent-2, var(--workspace-accent, #2f6652)) 16%, #ffffff);
+  color: var(--workspace-accent-2, var(--workspace-accent, #2f6652));
+}
+
+.workspace-shell .timeline-event-card-button strong,
+.workspace-shell .preview-tab.active,
+.workspace-shell .customize-live-preview h3,
+.workspace-shell .customize-live-preview h4 {
+  color: var(--workspace-accent-4, var(--workspace-accent-2, var(--workspace-accent, #2f6652)));
+}
+
+@media (max-width: 760px) {
+  .floating-add-button {
+    height: 44px;
+    right: 12px;
+    top: 12px;
+    width: 44px;
+  }
+
+  .map-add-button {
+    top: 64px;
+  }
+
+  .relationship-edit-dialog {
+    max-height: calc(100dvh - 28px);
+    width: calc(100vw - 24px);
+  }
+
+  .relationship-map-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-view-toolbar {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .graph-view-toolbar span {
+    text-align: left;
+  }
+
+  .customize-card {
+    padding: 12px;
+  }
+}

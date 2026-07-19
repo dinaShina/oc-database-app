@@ -32,6 +32,7 @@ export default function RelationshipMapEditor({
   const [zoom, setZoom] = useState(1);
   const [expandedNodeIds, setExpandedNodeIds] = useState([]);
   const [expandedEdgeIds, setExpandedEdgeIds] = useState([]);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const graph = useMemo(
     () => getGraphForOC(relationshipMaps, relationships, oc, ocs),
@@ -98,13 +99,16 @@ export default function RelationshipMapEditor({
       });
     }
 
-    cancelNodeEdit();
+    closeEditor();
   }
 
   function startNodeEdit(node) {
     if (node.id === "main") return;
     setEditingNodeId(node.id);
+    setEditingEdgeId(null);
     setNodeForm({ ...INITIAL_RELATIONSHIP_NODE, ...node });
+    setEdgeForm(INITIAL_RELATIONSHIP_EDGE);
+    setIsEditorOpen(true);
   }
 
   function cancelNodeEdit() {
@@ -144,12 +148,15 @@ export default function RelationshipMapEditor({
       });
     }
 
-    cancelEdgeEdit();
+    closeEditor();
   }
 
   function startEdgeEdit(edge) {
     setEditingEdgeId(edge.id);
+    setEditingNodeId(null);
     setEdgeForm({ ...INITIAL_RELATIONSHIP_EDGE, ...edge });
+    setNodeForm(INITIAL_RELATIONSHIP_NODE);
+    setIsEditorOpen(true);
   }
 
   function cancelEdgeEdit() {
@@ -157,6 +164,21 @@ export default function RelationshipMapEditor({
     setEdgeForm(INITIAL_RELATIONSHIP_EDGE);
   }
 
+  function openEditor() {
+    setEditingNodeId(null);
+    setEditingEdgeId(null);
+    setNodeForm(INITIAL_RELATIONSHIP_NODE);
+    setEdgeForm(INITIAL_RELATIONSHIP_EDGE);
+    setIsEditorOpen(true);
+  }
+
+  function closeEditor() {
+    setEditingNodeId(null);
+    setEditingEdgeId(null);
+    setNodeForm(INITIAL_RELATIONSHIP_NODE);
+    setEdgeForm(INITIAL_RELATIONSHIP_EDGE);
+    setIsEditorOpen(false);
+  }
   function deleteEdge(edgeId) {
     persistGraph({ ...graph, edges: edges.filter((edge) => edge.id !== edgeId) });
     if (editingEdgeId === edgeId) cancelEdgeEdit();
@@ -217,6 +239,18 @@ export default function RelationshipMapEditor({
     };
   }
 
+  function handleWheelZoom(event) {
+    if (!canvasRef.current) return;
+    event.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const nextZoom = clamp(Number((zoom + (event.deltaY < 0 ? 0.08 : -0.08)).toFixed(2)), 0.55, 1.7);
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    const logicalX = (mouseX - canvasPan.x) / zoom;
+    const logicalY = (mouseY - canvasPan.y) / zoom;
+    setZoom(nextZoom);
+    setCanvasPan({ x: mouseX - logicalX * nextZoom, y: mouseY - logicalY * nextZoom });
+  }
   function changeZoom(delta) {
     setZoom((current) => clamp(Number((current + delta).toFixed(2)), 0.55, 1.65));
   }
@@ -248,7 +282,7 @@ export default function RelationshipMapEditor({
         </div>
       ) : null}
 
-      <div className="relationship-map-tools">
+      {isEditorOpen ? <div className="dialog-backdrop" role="presentation"><section className="confirm-dialog relationship-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="relationship-dialog-title"><div className="modal-heading-row"><div><p className="eyebrow">Relationship Map</p><h2 id="relationship-dialog-title">{editingNodeId ? "Edit Character Node" : editingEdgeId ? "Edit Relationship" : "Add Relationship"}</h2></div><button className="icon-close-button" type="button" onClick={closeEditor} aria-label="Close">x</button></div><div className="relationship-map-tools">
         <form className="sub-form" onSubmit={handleNodeSubmit}>
           <h3>{editingNodeId ? "Edit character node" : "Add character node"}</h3>
           <div className="field-grid">
@@ -286,7 +320,7 @@ export default function RelationshipMapEditor({
 
           <div className="form-actions">
             <button className="primary-button inline-primary" type="submit">{editingNodeId ? "Save node" : "Add node"}</button>
-            {editingNodeId ? <button className="secondary-button" type="button" onClick={cancelNodeEdit}>Cancel</button> : null}
+            <button className="secondary-button" type="button" onClick={closeEditor}>Cancel</button>
           </div>
         </form>
 
@@ -317,19 +351,19 @@ export default function RelationshipMapEditor({
           </label>
           <div className="form-actions">
             <button className="primary-button inline-primary" type="submit">{editingEdgeId ? "Save line" : "Add line"}</button>
-            {editingEdgeId ? <button className="secondary-button" type="button" onClick={cancelEdgeEdit}>Cancel</button> : null}
+            <button className="secondary-button" type="button" onClick={closeEditor}>Cancel</button>
           </div>
         </form>
-      </div>
+      </div></section></div> : null}
 
-      <div className="graph-view-toolbar" aria-label="Relationship map zoom controls">
-        <button className="secondary-button" type="button" onClick={() => changeZoom(0.1)}>Zoom In</button>
-        <button className="secondary-button" type="button" onClick={() => changeZoom(-0.1)}>Zoom Out</button>
-        <button className="secondary-button" type="button" onClick={resetView}>Reset Zoom</button>
-        <span>{Math.round(zoom * 100)}%</span>
-      </div>
+      <section className="map-focus-wrap">
+        <div className="graph-view-toolbar" aria-label="Relationship map view controls">
+          <button className="secondary-button" type="button" onClick={resetView}>Reset View</button>
+          <span>{Math.round(zoom * 100)}% - wheel to zoom, drag blank space to pan</span>
+        </div>
+        <button className="floating-add-button map-add-button" type="button" onClick={openEditor} aria-label="Add relationship">+</button>
 
-      <div className={canvasPanning ? "graph-canvas is-panning" : "graph-canvas"} ref={canvasRef} onPointerDown={startCanvasPan} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerLeave={stopDrag} style={{ height: CANVAS_HEIGHT }}>
+      <div className={canvasPanning ? "graph-canvas is-panning" : "graph-canvas"} ref={canvasRef} onWheel={handleWheelZoom} onPointerDown={startCanvasPan} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerLeave={stopDrag} style={{ height: CANVAS_HEIGHT }}>
         <div className="graph-viewport" style={{ transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${zoom})` }}>
           <svg className="graph-lines" aria-hidden="true">
             {edges.map((edge) => <GraphEdge key={edge.id} edge={edge} nodes={nodes} />)}
@@ -356,6 +390,7 @@ export default function RelationshipMapEditor({
           ))}
         </div>
       </div>
+      </section>
 
       <div className="edge-list">
         <h3>Relationship lines</h3>
@@ -542,6 +577,8 @@ function getNodeTypeLabel(type) {
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
+
 
 
 

@@ -54,17 +54,17 @@ export function exportCharacterPdf({ familyMembers = [], inspirationItems = [], 
   if (!oc) return;
   const writingEntries = getWritingEntries().filter((entry) => entry.connectedOcId === oc.id);
   const html = buildCharacterDocument({ familyMembers, inspirationItems, oc, ocs, options, relationshipMaps, relationships, timelineData, writingEntries });
-  openPrintDocument(html, `${oc.name || "character"}-archive`);
+  downloadPdfFromHtml(html, `${oc.name || "character"}-archive`);
 }
 
 export function exportCharacterArchivePdf(data) {
   const html = buildCompleteCharacterArchive(data);
-  openPrintDocument(html, "complete-character-archive");
+  downloadPdfFromHtml(html, "complete-character-archive");
 }
 
 export function exportWorldArchivePdf(data) {
   const html = buildCompleteWorldArchive(data);
-  openPrintDocument(html, "complete-world-archive");
+  downloadPdfFromHtml(html, "complete-world-archive");
 }
 
 export function printCurrentPageToPdf() {
@@ -176,12 +176,127 @@ function renderDocumentShell({ body, theme, title }) {
 function openPrintDocument(html, name) {
   const printWindow = window.open("", name, "noopener,noreferrer,width=1000,height=800");
   if (!printWindow) {
-    window.alert("Please allow popups to export this PDF.");
+    window.alert("Please allow popups to print this archive.");
     return;
   }
   printWindow.document.open();
   printWindow.document.write(html);
   printWindow.document.close();
+}
+
+function downloadPdfFromHtml(html, name) {
+  const lines = htmlToPdfLines(html);
+  const pdf = createSimplePdf(lines, getSafeFileName(name));
+  const blob = new Blob([pdf], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${getSafeFileName(name)}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function htmlToPdfLines(html) {
+  const parser = new DOMParser();
+  const documentHtml = parser.parseFromString(html, "text/html");
+  documentHtml.querySelectorAll("script, style").forEach((node) => node.remove());
+  const headings = Array.from(documentHtml.body.querySelectorAll("h1, h2, h3, p, li, dt, dd, blockquote"));
+  const rawLines = headings.map((node) => node.textContent.trim()).filter(Boolean);
+  return rawLines.length ? rawLines : [documentHtml.body.textContent.trim() || "Atlas Archive Export"];
+}
+
+function createSimplePdf(lines, title) {
+  const pageWidth = 595;
+  const pageHeight = 842;
+  const margin = 54;
+  const lineHeight = 15;
+  const maxChars = 82;
+  const wrapped = [`Atlas Archive - ${title}`, ""].concat(lines.flatMap((line) => wrapPdfLine(line, maxChars))).flatMap((line) => line === "" ? [""] : [line]);
+  const pages = [];
+  let pageLines = [];
+  const maxLines = Math.floor((pageHeight - margin * 2) / lineHeight);
+  wrapped.forEach((line) => {
+    if (pageLines.length >= maxLines) {
+      pages.push(pageLines);
+      pageLines = [];
+    }
+    pageLines.push(line);
+  });
+  if (pageLines.length) pages.push(pageLines);
+
+  const objects = [];
+  const addObject = (body) => {
+    objects.push(body);
+    return objects.length;
+  };
+  const fontObject = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  const pageRefs = [];
+  pages.forEach((linesForPage, pageIndex) => {
+    const content = renderPdfPageContent(linesForPage, { lineHeight, margin, pageHeight, pageIndex });
+    const contentObject = addObject(`<< /Length ${byteLength(content)} >>\nstream\n${content}\nendstream`);
+    const pageObject = addObject(`<< /Type /Page /Parent 0 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 ${fontObject} 0 R >> >> /Contents ${contentObject} 0 R >>`);
+    pageRefs.push(pageObject);
+  });
+  const pagesObject = addObject(`<< /Type /Pages /Kids [${pageRefs.map((ref) => `${ref} 0 R`).join(" ")}] /Count ${pageRefs.length} >>`);
+  pageRefs.forEach((pageRef) => {
+    objects[pageRef - 1] = objects[pageRef - 1].replace("/Parent 0 0 R", `/Parent ${pagesObject} 0 R`);
+  });
+  const catalogObject = addObject(`<< /Type /Catalog /Pages ${pagesObject} 0 R >>`);
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((body, index) => {
+    offsets.push(byteLength(pdf));
+    pdf += `${index + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xrefOffset = byteLength(pdf);
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => { pdf += `${String(offset).padStart(10, "0")} 00000 n \n`; });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogObject} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+  return pdf;
+}
+
+function renderPdfPageContent(lines, { lineHeight, margin, pageHeight, pageIndex }) {
+  const commands = ["BT", "/F1 11 Tf", "14 TL", `${margin} ${pageHeight - margin} Td`];
+  lines.forEach((line, index) => {
+    if (index > 0) commands.push(`0 -${lineHeight} Td`);
+    const size = pageIndex === 0 && index === 0 ? 18 : 11;
+    commands.push(`/F1 ${size} Tf`);
+    commands.push(`(${escapePdfText(line)}) Tj`);
+  });
+  commands.push("ET");
+  return commands.join("\n");
+}
+
+function wrapPdfLine(line, maxChars) {
+  const words = String(line || "").replace(/\s+/g, " ").trim().split(" ");
+  const rows = [];
+  let current = "";
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxChars && current) {
+      rows.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+  if (current) rows.push(current);
+  return rows.length ? rows : [""];
+}
+
+function escapePdfText(value) {
+  return String(value || "").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/[\u2013\u2014]/g, "-").replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "?").replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+}
+
+function byteLength(value) {
+  return new TextEncoder().encode(value).length;
+}
+
+function getSafeFileName(value) {
+  return String(value || "atlas-archive").trim().replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || "atlas-archive";
 }
 
 function getExportTheme(oc) {
@@ -222,6 +337,7 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value).replace(/'/g, "&#39;");
 }
+
 
 
 

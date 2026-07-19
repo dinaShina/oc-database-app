@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, useState } from "react";
+﻿import { Component, useEffect, useMemo, useState } from "react";
 import useIsMobile from "./hooks/useIsMobile.js";
 import CharacterWorkspaceDesktop from "./components/layouts/CharacterWorkspaceDesktop.jsx";
 import CharacterWorkspaceMobile from "./components/layouts/CharacterWorkspaceMobile.jsx";
@@ -53,6 +53,7 @@ export default function App() {
   const [showCharacterForm, setShowCharacterForm] = useState(false);
   const [unsavedEditor, setUnsavedEditor] = useState(CLEAN_UNSAVED_STATE);
   const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [pendingDeleteOCId, setPendingDeleteOCId] = useState(null);
   const [appSettings, setAppSettings] = useState(() => getAppSettings());
   const [ownerSeedMode] = useState(() => enableOwnerSeedModeFromUrl() || true);
   const [workspaceConfigs, setWorkspaceConfigs] = useState(() => getWorkspaceConfigs());
@@ -287,7 +288,14 @@ export default function App() {
     setPendingNavigation(null);
   }
 
-  async function handleDeleteOC(id) {
+  function handleDeleteOC(id) {
+    setPendingDeleteOCId(id);
+  }
+
+  async function confirmDeleteOC() {
+    const id = pendingDeleteOCId;
+    if (!id) return;
+    setPendingDeleteOCId(null);
     if (betaEnabled) {
       try {
         await deleteUserCharacter(authSession, id);
@@ -318,7 +326,6 @@ export default function App() {
     if (editingOC?.id === id) setEditingOC(null);
     if (activeOCId === id) setActiveOCId(null);
   }
-
   function toggleOCFavorite(id) {
     const oc = ocs.find((item) => item.id === id);
     if (!oc) return;
@@ -433,7 +440,7 @@ export default function App() {
           <div className="app-header-side">
             <p className="app-summary">A calmer studio for characters, worlds, timelines, and story planning.</p>
             <div className="top-account-actions">
-              {betaEnabled && authSession?.access_token ? <button className="secondary-button inline-primary" type="button" onClick={() => requestNavigation(() => navigateToSection("settings", "account"))}>Account</button> : null}
+              <button className="secondary-button inline-primary" type="button" onClick={() => requestNavigation(() => navigateToSection("account"))}>Account</button>
               {betaEnabled && authSession?.access_token ? <button className="text-button" type="button" onClick={handleSignOut}>Sign out</button> : null}
             </div>
           </div>
@@ -448,6 +455,8 @@ export default function App() {
           <WorldLibrary ocs={ocs} onWorldsChange={setWorldRecords} timelineData={timelineData} worlds={worldRecords} />
         ) : activeSection === "favorites" ? (
           <FavoritesView ocs={ocs} onOpenOC={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} onToggleOCFavorite={toggleOCFavorite} onToggleWorldFavorite={toggleWorldFavorite} timelineData={timelineData} worlds={worldRecords} />
+        ) : activeSection === "account" ? (
+          <AccountPage authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onSignOut={handleSignOut} />
         ) : activeSection === "settings" ? (
           <SettingsErrorBoundary><GlobalSettings appSettings={appSettings} authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onAccountDeletionRequest={handleAccountDeletionRequest} onEmergencyBackup={downloadEmergencyBackup} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onRestoreCharacters={restoreLocalCharacters} onRestoreMyCharacters={restoreMyCharacters} ownerSeedMode={ownerSeedMode} onSettingsChange={setAndSaveAppSettings} onSignOut={handleSignOut} /></SettingsErrorBoundary>
         ) : (
@@ -465,6 +474,7 @@ export default function App() {
       ) : null}
 
       <UnsavedChangesDialog open={Boolean(pendingNavigation)} onCancel={handleCancelNavigation} onDiscard={handleDiscardAndContinue} onSave={handleSaveAndContinue} />
+      <DeleteCharacterDialog character={ocs.find((item) => item.id === pendingDeleteOCId)} onCancel={() => setPendingDeleteOCId(null)} onDelete={confirmDeleteOC} open={Boolean(pendingDeleteOCId)} />
       <LegalFooter onNavigate={(section, category) => requestNavigation(() => navigateToSection(section, category))} />
     </div>
   );
@@ -511,22 +521,12 @@ function MobileLayoutEscape({ appSettings, detectedMobile, onSettingsChange }) {
   );
 }
 function MobileNavigation({ activeSection, onNavigate }) {
-  const [moreOpen, setMoreOpen] = useState(false);
-  const items = [["dashboard", "Dashboard", "grid"], ["library", "Characters", "user"], ["worlds", "Worlds", "map"], ["favorites", "Favorites", "star"]];
+  const items = [["dashboard", "Dashboard", "grid"], ["library", "Characters", "user"], ["worlds", "Worlds", "map"], ["favorites", "Favorites", "star"], ["settings", "Settings", "settings"]];
 
   return (
-    <>
-      {moreOpen ? (
-        <div className="mobile-more-menu">
-          <button type="button" onClick={() => { setMoreOpen(false); onNavigate("settings"); }}>Settings</button>
-          <button type="button" disabled>Archive</button>
-        </div>
-      ) : null}
-      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
-        {items.map(([id, label, icon]) => <button className={activeSection === id ? "mobile-nav-link active" : "mobile-nav-link"} key={id} type="button" onClick={() => { setMoreOpen(false); onNavigate(id); }}><span className={`mobile-nav-icon ${icon}`} aria-hidden="true" /><span>{label}</span></button>)}
-        <button className={activeSection === "settings" ? "mobile-nav-link active" : "mobile-nav-link"} type="button" onClick={() => setMoreOpen((open) => !open)}><span className="mobile-nav-icon more" aria-hidden="true" /><span>More</span></button>
-      </nav>
-    </>
+    <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+      {items.map(([id, label, icon]) => <button className={activeSection === id ? "mobile-nav-link active" : "mobile-nav-link"} key={id} type="button" onClick={() => onNavigate(id)}><span className={`mobile-nav-icon ${icon}`} aria-hidden="true" /><span>{label}</span></button>)}
+    </nav>
   );
 }
 
@@ -535,6 +535,93 @@ function UnsavedChangesDialog({ onCancel, onDiscard, onSave, open }) {
   return <div className="dialog-backdrop" role="presentation"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="unsaved-dialog-title"><h2 id="unsaved-dialog-title">Unsaved Changes</h2><p>You have unsaved changes.</p><p>What would you like to do?</p><div className="dialog-actions"><button className="primary-button" type="button" onClick={onSave}>Save and Continue</button><button className="danger-outline-button" type="button" onClick={onDiscard}>Discard Changes</button><button className="secondary-button" type="button" onClick={onCancel}>Cancel</button></div></section></div>;
 }
 
+function AccountPage({ authSession, betaEnabled, exportData, onExportAccountData, onNavigate, onSignOut }) {
+  const accountEmail = authSession?.user?.email || "Not connected yet";
+  const characterCount = exportData?.ocs?.length || 0;
+  const worldCount = exportData?.worlds?.length || 0;
+  const timelineCount = exportData?.timelineData?.events?.length || 0;
+
+  return (
+    <section className="account-page">
+      <header className="account-hero panel">
+        <div className="account-avatar-placeholder" aria-hidden="true">AA</div>
+        <div>
+          <p className="eyebrow">Future Account</p>
+          <h2>Account</h2>
+          <p className="muted-text">This page is prepared for login, profiles, cloud sync, and multi-device work. Authentication is not implemented in this step.</p>
+        </div>
+        <span className="coming-soon-pill">Coming Soon</span>
+      </header>
+
+      <div className="account-section-grid">
+        <section className="panel account-info-card">
+          <p className="eyebrow">Profile</p>
+          <h3>User Profile</h3>
+          <dl className="account-fact-list">
+            <div><dt>Email</dt><dd>{accountEmail}</dd></div>
+            <div><dt>Username</dt><dd>Prepared for future accounts</dd></div>
+            <div><dt>Avatar</dt><dd>Upload support planned</dd></div>
+          </dl>
+        </section>
+
+        <section className="panel account-info-card">
+          <p className="eyebrow">Workspace</p>
+          <h3>Local Archive</h3>
+          <dl className="account-fact-list">
+            <div><dt>Characters</dt><dd>{characterCount}</dd></div>
+            <div><dt>Worlds</dt><dd>{worldCount}</dd></div>
+            <div><dt>Timeline Events</dt><dd>{timelineCount}</dd></div>
+          </dl>
+        </section>
+
+        <section className="panel account-info-card">
+          <p className="eyebrow">Cloud Sync</p>
+          <h3>Multiple Devices</h3>
+          <p className="muted-text">Cloud synchronization, backups, and account recovery will connect here later.</p>
+          <button className="secondary-button inline-primary" type="button" disabled>Cloud Sync Coming Soon</button>
+        </section>
+
+        <section className="panel account-info-card">
+          <p className="eyebrow">Authentication</p>
+          <h3>Login / Register</h3>
+          <p className="muted-text">Login, registration, password reset, and email verification are prepared as UI areas only.</p>
+          <div className="account-action-grid">
+            <button className="primary-button inline-primary" type="button" disabled>Login Coming Soon</button>
+            <button className="secondary-button inline-primary" type="button" disabled>Register Coming Soon</button>
+            <button className="secondary-button inline-primary" type="button" disabled>Password Reset</button>
+          </div>
+        </section>
+
+        <section className="panel account-info-card account-wide-card">
+          <p className="eyebrow">Data</p>
+          <h3>Account-ready data tools</h3>
+          <p className="muted-text">Exports stay available now, and this structure can later connect to a backend without changing the main app pages.</p>
+          <div className="account-action-grid">
+            <button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export Current Data</button>
+            <button className="secondary-button inline-primary" type="button" onClick={() => onNavigate("settings", "data")}>Open Data & Storage</button>
+            {betaEnabled && authSession?.access_token ? <button className="secondary-button inline-primary" type="button" onClick={onSignOut}>Sign out</button> : null}
+          </div>
+        </section>
+      </div>
+    </section>
+  );
+}
+function DeleteCharacterDialog({ character, onCancel, onDelete, open }) {
+  if (!open) return null;
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <section className="confirm-dialog delete-character-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-character-title">
+        <h2 id="delete-character-title">Delete Character</h2>
+        <p>Are you sure you want to permanently delete {character?.name || "this character"}?</p>
+        <p className="muted-text">This action cannot be undone.</p>
+        <div className="dialog-actions horizontal-actions">
+          <button className="secondary-button" type="button" onClick={onCancel}>Cancel</button>
+          <button className="delete-button" type="button" onClick={onDelete}>Delete</button>
+        </div>
+      </section>
+    </div>
+  );
+}
 class SettingsErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -628,7 +715,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
     },
     {
       id: "data",
-      title: "Data & Backup",
+      title: "Data & Storage",
       eyebrow: "Storage",
       summary: "Export and storage status for your current workspace.",
       content: (
@@ -641,7 +728,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
             <article><strong>{characterStorageStatus.lastBackup ? formatDateTime(characterStorageStatus.lastBackup) : "No backup yet"}</strong><span>Last character backup</span></article>
             <article><strong>{characterStorageStatus.error || "None"}</strong><span>Storage error</span></article>
           </div>
-          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button>{ownerSeedMode ? <button className="secondary-button inline-primary" type="button" onClick={onRestoreMyCharacters}>Restore My Characters</button> : null}<button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button></div>
+          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button>{ownerSeedMode ? <button className="secondary-button inline-primary" type="button" onClick={onRestoreMyCharacters}>Restore My Characters</button> : null}<button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button><button className="danger-outline-button" type="button" disabled>Reset Data Coming Soon</button></div>
           <section className="recovery-panel">
             <div><h3>Recover Local Data</h3><p className="muted-text">Found Atlas Archive and legacy browser-storage sources. Restoring merges by character ID and creates a backup first.</p></div>
             <div className="recovery-source-list">
@@ -675,28 +762,50 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
       title: "About",
       eyebrow: "Atlas Archive",
       summary: "What is ready now and what stays prepared for later.",
-      content: <div className="prepared-grid compact-prepared-grid">{["Notebook mode", "Fantasy themes", "Export formats", "Backend sync"].map((item) => <article className="prepared-card future-setting-card" key={item}><h3>{item}</h3><p className="muted-text">Prepared for a later step.</p></article>)}</div>
+      content: <><div className="prepared-grid compact-prepared-grid">{["Notebook mode", "Fantasy themes", "Export formats", "Backend sync"].map((item) => <article className="prepared-card future-setting-card" key={item}><h3>{item}</h3><p className="muted-text">Prepared for a later step.</p></article>)}</div><div className="legal-link-row"><button className="secondary-button inline-primary" type="button" onClick={() => onNavigate("account")}>Open Account Page</button><a href={buildAppHref("privacy")}>Privacy Policy</a><a href={buildAppHref("terms")}>Beta Terms</a><a href={buildAppHref("contact")}>Contact</a></div></>
     }
   ];
 
-  const selectedGroup = groups.find((group) => group.id === activeCategory) || groups[0];
+  const settingsGroups = groups.filter((group) => ["appearance", "data", "about"].includes(group.id));
+  const selectedGroup = settingsGroups.find((group) => group.id === activeCategory) || settingsGroups[0];
 
-  if (isSettingsMobile && !getSettingsCategoryFromLocation()) {
-    return <section className="settings-page settings-mobile-overview"><div className="settings-overview-list">{groups.map((group) => <button className="settings-overview-button" key={group.id} type="button" onClick={() => openCategory(group.id)}><span><strong>{group.title}</strong><small>{group.summary}</small></span><span aria-hidden="true">&gt;</span></button>)}</div></section>;
-  }
-
-  if (isSettingsMobile) {
-    return <section className="settings-page settings-mobile-detail"><button className="secondary-button settings-back-button" type="button" onClick={() => { setActiveCategory("appearance"); updateAppRoute("settings"); }}>Back to Settings</button><SettingsGroupCard group={selectedGroup} /></section>;
-  }
-
-  return <section className="settings-page settings-grouped-page">{groups.map((group) => <SettingsGroupCard group={group} key={group.id} />)}</section>;
+  return (
+    <section className="settings-page settings-grouped-page settings-accordion-page">
+      <header className="settings-clean-header">
+        <p className="eyebrow">Application</p>
+        <h2>Settings</h2>
+        <p className="muted-text">Adjust appearance, data tools, and development options without crowding the page.</p>
+      </header>
+      {settingsGroups.map((group) => (
+        <SettingsGroupCard
+          defaultOpen={group.id === selectedGroup.id}
+          group={group}
+          key={group.id}
+          onOpen={() => openCategory(group.id)}
+        />
+      ))}
+    </section>
+  );
 }
-function SettingsGroupCard({ group }) {
-  return <section className="panel settings-group-card" id={group.id === "data" ? "data-account" : undefined}><div><p className="eyebrow">{group.eyebrow}</p><h2>{group.title}</h2><p className="muted-text">{group.summary}</p></div>{group.content}</section>;
+function SettingsGroupCard({ defaultOpen = false, group, onOpen }) {
+  function handleToggle(event) {
+    if (event.currentTarget.open) onOpen?.();
+  }
+
+  return (
+    <details className="panel settings-group-card settings-accordion-card" id={group.id === "data" ? "data-account" : undefined} open={defaultOpen} onToggle={handleToggle}>
+      <summary>
+        <span><p className="eyebrow">{group.eyebrow}</p><h2>{group.title}</h2><small>{group.summary}</small></span>
+        <span className="settings-accordion-chevron" aria-hidden="true">&gt;</span>
+      </summary>
+      <div className="settings-accordion-content">{group.content}</div>
+    </details>
+  );
 }
 function getInitialAppSection() {
   if (typeof window === "undefined") return "dashboard";
   const route = getCurrentAppRoute();
+  if (route.startsWith("account") || route.startsWith("settings/account")) return "account";
   if (route.startsWith("settings")) return "settings";
   if (route.startsWith("worlds")) return "worlds";
   if (route.startsWith("favorites")) return "favorites";
@@ -726,7 +835,7 @@ function stripBasePath(pathname) {
 
 function updateAppRoute(section, settingsCategory = "") {
   if (typeof window === "undefined") return;
-  const routeMap = { dashboard: "", library: "characters", worlds: "worlds", favorites: "favorites", settings: settingsCategory ? `settings/${settingsCategory}` : "settings" };
+  const routeMap = { dashboard: "", library: "characters", worlds: "worlds", favorites: "favorites", account: "account", settings: settingsCategory ? `settings/${settingsCategory}` : "settings" };
   const route = routeMap[section] ?? "characters";
   const nextPath = buildAppHref(route);
   const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -736,7 +845,7 @@ function updateAppRoute(section, settingsCategory = "") {
 function getSettingsCategoryFromLocation() {
   if (typeof window === "undefined") return "";
   const route = getCurrentAppRoute();
-  const match = route.match(/^settings\/(appearance|account|privacy|data|application|about)$/);
+  const match = route.match(/^settings\/(appearance|privacy|data|application|about)$/);
   if (match) return match[1];
   if (window.location.hash === "#data-account") return "data";
   return "";
@@ -887,6 +996,14 @@ function getLegalTitle(page) {
   if (page === "terms") return "Terms / Beta Rules";
   return "Contact";
 }
+
+
+
+
+
+
+
+
 
 
 
