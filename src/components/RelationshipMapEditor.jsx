@@ -27,6 +27,11 @@ export default function RelationshipMapEditor({
   const [editingNodeId, setEditingNodeId] = useState(null);
   const [editingEdgeId, setEditingEdgeId] = useState(null);
   const [dragging, setDragging] = useState(null);
+  const [canvasPanning, setCanvasPanning] = useState(null);
+  const [canvasPan, setCanvasPan] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [expandedNodeIds, setExpandedNodeIds] = useState([]);
+  const [expandedEdgeIds, setExpandedEdgeIds] = useState([]);
 
   const graph = useMemo(
     () => getGraphForOC(relationshipMaps, relationships, oc, ocs),
@@ -159,30 +164,74 @@ export default function RelationshipMapEditor({
 
   function startDrag(event, node) {
     if (event.button !== 0) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    event.stopPropagation();
+    const point = getCanvasPoint(event);
+    if (!point) return;
     setDragging({
       nodeId: node.id,
-      offsetX: event.clientX - rect.left - node.x,
-      offsetY: event.clientY - rect.top - node.y
+      offsetX: point.x - node.x,
+      offsetY: point.y - node.y
     });
   }
 
-  function moveDrag(event) {
-    if (!dragging) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  function startCanvasPan(event) {
+    if (event.button !== 0 || event.target.closest("button, input, textarea, select, .graph-node")) return;
+    setCanvasPanning({ startX: event.clientX, startY: event.clientY, originX: canvasPan.x, originY: canvasPan.y });
+  }
 
-    const x = clamp(event.clientX - rect.left - dragging.offsetX, 8, rect.width - NODE_WIDTH - 8);
-    const y = clamp(event.clientY - rect.top - dragging.offsetY, 8, CANVAS_HEIGHT - NODE_HEIGHT - 8);
-    persistGraph({
-      ...graph,
-      nodes: nodes.map((node) => (node.id === dragging.nodeId ? { ...node, x, y } : node))
-    });
+  function moveDrag(event) {
+    if (dragging) {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      const point = getCanvasPoint(event);
+      if (!rect || !point) return;
+
+      const logicalWidth = Math.max(rect.width, rect.width / zoom);
+      const x = clamp(point.x - dragging.offsetX, 8, logicalWidth - NODE_WIDTH - 8);
+      const y = clamp(point.y - dragging.offsetY, 8, CANVAS_HEIGHT - NODE_HEIGHT - 8);
+      persistGraph({
+        ...graph,
+        nodes: nodes.map((node) => (node.id === dragging.nodeId ? { ...node, x, y } : node))
+      });
+      return;
+    }
+
+    if (canvasPanning) {
+      setCanvasPan({
+        x: canvasPanning.originX + event.clientX - canvasPanning.startX,
+        y: canvasPanning.originY + event.clientY - canvasPanning.startY
+      });
+    }
   }
 
   function stopDrag() {
     setDragging(null);
+    setCanvasPanning(null);
+  }
+
+  function getCanvasPoint(event) {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    return {
+      x: (event.clientX - rect.left - canvasPan.x) / zoom,
+      y: (event.clientY - rect.top - canvasPan.y) / zoom
+    };
+  }
+
+  function changeZoom(delta) {
+    setZoom((current) => clamp(Number((current + delta).toFixed(2)), 0.55, 1.65));
+  }
+
+  function resetView() {
+    setZoom(1);
+    setCanvasPan({ x: 0, y: 0 });
+  }
+
+  function toggleExpandedNode(nodeId) {
+    setExpandedNodeIds((current) => current.includes(nodeId) ? current.filter((id) => id !== nodeId) : [...current, nodeId]);
+  }
+
+  function toggleExpandedEdge(edgeId) {
+    setExpandedEdgeIds((current) => current.includes(edgeId) ? current.filter((id) => id !== edgeId) : [...current, edgeId]);
   }
 
   const nodeImage = nodeForm.profilePictureData || nodeForm.profilePictureUrl;
@@ -273,30 +322,39 @@ export default function RelationshipMapEditor({
         </form>
       </div>
 
-      <div className="graph-canvas" ref={canvasRef} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerLeave={stopDrag} style={{ height: CANVAS_HEIGHT }}>
-        <svg className="graph-lines" aria-hidden="true">
-          {edges.map((edge) => <GraphEdge key={edge.id} edge={edge} nodes={nodes} />)}
-        </svg>
+      <div className="graph-view-toolbar" aria-label="Relationship map zoom controls">
+        <button className="secondary-button" type="button" onClick={() => changeZoom(0.1)}>Zoom In</button>
+        <button className="secondary-button" type="button" onClick={() => changeZoom(-0.1)}>Zoom Out</button>
+        <button className="secondary-button" type="button" onClick={resetView}>Reset Zoom</button>
+        <span>{Math.round(zoom * 100)}%</span>
+      </div>
 
-        {nodes.map((node) => (
-          <article
-            className={node.id === "main" ? "graph-node main-graph-node" : "graph-node"}
-            key={node.id}
-            onPointerDown={(event) => startDrag(event, node)}
-            style={{ left: node.x, top: node.y }}
-          >
-            <ProfileImage source={node.profilePictureData || node.profilePictureUrl} name={node.name} />
-            <div className="graph-node-body">
-              <h3>{node.name || "Unnamed character"}</h3>
-              <p>{getNodeTypeLabel(node.type)}</p>
-              {node.notes ? <p className="muted-text graph-note">{node.notes}</p> : null}
-            </div>
-            <div className="graph-node-actions" onPointerDown={(event) => event.stopPropagation()}>
-              {node.id !== "main" ? <button className="secondary-button" type="button" onClick={() => startNodeEdit(node)}>Edit</button> : null}
-              {node.id !== "main" ? <button className="delete-button" type="button" onClick={() => deleteNode(node.id)}>Delete</button> : null}
-            </div>
-          </article>
-        ))}
+      <div className={canvasPanning ? "graph-canvas is-panning" : "graph-canvas"} ref={canvasRef} onPointerDown={startCanvasPan} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerLeave={stopDrag} style={{ height: CANVAS_HEIGHT }}>
+        <div className="graph-viewport" style={{ transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${zoom})` }}>
+          <svg className="graph-lines" aria-hidden="true">
+            {edges.map((edge) => <GraphEdge key={edge.id} edge={edge} nodes={nodes} />)}
+          </svg>
+
+          {nodes.map((node) => (
+            <article
+              className={node.id === "main" ? "graph-node main-graph-node" : "graph-node"}
+              key={node.id}
+              onPointerDown={(event) => startDrag(event, node)}
+              style={{ left: node.x, top: node.y }}
+            >
+              <ProfileImage source={node.profilePictureData || node.profilePictureUrl} name={node.name} />
+              <div className="graph-node-body">
+                <h3>{node.name || "Unnamed character"}</h3>
+                <p>{getNodeTypeLabel(node.type)}</p>
+                <ExpandablePreview className="muted-text graph-note" id={node.id} isExpanded={expandedNodeIds.includes(node.id)} onToggle={toggleExpandedNode} text={node.notes} />
+              </div>
+              <div className="graph-node-actions" onPointerDown={(event) => event.stopPropagation()}>
+                {node.id !== "main" ? <button className="secondary-button" type="button" onClick={() => startNodeEdit(node)}>Edit</button> : null}
+                {node.id !== "main" ? <button className="delete-button" type="button" onClick={() => deleteNode(node.id)}>Delete</button> : null}
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
 
       <div className="edge-list">
@@ -308,7 +366,7 @@ export default function RelationshipMapEditor({
               <p>{getNodeName(nodes, edge.fromNodeId)}{" -> "}{getNodeName(nodes, edge.toNodeId)}{" | "}{edge.direction}</p>
               {edge.ocFeels ? <p className="muted-text">OC feels: {edge.ocFeels}</p> : null}
               {edge.targetFeels ? <p className="muted-text">Other feels: {edge.targetFeels}</p> : null}
-              {edge.notes ? <p className="muted-text">{edge.notes}</p> : null}
+              <ExpandablePreview className="muted-text" id={edge.id} isExpanded={expandedEdgeIds.includes(edge.id)} onToggle={toggleExpandedEdge} text={edge.notes} />
             </div>
             <div className="card-actions">
               <button className="secondary-button" type="button" onClick={() => startEdgeEdit(edge)}>Edit</button>
@@ -440,6 +498,28 @@ function ProfileImage({ source, name }) {
   return <div className="profile-picture-preview graph-node-picture">{source ? <img src={source} alt={name || "Character"} /> : <span>No picture</span>}</div>;
 }
 
+function ExpandablePreview({ className = "", id, isExpanded, onToggle, text }) {
+  if (!text) return null;
+  const preview = getPreviewText(text, 74);
+  const isLong = preview !== text;
+  return (
+    <p className={className}>
+      {isExpanded || !isLong ? text : preview}
+      {isLong ? (
+        <button className="text-link-button" type="button" onPointerDown={(event) => event.stopPropagation()} onClick={() => onToggle(id)}>
+          {isExpanded ? "Show less" : "See more"}
+        </button>
+      ) : null}
+    </p>
+  );
+}
+
+function getPreviewText(value, maxLength) {
+  const normalized = String(value || "").replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength).trim()}...`;
+}
+
 function TextInput({ label, name, onChange, placeholder = "", value }) {
   return (
     <label className="field">
@@ -462,6 +542,8 @@ function getNodeTypeLabel(type) {
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
+
 
 
 

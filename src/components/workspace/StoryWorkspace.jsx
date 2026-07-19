@@ -1,5 +1,5 @@
 ﻿import { formatDateTime } from "../../utils/dateFormat.js";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { INITIAL_STORY_ENTRY, STORY_CATEGORIES } from "../../data/writingSchema.js";
 import {
   clearRecoveredDraft,
@@ -14,6 +14,14 @@ import {
 import WorkspacePanel from "./WorkspacePanel.jsx";
 
 const AUTOSAVE_LABEL_DELAY = 1400;
+const STORY_FONT_OPTIONS = [
+  { label: "Notebook", value: "Georgia, 'Times New Roman', serif" },
+  { label: "Clean Sans", value: "Inter, Segoe UI, Arial, sans-serif" },
+  { label: "Classic Serif", value: "Cambria, Georgia, serif" },
+  { label: "Typewriter", value: "'Courier New', Courier, monospace" },
+  { label: "System", value: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }
+];
+const STORY_FONT_SIZES = ["15", "16", "18", "20", "22"];
 
 export default function StoryWorkspace({ oc }) {
   const [entries, setEntries] = useState(() => getWritingEntries());
@@ -21,6 +29,8 @@ export default function StoryWorkspace({ oc }) {
   const [activeEntryId, setActiveEntryId] = useState("");
   const [saveState, setSaveState] = useState("Saved");
   const [recoveredDraft, setRecoveredDraft] = useState(() => getRecoveredDraft(oc.id));
+  const [editorStyle, setEditorStyle] = useState(() => getStoryEditorStyle(oc.id));
+  const textareaRef = useRef(null);
 
   const characterEntries = useMemo(
     () => entries.filter((entry) => entry.connectedOcId === oc.id),
@@ -33,6 +43,8 @@ export default function StoryWorkspace({ oc }) {
   );
 
   const activeEntry = entries.find((entry) => entry.id === activeEntryId) || activeEntries[0] || null;
+  const customFontFamily = `atlas-story-font-${oc.id}`;
+  const editorFontFamily = editorStyle.customFontData ? customFontFamily : editorStyle.fontFamily;
   const stats = getWritingStats(activeEntry?.content || "");
 
   useEffect(() => {
@@ -79,6 +91,45 @@ export default function StoryWorkspace({ oc }) {
     if (activeEntryId === id) setActiveEntryId("");
   }
 
+  function updateEditorStyle(field, value) {
+    setEditorStyle((current) => {
+      const next = { ...current, [field]: value };
+      saveStoryEditorStyle(oc.id, next);
+      return next;
+    });
+  }
+
+  function uploadCustomFont(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditorStyle((current) => {
+        const next = { ...current, customFontData: String(reader.result || ""), customFontName: file.name };
+        saveStoryEditorStyle(oc.id, next);
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function applyFormat(type) {
+    if (!activeEntry || !textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart ?? 0;
+    const end = textarea.selectionEnd ?? start;
+    const content = activeEntry.content || "";
+    const selected = content.slice(start, end);
+    const fallback = selected || getFormattingFallback(type);
+    const replacement = formatSelection(type, fallback);
+    const nextContent = `${content.slice(0, start)}${replacement}${content.slice(end)}`;
+    updateActiveEntry("content", nextContent);
+    window.requestAnimationFrame(() => {
+      textarea.focus();
+      const cursorStart = start + replacement.length;
+      textarea.setSelectionRange(cursorStart, cursorStart);
+    });
+  }
   function restoreDraft() {
     if (!recoveredDraft) return;
     createEntry(recoveredDraft.category || "drafts", recoveredDraft);
@@ -156,9 +207,23 @@ export default function StoryWorkspace({ oc }) {
 
           {activeEntry ? (
             <section className="writing-editor" aria-label="Story editor">
+              {editorStyle.customFontData ? <style>{`@font-face { font-family: "${customFontFamily}"; src: url("${editorStyle.customFontData}"); }`}</style> : null}
               <input className="writing-title-input" value={activeEntry.title} placeholder="Title" onChange={(event) => updateActiveEntry("title", event.target.value)} />
               <input className="writing-subtitle-input" value={activeEntry.subtitle} placeholder="Optional subtitle" onChange={(event) => updateActiveEntry("subtitle", event.target.value)} />
-              <textarea className="writing-area" value={activeEntry.content} placeholder="Write here..." onChange={(event) => updateActiveEntry("content", event.target.value)} />
+              <StoryFormatToolbar
+                editorStyle={editorStyle}
+                onCustomFontUpload={uploadCustomFont}
+                onFormat={applyFormat}
+                onStyleChange={updateEditorStyle}
+              />
+              <textarea
+                className="writing-area"
+                ref={textareaRef}
+                style={{ fontFamily: editorFontFamily, fontSize: `${editorStyle.fontSize}px` }}
+                value={activeEntry.content}
+                placeholder="Write here..."
+                onChange={(event) => updateActiveEntry("content", event.target.value)}
+              />
 
               <footer className="writing-stats">
                 <span>{stats.words} words</span>
@@ -190,6 +255,81 @@ export default function StoryWorkspace({ oc }) {
   );
 }
 
+function StoryFormatToolbar({ editorStyle, onCustomFontUpload, onFormat, onStyleChange }) {
+  return (
+    <div className="story-format-toolbar" aria-label="Story formatting toolbar">
+      <label className="compact-tool-field">
+        <span>Font</span>
+        <select value={editorStyle.fontFamily} onChange={(event) => onStyleChange("fontFamily", event.target.value)}>
+          {STORY_FONT_OPTIONS.map((font) => <option key={font.label} value={font.value}>{font.label}</option>)}
+        </select>
+      </label>
+      <label className="compact-tool-field size-tool-field">
+        <span>Size</span>
+        <select value={editorStyle.fontSize} onChange={(event) => onStyleChange("fontSize", event.target.value)}>
+          {STORY_FONT_SIZES.map((size) => <option key={size} value={size}>{size}px</option>)}
+        </select>
+      </label>
+      <div className="format-button-group">
+        <button type="button" onClick={() => onFormat("heading")}>H</button>
+        <button type="button" onClick={() => onFormat("bold")}><strong>B</strong></button>
+        <button type="button" onClick={() => onFormat("italic")}><em>I</em></button>
+        <button type="button" onClick={() => onFormat("underline")}><span className="underline-icon">U</span></button>
+        <button type="button" onClick={() => onFormat("bullet")}>• List</button>
+        <button type="button" onClick={() => onFormat("number")}>1. List</button>
+        <button type="button" onClick={() => onFormat("quote")}>Quote</button>
+        <button type="button" onClick={() => onFormat("link")}>Link</button>
+        <button type="button" onClick={() => onFormat("image")}>Image</button>
+      </div>
+      <label className="custom-font-upload">
+        <span>{editorStyle.customFontName ? editorStyle.customFontName : "Custom font"}</span>
+        <input accept=".ttf,.otf,.woff,.woff2" type="file" onChange={onCustomFontUpload} />
+      </label>
+    </div>
+  );
+}
+
+function getFormattingFallback(type) {
+  if (type === "image") return "image description";
+  if (type === "link") return "link text";
+  if (type === "heading") return "Heading";
+  return "text";
+}
+
+function formatSelection(type, value) {
+  const selected = String(value || "");
+  if (type === "bold") return `**${selected}**`;
+  if (type === "italic") return `*${selected}*`;
+  if (type === "underline") return `<u>${selected}</u>`;
+  if (type === "bullet") return selected.split("\n").map((line) => `- ${line || "List item"}`).join("\n");
+  if (type === "number") return selected.split("\n").map((line, index) => `${index + 1}. ${line || "List item"}`).join("\n");
+  if (type === "quote") return selected.split("\n").map((line) => `> ${line || "Quote"}`).join("\n");
+  if (type === "heading") return `## ${selected}`;
+  if (type === "image") return `![${selected}](image-url)`;
+  if (type === "link") return `[${selected}](https://)`;
+  return selected;
+}
+
+function getStoryEditorStyle(ocId) {
+  try {
+    const saved = window.localStorage.getItem(`atlas-story-editor-style-${ocId}`);
+    return saved ? { ...getDefaultStoryEditorStyle(), ...JSON.parse(saved) } : getDefaultStoryEditorStyle();
+  } catch (error) {
+    return getDefaultStoryEditorStyle();
+  }
+}
+
+function saveStoryEditorStyle(ocId, value) {
+  try {
+    window.localStorage.setItem(`atlas-story-editor-style-${ocId}`, JSON.stringify(value));
+  } catch (error) {
+    console.warn("Could not save story editor style", error);
+  }
+}
+
+function getDefaultStoryEditorStyle() {
+  return { customFontData: "", customFontName: "", fontFamily: STORY_FONT_OPTIONS[0].value, fontSize: "18" };
+}
 function getWritingStats(content) {
   const trimmed = content.trim();
   const words = trimmed ? trimmed.split(/\s+/).length : 0;
@@ -216,4 +356,8 @@ function formatEditedDate(value) {
   if (!value) return "never";
   return formatDateTime(value);
 }
+
+
+
+
 

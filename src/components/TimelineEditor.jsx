@@ -39,7 +39,8 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   const activeEvents = useMemo(() => timelineData.events.filter((event) => event.timelineId === activeTimelineIdSafe), [timelineData.events, activeTimelineIdSafe]);
   const datedEvents = useMemo(() => activeEvents.filter(hasSortableDate).sort(compareDatedEvents), [activeEvents]);
   const undatedEvents = useMemo(() => activeEvents.filter((event) => !hasSortableDate(event)).sort((a, b) => a.order - b.order), [activeEvents]);
-  const timelineRows = useMemo(() => chunkEvents(datedEvents, EVENTS_PER_ROW), [datedEvents]);
+  const orderedEvents = useMemo(() => [...datedEvents, ...undatedEvents], [datedEvents, undatedEvents]);
+  const timelineRows = useMemo(() => chunkEvents(orderedEvents, EVENTS_PER_ROW), [orderedEvents]);
   const selectedEvent = activeEvents.find((event) => event.id === selectedEventId) || null;
 
   function persist(nextData) {
@@ -139,7 +140,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
 
   function handleDatedDrag(pointerEvent) {
     pointerEvent.preventDefault();
-    window.alert("This timeline is sorted automatically by date. Change the event date or move it to undated events.");
+    window.alert("This timeline is sorted automatically by date. Change the event year or full date to reposition it.");
   }
 
   function moveUndatedEvent(eventId, direction) {
@@ -221,7 +222,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
       {activeTimeline ? (
         <>
           <section className="visual-timeline-card serpentine-timeline-card timeline-reading-card">
-            {datedEvents.length === 0 && undatedEvents.length === 0 ? (
+            {orderedEvents.length === 0 ? (
               <div className="timeline-empty-compact">
                 <div className="empty-illustration" aria-hidden="true">+</div>
                 <h3>No events yet.</h3>
@@ -230,7 +231,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
               </div>
             ) : null}
 
-            {datedEvents.length > 0 ? (
+            {orderedEvents.length > 0 ? (
               <div className="timeline-flow" style={{ "--events-per-row": EVENTS_PER_ROW }}>
                 {timelineRows.map((row, rowIndex) => (
                   <div className={rowIndex % 2 === 0 ? "timeline-flow-row" : "timeline-flow-row reverse"} key={`row-${rowIndex}`}>
@@ -254,32 +255,6 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
               </div>
             ) : null}
 
-            {undatedEvents.length > 0 ? (
-              <section className="undated-timeline-section">
-                <div>
-                  <p className="eyebrow">Relative Events</p>
-                  <h3>Undated Events</h3>
-                </div>
-                <div className="undated-event-list">
-                  {undatedEvents.map((event, index) => (
-                    <TimelineUndatedEvent
-                      event={event}
-                      isExpanded={expandedEventIds.includes(event.id)}
-                      isFirst={index === 0}
-                      isLast={index === undatedEvents.length - 1}
-                      isSelected={selectedEvent?.id === event.id}
-                      key={event.id}
-                      onEdit={openEditEventModal}
-                      onMove={moveUndatedEvent}
-                      onMoveToTarget={moveUndatedEventToTarget}
-                      onSelect={setSelectedEventId}
-                      onToggleExpanded={toggleExpandedEvent}
-                      ocs={ocs}
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
           </section>
 
           {selectedEvent ? (
@@ -628,3 +603,6 @@ function getEventAge(event, ocs) {
   if (!Number.isFinite(birthYear) || !Number.isFinite(eventYear)) return "";
   return eventYear - birthYear;
 }
+
+
+

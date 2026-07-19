@@ -8326,3 +8326,308 @@ textarea.writing-area {
     min-height: 68px;
   }
 }
+
+/* Focused polish pass: relationship map, timeline, story editor, sidebar and dashboard. */
+@media (min-width: 901px) {
+  .app-frame {
+    align-items: stretch;
+    min-height: 100dvh;
+    position: relative;
+  }
+
+  .app-frame::before {
+    background: var(--app-surface-strong, #fffaf2);
+    border-right: 1px solid var(--app-border, #dfd5c7);
+    content: "";
+    inset: 0 auto 0 0;
+    pointer-events: none;
+    position: fixed;
+    width: 240px;
+    z-index: 0;
+  }
+
+  .app-sidebar {
+    align-self: stretch;
+    background: transparent;
+    border-right: 0;
+    height: 100dvh;
+    min-height: 100dvh;
+    z-index: 1;
+  }
+
+  .app-shell {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.graph-view-toolbar {
+  align-items: center;
+  background: var(--app-surface, #ffffff);
+  border: 1px solid var(--app-border, #e4dbd0);
+  border-radius: 14px;
+  box-shadow: var(--premium-shadow-soft, 0 12px 28px rgba(36, 28, 22, 0.08));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 10px;
+}
+
+.graph-view-toolbar span {
+  color: var(--app-muted, #596273);
+  font-size: 0.85rem;
+  font-weight: 850;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.graph-canvas {
+  background: #f8f4ec;
+  border-color: color-mix(in srgb, var(--app-border, #d8cec0) 88%, #1e2329);
+  border-radius: 16px;
+  cursor: grab;
+  min-height: 560px;
+}
+
+.graph-canvas.is-panning {
+  cursor: grabbing;
+}
+
+.graph-viewport {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  transform-origin: 0 0;
+  width: 100%;
+  will-change: transform;
+}
+
+.graph-lines {
+  overflow: visible;
+}
+
+.graph-line {
+  stroke: #44685b;
+  stroke-width: 3.5;
+}
+
+.graph-arrow {
+  fill: #44685b;
+}
+
+.graph-edge-label {
+  background: rgba(30, 35, 41, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 8px 18px rgba(30, 35, 41, 0.18);
+  color: #fffaf2;
+  line-height: 1.2;
+  padding: 5px 7px;
+}
+
+.graph-node {
+  background: rgba(255, 253, 248, 0.98);
+  border-color: rgba(68, 104, 91, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(36, 28, 22, 0.14);
+}
+
+.main-graph-node {
+  background: #e9f4ef;
+  border-color: rgba(47, 102, 82, 0.5);
+}
+
+.graph-node-body h3,
+.graph-node-body p,
+.edge-row h3,
+.edge-row p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.graph-note {
+  display: block;
+  margin-top: 4px;
+  overflow: visible;
+}
+
+.text-link-button {
+  background: transparent;
+  border: 0;
+  color: var(--app-accent, #2f6652);
+  cursor: pointer;
+  display: inline;
+  font: inherit;
+  font-weight: 900;
+  margin-left: 6px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.edge-row {
+  align-items: start;
+}
+
+.story-format-toolbar {
+  align-items: center;
+  background: color-mix(in srgb, var(--workspace-accent-3, #fffaf2) 36%, #ffffff);
+  border: 1px solid var(--workspace-border, #e4dbd0);
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+}
+
+.compact-tool-field,
+.custom-font-upload {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+}
+
+.compact-tool-field span,
+.custom-font-upload span {
+  color: var(--workspace-muted-text, #596273);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.compact-tool-field select {
+  min-height: 38px;
+  padding: 7px 10px;
+}
+
+.size-tool-field select {
+  width: 82px;
+}
+
+.format-button-group {
+  display: flex;
+  flex: 1 1 320px;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.format-button-group button,
+.custom-font-upload {
+  background: var(--app-surface, #ffffff);
+  border: 1px solid var(--workspace-border, #e4dbd0);
+  border-radius: 999px;
+  color: var(--workspace-text, #1e2329);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 850;
+  min-height: 36px;
+  padding: 7px 11px;
+}
+
+.format-button-group button:hover,
+.custom-font-upload:hover {
+  border-color: var(--workspace-accent, #2f6652);
+  color: var(--workspace-accent, #2f6652);
+}
+
+.underline-icon {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.custom-font-upload input {
+  inline-size: 1px;
+  opacity: 0;
+  position: absolute;
+}
+
+.writing-area {
+  overflow-wrap: anywhere;
+}
+
+.timeline-flow-event .precision-unknown {
+  background: #ece8df;
+  color: #3f4650;
+}
+
+.timeline-card-actions .secondary-button {
+  border-radius: 999px;
+  font-size: 0.78rem;
+  min-height: 32px;
+  padding: 6px 10px;
+}
+
+.timeline-event-card-button strong {
+  overflow-wrap: anywhere;
+}
+
+.dashboard-topline {
+  overflow: hidden;
+  position: relative;
+}
+
+.dashboard-topline > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-topline::after {
+  background:
+    linear-gradient(135deg, rgba(47, 102, 82, 0.16), rgba(185, 135, 91, 0.12)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.6) 0 9px, rgba(255, 255, 255, 0.18) 9px 18px);
+  border: 1px solid rgba(47, 102, 82, 0.14);
+  border-radius: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 16px 30px rgba(36, 28, 22, 0.08);
+  content: "";
+  height: min(150px, 70%);
+  margin-left: auto;
+  min-width: 220px;
+  width: clamp(220px, 24vw, 340px);
+}
+
+.dashboard-card-grid,
+.dashboard-grid,
+.world-grid,
+.favorites-layout,
+.edge-list {
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .graph-view-toolbar {
+    position: sticky;
+    top: 8px;
+    z-index: 3;
+  }
+
+  .graph-view-toolbar span {
+    margin-left: 0;
+  }
+
+  .relationship-map-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .story-format-toolbar {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 92px;
+  }
+
+  .format-button-group,
+  .custom-font-upload {
+    grid-column: 1 / -1;
+  }
+
+  .format-button-group button,
+  .custom-font-upload {
+    min-height: 38px;
+  }
+
+  .dashboard-topline::after {
+    display: none;
+  }
+}
+
