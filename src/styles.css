@@ -6135,3 +6135,1107 @@ button:active {
   color: #f4efe8;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
 }
+
+/* Timeline focus redesign */
+.timeline-focus-page {
+  align-content: start;
+  gap: 16px;
+  max-width: min(100%, 1560px);
+  width: 100%;
+}
+
+.workspace-shell:has(.timeline-focus-page) {
+  max-width: min(100%, 1560px);
+}
+
+.workspace-shell:has(.timeline-focus-page) .workspace-panel {
+  padding-inline: clamp(16px, 2.2vw, 28px);
+}
+
+.timeline-focus-header {
+  align-items: start;
+  background: var(--workspace-card, var(--app-surface-strong, #fffdf8));
+  border: 1px solid var(--workspace-border, var(--app-border, #e4dbd0));
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(36, 28, 22, 0.08);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: clamp(16px, 2vw, 24px);
+}
+
+.timeline-focus-header h2 {
+  font-size: clamp(1.55rem, 2vw, 2.2rem);
+}
+
+.timeline-header-actions,
+.timeline-settings-heading,
+.timeline-card-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.timeline-switcher {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.timeline-switch {
+  background: var(--workspace-card, #fffdf8);
+  border: 1px solid var(--workspace-border, #e4dbd0);
+  border-radius: 999px;
+  color: inherit;
+  display: grid;
+  gap: 1px;
+  min-width: 180px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.timeline-switch span {
+  color: var(--workspace-muted-text, #596273);
+  font-size: 0.78rem;
+}
+
+.timeline-switch.active {
+  background: color-mix(in srgb, var(--workspace-accent, #2f6652) 12%, #ffffff);
+  border-color: var(--workspace-accent, #2f6652);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--workspace-accent, #2f6652) 16%, transparent);
+  color: var(--workspace-accent, #2f6652);
+}
+
+.timeline-settings-panel,
+.timeline-compact-tools {
+  background: var(--workspace-card, #fffdf8);
+  border: 1px solid var(--workspace-border, #e4dbd0);
+  border-radius: 16px;
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.timeline-settings-heading {
+  justify-content: space-between;
+}
+
+.timeline-compact-tools {
+  padding: 14px;
+}
+
+.timeline-compact-tools .timeline-filters {
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+}
+
+.timeline-year-nav {
+  border-top: 1px solid var(--workspace-border, #e4dbd0);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.timeline-year-nav button {
+  background: color-mix(in srgb, var(--workspace-accent, #2f6652) 10%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--workspace-accent, #2f6652) 28%, #ffffff);
+  border-radius: 999px;
+  color: var(--workspace-accent, #2f6652);
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 6px 10px;
+}
+
+.serpentine-timeline-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.42)),
+    var(--workspace-card, #fffdf8);
+  border-radius: 18px;
+  min-height: 0;
+  overflow: visible;
+  padding: clamp(18px, 2.2vw, 30px);
+}
+
+.timeline-empty-compact {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  min-height: 280px;
+  text-align: center;
+}
+
+.timeline-empty-compact .empty-illustration {
+  align-items: center;
+  background: color-mix(in srgb, var(--workspace-accent, #2f6652) 13%, #ffffff);
+  border: 1px dashed color-mix(in srgb, var(--workspace-accent, #2f6652) 40%, #ffffff);
+  border-radius: 24px;
+  color: var(--workspace-accent, #2f6652);
+  display: flex;
+  font-size: 2.4rem;
+  font-weight: 700;
+  height: 92px;
+  justify-content: center;
+  width: 92px;
+}
+
+.timeline-flow {
+  display: grid;
+  gap: 34px;
+}
+
+.timeline-flow-row {
+  display: grid;
+  gap: clamp(16px, 2vw, 26px);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+  justify-content: start;
+  position: relative;
+}
+
+.timeline-flow-row.reverse {
+  direction: rtl;
+  justify-content: end;
+}
+
+.timeline-flow-row.reverse > * {
+  direction: ltr;
+}
+
+.timeline-flow-row::before {
+  background: linear-gradient(90deg, #b9875b, var(--workspace-accent, #2f6652), #415f8f);
+  border-radius: 999px;
+  content: "";
+  height: 4px;
+  left: 32px;
+  position: absolute;
+  right: 32px;
+  top: 23px;
+  z-index: 0;
+}
+
+.timeline-flow-row:not(:last-child)::after {
+  background: linear-gradient(180deg, var(--workspace-accent, #2f6652), #b9875b);
+  border-radius: 999px;
+  bottom: -36px;
+  content: "";
+  height: 38px;
+  position: absolute;
+  right: 32px;
+  width: 4px;
+}
+
+.timeline-flow-row.reverse:not(:last-child)::after {
+  left: 32px;
+  right: auto;
+}
+
+.timeline-flow-event,
+.undated-event-card {
+  background: var(--workspace-card, #ffffff);
+  border: 1px solid var(--workspace-border, #e4dbd0);
+  border-radius: 16px;
+  box-shadow: 0 14px 30px rgba(36, 28, 22, 0.08);
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.timeline-flow-event.selected,
+.undated-event-card.selected {
+  border-color: var(--workspace-accent, #2f6652);
+  box-shadow: 0 16px 36px rgba(36, 28, 22, 0.12), 0 0 0 3px color-mix(in srgb, var(--workspace-accent, #2f6652) 14%, transparent);
+}
+
+.timeline-node-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: 0;
+  width: 100%;
+}
+
+.timeline-node-dot {
+  background: var(--workspace-card, #fffaf2);
+  border: 4px solid var(--workspace-accent, #2f6652);
+  border-radius: 999px;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--workspace-accent, #2f6652) 14%, transparent);
+  display: inline-block;
+  height: 26px;
+  width: 26px;
+}
+
+.timeline-node-arrow {
+  color: var(--workspace-accent, #2f6652);
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.timeline-event-card-button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.timeline-event-card-button strong {
+  color: #8b5b40;
+  font-size: 0.9rem;
+}
+
+.timeline-flow-title {
+  color: var(--workspace-text, #1e2329);
+  font-size: 1.05rem;
+  font-weight: 850;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.timeline-meta-line,
+.timeline-description-preview {
+  color: var(--workspace-muted-text, #596273);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.timeline-description-preview:not(.expanded) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.date-precision-pill {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  justify-self: start;
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+
+.precision-exact { background: #eef7f3; color: #2f6652; }
+.precision-month { background: #edf2ff; color: #415f8f; }
+.precision-year { background: #fff5e8; color: #8b5b40; }
+.precision-approximate { background: #f7eefb; color: #73518a; }
+.precision-unknown { background: #f1f1f1; color: #596273; }
+
+.timeline-card-actions {
+  justify-content: flex-start;
+}
+
+.timeline-card-actions .secondary-button {
+  font-size: 0.8rem;
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
+.timeline-card-actions .secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+
+.undated-timeline-section {
+  border-top: 1px solid var(--workspace-border, #e4dbd0);
+  display: grid;
+  gap: 14px;
+  margin-top: 32px;
+  padding-top: 24px;
+}
+
+.undated-event-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+@media (min-width: 1280px) {
+  .timeline-flow-row {
+    grid-template-columns: repeat(4, minmax(220px, 280px));
+  }
+}
+
+@media (min-width: 820px) and (max-width: 1279px) {
+  .timeline-flow-row {
+    grid-template-columns: repeat(3, minmax(210px, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .timeline-focus-header,
+  .timeline-settings-heading {
+    display: grid;
+  }
+
+  .timeline-header-actions {
+    justify-content: stretch;
+  }
+
+  .timeline-header-actions button,
+  .timeline-settings-heading button {
+    width: 100%;
+  }
+
+  .timeline-compact-tools .timeline-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .timeline-flow-row {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .timeline-focus-page {
+    gap: 14px;
+  }
+
+  .timeline-focus-header,
+  .timeline-settings-panel,
+  .timeline-compact-tools,
+  .serpentine-timeline-card {
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .timeline-focus-header h2 {
+    font-size: 1.65rem;
+  }
+
+  .timeline-switch {
+    min-width: 158px;
+  }
+
+  .timeline-compact-tools .timeline-filters,
+  .timeline-event-modal .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-year-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .timeline-flow {
+    gap: 18px;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .timeline-flow::before {
+    background: linear-gradient(180deg, #b9875b, var(--workspace-accent, #2f6652), #415f8f);
+    border-radius: 999px;
+    content: "";
+    left: 11px;
+    position: absolute;
+    top: 4px;
+    bottom: 8px;
+    width: 4px;
+  }
+
+  .timeline-flow-row,
+  .timeline-flow-row.reverse {
+    direction: ltr;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .timeline-flow-row::before,
+  .timeline-flow-row::after,
+  .timeline-flow-row.reverse::after {
+    display: none;
+  }
+
+  .timeline-flow-event {
+    padding-left: 16px;
+  }
+
+  .timeline-node-button {
+    left: -34px;
+    position: absolute;
+    top: 18px;
+    width: 28px;
+  }
+
+  .timeline-node-dot {
+    height: 22px;
+    width: 22px;
+  }
+
+  .timeline-node-arrow {
+    display: none;
+  }
+
+  .timeline-card-actions .secondary-button {
+    min-height: 40px;
+  }
+
+  .undated-event-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.night-mood .timeline-focus-header,
+.night-mood .timeline-settings-panel,
+.night-mood .timeline-compact-tools,
+.night-mood .timeline-switch,
+.night-mood .timeline-flow-event,
+.night-mood .undated-event-card {
+  background: #1a2026;
+  border-color: #303943;
+  color: #edf1f4;
+}
+
+.night-mood .timeline-event-card-button strong,
+.night-mood .timeline-flow-title {
+  color: #edf1f4;
+}
+
+/* Global overflow and readability guardrails */
+html,
+body,
+#root,
+.app-frame,
+.app-shell,
+.mobile-app-shell,
+.workspace-shell,
+.workspace-panel,
+.panel,
+.list-panel,
+.editor-page,
+.dashboard-panel,
+.library-page-panel,
+.world-library-panel,
+.timeline-focus-page,
+.story-workspace,
+.network-tab-panel,
+.inspiration-workspace {
+  max-width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+section,
+article,
+div,
+form,
+fieldset,
+header,
+nav,
+main,
+aside,
+ul,
+ol,
+li,
+dl,
+dt,
+dd,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+strong,
+small,
+label,
+button,
+a,
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+p,
+li,
+dd,
+dt,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+strong,
+small,
+label,
+button,
+a,
+.card-copy,
+.card-copy strong,
+.card-copy span,
+.card-copy small,
+.desk-card,
+.desk-card strong,
+.desk-card span,
+.desk-card small,
+.world-card,
+.world-card h3,
+.world-card p,
+.favorite-card,
+.library-card,
+.prepared-card,
+.story-entry-card,
+.timeline-detail-card,
+.timeline-flow-event,
+.undated-event-card,
+.relationship-card,
+.tree-node,
+.map-node,
+.edge-row,
+.graph-node-body,
+.text-block,
+.fact-list,
+.fact-list dd {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.text-block p,
+.world-card-description,
+.story-entry-card span,
+.story-entry-card small,
+.graph-note,
+.timeline-description-preview,
+.mobile-summary-copy h3,
+.mobile-summary-copy p,
+.card-copy strong,
+.desk-card strong,
+.mobile-desk-card strong,
+.world-card h3,
+.theme-preset-label,
+.theme-preview-title {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.graph-note,
+.timeline-description-preview.expanded,
+.world-card-description {
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+textarea {
+  min-height: 120px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+button,
+.primary-button,
+.secondary-button,
+.delete-button,
+.danger-outline-button,
+.choice-button,
+.sidebar-link,
+.workspace-tab,
+.mobile-nav-link,
+.timeline-switch {
+  align-items: center;
+  white-space: normal;
+}
+
+.oc-card,
+.library-card,
+.world-card,
+.favorite-card,
+.desk-card,
+.dashboard-row,
+.prepared-card,
+.story-entry-card,
+.timeline-detail-card,
+.timeline-flow-event,
+.undated-event-card,
+.relationship-card,
+.tree-node,
+.map-node,
+.edge-row,
+.settings-option-card,
+.customize-card {
+  overflow: visible;
+}
+
+.field-grid,
+.list-controls,
+.library-controls,
+.dashboard-grid,
+.world-grid,
+.spacious-world-grid,
+.favorites-layout,
+.library-grid,
+.prepared-grid,
+.fact-list,
+.relationship-map-tools,
+.timeline-filters,
+.undated-event-list,
+.timeline-flow-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  min-width: 0;
+}
+
+.field,
+.filter-field,
+.field-group,
+.card-copy,
+.oc-card-body,
+.world-card,
+.favorite-card-main,
+.timeline-event-card-button,
+.timeline-detail-card,
+.settings-group-card,
+.customize-card,
+.writing-editor {
+  min-width: 0;
+  width: 100%;
+}
+
+/* World cards must grow with long worldbuilding text. */
+.world-grid.spacious-world-grid {
+  align-items: stretch;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+.world-card,
+.spacious-world-card,
+.polished-world-card {
+  align-content: start;
+  grid-auto-rows: auto;
+  height: auto;
+  min-height: 0;
+  padding: clamp(16px, 2vw, 22px);
+}
+
+.world-card > *,
+.spacious-world-card > *,
+.polished-world-card > * {
+  min-width: 0;
+}
+
+.world-card h3 {
+  line-height: 1.22;
+  padding-right: 18px;
+}
+
+.world-card-description {
+  line-height: 1.6;
+  margin: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+}
+
+.world-card .fact-list {
+  margin-top: 4px;
+}
+
+.world-card .card-actions {
+  align-self: end;
+  margin-top: 4px;
+}
+
+/* Let text-heavy cards become taller instead of clipping content. */
+.story-entry-card,
+.prepared-card,
+.timeline-detail-card,
+.relationship-card,
+.edge-row,
+.tree-node,
+.map-node,
+.settings-option-card,
+.favorite-card,
+.desk-card {
+  height: auto;
+}
+
+@media (max-width: 620px) {
+  .field-grid,
+  .list-controls,
+  .library-controls,
+  .dashboard-grid,
+  .world-grid,
+  .spacious-world-grid,
+  .favorites-layout,
+  .library-grid,
+  .prepared-grid,
+  .fact-list,
+  .relationship-map-tools,
+  .timeline-filters,
+  .undated-event-list,
+  .timeline-flow-row {
+    grid-template-columns: 1fr;
+  }
+
+  .world-card,
+  .desk-card,
+  .favorite-card,
+  .library-card,
+  .prepared-card,
+  .story-entry-card,
+  .timeline-detail-card {
+    padding: 16px;
+  }
+
+  .card-actions,
+  .form-actions,
+  .timeline-card-actions {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Final content safety pass: readable growth beats clipping. */
+.app-shell *,
+.mobile-app-shell *,
+.workspace-shell * {
+  max-width: 100%;
+}
+
+:is(.workspace-panel, .panel, .list-panel, .editor-page, .dashboard-panel, .library-page-panel, .world-library-panel, .settings-group-card, .customize-card, .large-modal, .confirm-dialog) {
+  overflow-wrap: anywhere;
+}
+
+:is(.workspace-panel, .panel, .list-panel, .editor-page, .dashboard-panel, .library-page-panel, .world-library-panel, .settings-group-card, .customize-card, .large-modal, .confirm-dialog) > * {
+  min-width: 0;
+}
+
+:is(.card-copy strong, .library-card h3, .world-card h3, .desk-card strong, .favorite-card h3, .mobile-desk-card strong, .mobile-character-title-block h2, .mobile-character-title-block .eyebrow, .mobile-character-title-block .muted-text, .customize-mobile-header h3, .theme-preset-label, .theme-preview-title, .inspiration-entry-card h3, .prepared-card h3, .story-entry-card strong, .timeline-switch strong) {
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+:is(.muted-text, .app-summary, .count-line, .field span, .filter-field span, .field small, .inline-check span, .fact-list dd, .fact-list dt, .profile-details summary, .card-details summary, .inspiration-entry-card p, .inspiration-entry-card blockquote, .prepared-card p, .prepared-card a, .story-entry-card span, .story-entry-card small, .dashboard-row span, .favorite-card-main span, .world-card-description, .timeline-meta-line, .timeline-description-preview, .timeline-detail-card p, .graph-edge-label, .graph-node-body p, .graph-note) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+:is(.text-block p, .profile-details .text-block p, .timeline-detail-card .text-block p, .inspiration-entry-card p, .prepared-card p, .favorite-card p, .world-card-description) {
+  white-space: pre-wrap;
+}
+
+:is(.graph-note, .timeline-description-preview:not(.expanded), .story-entry-card span, .story-entry-card small) {
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  display: block;
+  overflow: visible;
+}
+
+:is(.world-card, .spacious-world-card, .polished-world-card, .desk-card, .library-card, .favorite-card, .story-entry-card, .prepared-card, .inspiration-entry-card, .timeline-flow-event, .undated-event-card, .timeline-detail-card, .profile-details, .relationship-card, .edge-row, .tree-node, .map-node, .settings-option-card) {
+  block-size: auto;
+  contain: none;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+:is(.card-actions, .form-actions, .dialog-actions, .horizontal-actions, .timeline-card-actions, .inspiration-card-actions) {
+  min-width: 0;
+  row-gap: 8px;
+}
+
+:is(.card-actions, .form-actions, .dialog-actions, .horizontal-actions, .timeline-card-actions, .inspiration-card-actions) > button,
+:is(.primary-button, .secondary-button, .delete-button, .danger-outline-button, .choice-button) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* World page: long descriptions should behave like article text inside flexible cards. */
+.world-library-panel {
+  overflow: visible;
+}
+
+.world-grid.spacious-world-grid,
+.world-grid {
+  align-items: start;
+  grid-auto-rows: auto;
+}
+
+.polished-world-card::after {
+  flex: none;
+}
+
+.world-card h3,
+.world-card .muted-text,
+.world-card-description,
+.world-card .fact-list,
+.world-card .card-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.world-card-description {
+  background: transparent;
+  display: block;
+  max-height: none;
+  padding-right: 0;
+}
+
+/* Inputs should grow where users write prose instead of hiding it. */
+textarea[name="description"],
+textarea[name="notes"],
+textarea[name="appearance"],
+textarea[name="personality"],
+textarea[name="backstory"],
+textarea[name="skillsPowers"],
+textarea[name="weaknesses"],
+textarea[name="relationships"] {
+  min-height: 140px;
+}
+
+@media (max-width: 760px) {
+  :is(.mobile-character-title-block h2, .mobile-character-title-block .eyebrow, .mobile-character-title-block .muted-text, .customize-mobile-header h3) {
+    line-height: 1.2;
+  }
+
+  .mobile-character-header,
+  .customize-mobile-header,
+  .mobile-desk-card.character-desk-card,
+  .character-desk-card,
+  .compact-character-card,
+  .polished-favorite-card,
+  .edge-row,
+  .relationship-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-picture-preview,
+  .desk-card-picture,
+  .compact-card-picture,
+  .mobile-header-avatar {
+    flex: 0 0 auto;
+  }
+
+  .mobile-card-strip,
+  .mobile-stack-section .mobile-card-strip {
+    max-width: 100%;
+  }
+
+  .mobile-desk-card {
+    min-width: 0;
+  }
+}
+
+/* Hard containment pass: cards grow, but content may not draw outside borders. */
+:is(.oc-card, .library-card, .world-card, .spacious-world-card, .polished-world-card, .favorite-card, .desk-card, .dashboard-row, .prepared-card, .story-entry-card, .inspiration-entry-card, .timeline-flow-event, .undated-event-card, .timeline-detail-card, .profile-details, .relationship-card, .edge-row, .tree-node, .map-node, .settings-option-card, .customize-card, .sub-form, .timeline-settings-panel, .timeline-compact-tools, .timeline-focus-header) {
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+:is(.oc-card, .library-card, .world-card, .spacious-world-card, .polished-world-card, .favorite-card, .desk-card, .dashboard-row, .prepared-card, .story-entry-card, .inspiration-entry-card, .timeline-flow-event, .undated-event-card, .timeline-detail-card, .profile-details, .relationship-card, .edge-row, .tree-node, .map-node, .settings-option-card, .customize-card, .sub-form, .timeline-settings-panel, .timeline-compact-tools, .timeline-focus-header) :is(p, h1, h2, h3, h4, span, strong, small, blockquote, dd, dt, a, button, label) {
+  hyphens: auto;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+:is(.world-card-description, .text-block p, .profile-details .text-block p, .timeline-detail-card .text-block p, .inspiration-entry-card p, .prepared-card p, .story-entry-card span, .story-entry-card small, .graph-note, .timeline-description-preview) {
+  display: block;
+  max-height: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: pre-wrap;
+}
+
+/* Replace text-heavy single-line truncation with readable wrapping. */
+:is(.card-copy strong, .library-card h3, .world-card h3, .desk-card strong, .favorite-card h3, .mobile-desk-card strong, .mobile-character-title-block h2, .mobile-character-title-block .eyebrow, .mobile-character-title-block .muted-text, .customize-mobile-header h3, .theme-preset-label, .theme-preview-title, .inspiration-entry-card h3, .prepared-card h3, .story-entry-card strong, .timeline-switch strong, .timeline-switch span) {
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+/* Long form content should be edited in taller fields with stable inner padding. */
+.field textarea,
+.filter-field textarea,
+textarea.writing-area {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* World library gets article-style cards instead of fixed dashboard tiles. */
+.world-library-panel .spacious-world-grid {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+.world-library-panel .world-card {
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
+}
+
+.world-library-panel .world-card-description {
+  border-radius: 10px;
+  padding: 0;
+}
+
+.world-library-panel .world-card .fact-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+}
+
+@media (max-width: 760px) {
+  .world-library-panel .spacious-world-grid,
+  .world-library-panel .world-card .fact-list,
+  .field-grid,
+  .library-controls,
+  .timeline-filters,
+  .prepared-grid,
+  .inspiration-item-grid,
+  .dashboard-card-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.library-card, .world-card, .favorite-card, .desk-card, .dashboard-row, .prepared-card, .story-entry-card, .inspiration-entry-card, .timeline-flow-event, .undated-event-card, .timeline-detail-card, .profile-details, .relationship-card, .edge-row, .tree-node, .map-node) {
+    border-radius: 14px;
+  }
+}
+
+/* Simplified focused timeline controls */
+.timeline-simple-page {
+  gap: 14px;
+}
+
+.timeline-simple-header {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 0 0 4px;
+}
+
+.timeline-simple-header h2 {
+  font-size: clamp(1.55rem, 2vw, 2.15rem);
+  line-height: 1.1;
+}
+
+.timeline-simple-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.timeline-simple-actions .primary-button,
+.timeline-simple-actions .secondary-button {
+  margin: 0;
+  min-height: 40px;
+  width: auto;
+}
+
+.timeline-year-search {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(120px, 150px) auto;
+  min-width: 0;
+}
+
+.timeline-year-search input {
+  min-height: 40px;
+  padding-block: 8px;
+}
+
+.compact-timeline-switcher {
+  background: transparent;
+  border: 0;
+  padding: 0 0 2px;
+}
+
+.timeline-reading-card {
+  margin-top: 2px;
+}
+
+.timeline-no-timeline-state {
+  background: var(--workspace-card, var(--app-surface-strong, #fffdf8));
+  border: 1px dashed var(--workspace-border, var(--app-border, #e4dbd0));
+  border-radius: 18px;
+}
+
+.timeline-create-modal {
+  max-width: 720px;
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (max-width: 760px) {
+  .timeline-simple-header {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .timeline-simple-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .timeline-simple-actions .primary-button,
+  .timeline-simple-actions .secondary-button,
+  .timeline-year-search,
+  .timeline-year-search button {
+    width: 100%;
+  }
+
+  .timeline-year-search {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

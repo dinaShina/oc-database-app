@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import {
   INITIAL_TIMELINE,
   INITIAL_TIMELINE_EVENT,
@@ -8,47 +8,39 @@ import {
 import {
   createTimeline,
   createTimelineEvent,
-  deleteTimeline,
   deleteTimelineEvent,
   saveTimelineData,
-  updateTimeline,
   updateTimelineEvent
 } from "../storage/timelineRepository.js";
 import { getWorldTitle } from "./OCList.jsx";
-import { formatDateWithMonthName } from "../utils/dateFormat.js";
+import { formatDateWithMonthName, formatMonthName } from "../utils/dateFormat.js";
 
-const MIN_SPAN = 10;
+const EVENTS_PER_ROW = 4;
 
 export default function TimelineEditor({ embedded = false, ocs, onBack, onTimelineDataChange, timelineData, workspaceOcId = "" }) {
   const visibleTimelines = workspaceOcId
     ? timelineData.timelines.filter((timeline) => timeline.connectedOcId === workspaceOcId || timeline.type !== "Character Timeline")
     : timelineData.timelines;
 
-  const [timelineForm, setTimelineForm] = useState({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
-  const [editingTimelineId, setEditingTimelineId] = useState(null);
   const [activeTimelineId, setActiveTimelineId] = useState(visibleTimelines[0]?.id || "");
+  const [timelineForm, setTimelineForm] = useState({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
   const [eventForm, setEventForm] = useState(INITIAL_TIMELINE_EVENT);
   const [editingEventId, setEditingEventId] = useState(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(visibleTimelines.length === 0);
   const [selectedEventId, setSelectedEventId] = useState("");
-  const [filters, setFilters] = useState({ characterId: "All", world: "All", eventType: "All", location: "" });
-  const lineRef = useRef(null);
+  const [expandedEventIds, setExpandedEventIds] = useState([]);
+  const [yearSearch, setYearSearch] = useState("");
 
   const worlds = useMemo(() => ["All", ...Array.from(new Set(ocs.map(getWorldTitle).filter(Boolean))).sort()], [ocs]);
-  const activeTimeline = timelineData.timelines.find((timeline) => timeline.id === activeTimelineId);
+  const activeTimeline = timelineData.timelines.find((timeline) => timeline.id === activeTimelineId) || visibleTimelines[0] || null;
+  const activeTimelineIdSafe = activeTimeline?.id || "";
 
-  const activeEvents = useMemo(() => {
-    return timelineData.events
-      .filter((event) => event.timelineId === activeTimelineId)
-      .filter((event) => filters.characterId === "All" || event.connectedCharacterIds.includes(filters.characterId))
-      .filter((event) => filters.world === "All" || event.connectedWorld === filters.world)
-      .filter((event) => filters.eventType === "All" || event.eventType === filters.eventType)
-      .filter((event) => !filters.location.trim() || event.connectedLocations.toLowerCase().includes(filters.location.trim().toLowerCase()))
-      .sort(compareEvents);
-  }, [timelineData.events, activeTimelineId, filters]);
-
-  const range = useMemo(() => getYearRange(activeEvents), [activeEvents]);
-  const selectedEvent = activeEvents.find((event) => event.id === selectedEventId) || activeEvents[0] || null;
+  const activeEvents = useMemo(() => timelineData.events.filter((event) => event.timelineId === activeTimelineIdSafe), [timelineData.events, activeTimelineIdSafe]);
+  const datedEvents = useMemo(() => activeEvents.filter(hasSortableDate).sort(compareDatedEvents), [activeEvents]);
+  const undatedEvents = useMemo(() => activeEvents.filter((event) => !hasSortableDate(event)).sort((a, b) => a.order - b.order), [activeEvents]);
+  const timelineRows = useMemo(() => chunkEvents(datedEvents, EVENTS_PER_ROW), [datedEvents]);
+  const selectedEvent = activeEvents.find((event) => event.id === selectedEventId) || null;
 
   function persist(nextData) {
     saveTimelineData(nextData);
@@ -77,45 +69,29 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
     });
   }
 
+  function openTimelineModal() {
+    setTimelineForm({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
+    setIsTimelineModalOpen(true);
+  }
+
+  function closeTimelineModal() {
+    if (visibleTimelines.length === 0) return;
+    setTimelineForm({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
+    setIsTimelineModalOpen(false);
+  }
+
   function handleTimelineSubmit(event) {
     event.preventDefault();
     if (!timelineForm.title.trim()) return;
-
-    if (editingTimelineId) {
-      persist({ ...timelineData, timelines: updateTimeline(timelineData.timelines, editingTimelineId, timelineForm) });
-    } else {
-      const nextTimeline = createTimeline(timelineForm);
-      persist({ ...timelineData, timelines: [nextTimeline, ...timelineData.timelines] });
-      setActiveTimelineId(nextTimeline.id);
-    }
-
-    cancelTimelineEdit();
-  }
-
-  function startTimelineEdit(timeline) {
-    setEditingTimelineId(timeline.id);
-    setTimelineForm({ ...INITIAL_TIMELINE, ...timeline });
-  }
-
-  function cancelTimelineEdit() {
-    setEditingTimelineId(null);
+    const nextTimeline = createTimeline(timelineForm);
+    persist({ ...timelineData, timelines: [nextTimeline, ...timelineData.timelines] });
+    setActiveTimelineId(nextTimeline.id);
     setTimelineForm({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
-  }
-
-  function removeTimeline(id) {
-    const nextData = deleteTimeline(timelineData, id);
-    persist(nextData);
-    if (activeTimelineId === id) {
-      const nextVisible = workspaceOcId
-        ? nextData.timelines.find((timeline) => timeline.connectedOcId === workspaceOcId || timeline.type !== "Character Timeline")
-        : nextData.timelines[0];
-      setActiveTimelineId(nextVisible?.id || "");
-    }
-    if (editingTimelineId === id) cancelTimelineEdit();
+    setIsTimelineModalOpen(false);
   }
 
   function openAddEventModal(year = "") {
-    if (!activeTimelineId) return;
+    if (!activeTimelineIdSafe) return;
     setEditingEventId(null);
     setEventForm({
       ...INITIAL_TIMELINE_EVENT,
@@ -140,14 +116,14 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
 
   function handleEventSubmit(event) {
     event.preventDefault();
-    if (!activeTimelineId || !eventForm.title.trim() || !eventForm.dateYear.trim()) return;
+    if (!activeTimelineIdSafe || !eventForm.title.trim()) return;
 
     if (editingEventId) {
       persist({ ...timelineData, events: updateTimelineEvent(timelineData.events, editingEventId, eventForm) });
       setSelectedEventId(editingEventId);
     } else {
-      const order = timelineData.events.filter((item) => item.timelineId === activeTimelineId).length;
-      const nextEvent = createTimelineEvent(activeTimelineId, eventForm, order);
+      const order = timelineData.events.filter((item) => item.timelineId === activeTimelineIdSafe).length;
+      const nextEvent = createTimelineEvent(activeTimelineIdSafe, eventForm, order);
       persist({ ...timelineData, events: [...timelineData.events, nextEvent] });
       setSelectedEventId(nextEvent.id);
     }
@@ -161,40 +137,53 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
     if (editingEventId === id) closeEventModal();
   }
 
-  function handleLineClick(event) {
-    if (event.target !== event.currentTarget && event.target.dataset.lineClick !== "true") return;
-    openAddEventModal(getYearFromPointer(event.clientX, lineRef.current, range));
+  function handleDatedDrag(pointerEvent) {
+    pointerEvent.preventDefault();
+    window.alert("This timeline is sorted automatically by date. Change the event date or move it to undated events.");
   }
 
-  function startEventDrag(pointerEvent, eventItem) {
-    pointerEvent.preventDefault();
-    pointerEvent.stopPropagation();
-    const point = pointerEvent.currentTarget;
-    point.setPointerCapture?.(pointerEvent.pointerId);
+  function moveUndatedEvent(eventId, direction) {
+    const undatedIds = undatedEvents.map((event) => event.id);
+    const currentIndex = undatedIds.indexOf(eventId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= undatedIds.length) return;
+    reorderUndatedEvents(arrayMove(undatedIds, currentIndex, nextIndex));
+  }
 
-    function handlePointerMove(moveEvent) {
-      const year = getYearFromPointer(moveEvent.clientX, lineRef.current, range);
-      point.style.left = `${getEventPosition({ ...eventItem, dateYear: String(year) }, range)}%`;
-    }
+  function moveUndatedEventToTarget(eventId, targetId) {
+    if (!eventId || !targetId || eventId === targetId) return;
+    const undatedIds = undatedEvents.map((event) => event.id);
+    const currentIndex = undatedIds.indexOf(eventId);
+    const targetIndex = undatedIds.indexOf(targetId);
+    if (currentIndex < 0 || targetIndex < 0) return;
+    reorderUndatedEvents(arrayMove(undatedIds, currentIndex, targetIndex));
+  }
 
-    function handlePointerUp(upEvent) {
-      const year = getYearFromPointer(upEvent.clientX, lineRef.current, range);
-      persist({
-        ...timelineData,
-        events: updateTimelineEvent(timelineData.events, eventItem.id, { ...eventItem, dateYear: String(year) })
-      });
-      point.style.left = "";
-      point.releasePointerCapture?.(pointerEvent.pointerId);
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
-    }
+  function reorderUndatedEvents(reorderedIds) {
+    const orderMap = new Map(reorderedIds.map((id, index) => [id, index]));
+    persist({
+      ...timelineData,
+      events: timelineData.events.map((event) => (
+        event.timelineId === activeTimelineIdSafe && orderMap.has(event.id)
+          ? { ...event, order: orderMap.get(event.id), updatedAt: new Date().toISOString() }
+          : event
+      ))
+    });
+  }
 
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerUp);
+  function toggleExpandedEvent(eventId) {
+    setExpandedEventIds((current) => current.includes(eventId) ? current.filter((id) => id !== eventId) : [...current, eventId]);
+  }
+
+  function handleYearSearch(event) {
+    event.preventDefault();
+    const year = extractStartYear(yearSearch);
+    if (!Number.isFinite(year)) return;
+    document.querySelector(`[data-timeline-year="${year}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   return (
-    <section className={embedded ? "timeline-page" : "panel editor-page timeline-page"}>
+    <section className={embedded ? "timeline-page timeline-focus-page timeline-simple-page" : "panel editor-page timeline-page timeline-focus-page timeline-simple-page"}>
       {!embedded ? (
         <div className="page-heading">
           <button className="secondary-button" type="button" onClick={onBack}>Back to OC list</button>
@@ -205,136 +194,120 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
         </div>
       ) : null}
 
-      <div className="timeline-layout visual-timeline-layout">
-        <aside className="timeline-sidebar">
-          <form className="sub-form" onSubmit={handleTimelineSubmit}>
-            <h3>{editingTimelineId ? "Edit timeline" : "Create timeline"}</h3>
-            <TextInput label="Timeline title" name="title" value={timelineForm.title} onChange={updateTimelineField} />
-            <label className="field">
-              <span>Timeline type</span>
-              <select name="type" value={timelineForm.type} onChange={updateTimelineField}>
-                {TIMELINE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-              </select>
-            </label>
-
-            {timelineForm.type === "Character Timeline" ? (
-              <label className="field">
-                <span>Main character</span>
-                <select name="connectedOcId" value={timelineForm.connectedOcId} onChange={updateTimelineField}>
-                  <option value="">No character selected</option>
-                  {ocs.map((oc) => <option key={oc.id} value={oc.id}>{oc.name}</option>)}
-                </select>
-              </label>
-            ) : null}
-
-            <label className="field">
-              <span>Connected world</span>
-              <select name="connectedWorld" value={timelineForm.connectedWorld} onChange={updateTimelineField}>
-                <option value="">No world selected</option>
-                {worlds.filter((world) => world !== "All").map((world) => <option key={world} value={world}>{world}</option>)}
-              </select>
-            </label>
-
-            <label className="field">
-              <span>Description</span>
-              <textarea name="description" value={timelineForm.description} rows="3" onChange={updateTimelineField} />
-            </label>
-            <label className="field">
-              <span>Notes</span>
-              <textarea name="notes" value={timelineForm.notes} rows="3" onChange={updateTimelineField} />
-            </label>
-            <div className="form-actions">
-              <button className="primary-button inline-primary" type="submit">{editingTimelineId ? "Save timeline" : "Add timeline"}</button>
-              {editingTimelineId ? <button className="secondary-button" type="button" onClick={cancelTimelineEdit}>Cancel</button> : null}
-            </div>
+      <header className="timeline-simple-header">
+        <h2>Timeline</h2>
+        <div className="timeline-simple-actions">
+          {activeTimeline ? <button className="primary-button inline-primary" type="button" onClick={() => openAddEventModal()}>Add Event</button> : null}
+          <button className="secondary-button" type="button" onClick={openTimelineModal}>Add Timeline</button>
+          <form className="timeline-year-search" onSubmit={handleYearSearch}>
+            <label className="sr-only" htmlFor="timeline-year-search">Search Year</label>
+            <input id="timeline-year-search" inputMode="numeric" placeholder="Search Year" value={yearSearch} onChange={(event) => setYearSearch(event.target.value)} />
+            <button className="secondary-button" type="submit">Go</button>
           </form>
+        </div>
+      </header>
 
-          <div className="timeline-list">
-            {visibleTimelines.length === 0 ? <p className="empty-state">No timelines yet.</p> : visibleTimelines.map((timeline) => (
-              <article className={timeline.id === activeTimelineId ? "timeline-list-item active" : "timeline-list-item"} key={timeline.id}>
-                <button type="button" onClick={() => setActiveTimelineId(timeline.id)}>
-                  <strong>{timeline.title}</strong>
-                  <span>{timeline.type}</span>
-                </button>
-                <div className="card-actions">
-                  <button className="secondary-button" type="button" onClick={() => startTimelineEdit(timeline)}>Edit</button>
-                  <button className="delete-button" type="button" onClick={() => removeTimeline(timeline.id)}>Delete</button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </aside>
+      {visibleTimelines.length > 1 ? (
+        <nav className="timeline-switcher compact-timeline-switcher" aria-label="Timeline selector">
+          {visibleTimelines.map((timeline) => (
+            <button className={timeline.id === activeTimelineIdSafe ? "timeline-switch active" : "timeline-switch"} key={timeline.id} type="button" onClick={() => setActiveTimelineId(timeline.id)}>
+              <strong>{timeline.title}</strong>
+              <span>{timeline.type}</span>
+            </button>
+          ))}
+        </nav>
+      ) : null}
 
-        <section className="timeline-main">
-          {activeTimeline ? (
-            <>
-              <div className="timeline-header-card">
-                <div>
-                  <p className="eyebrow">{activeTimeline.type}</p>
-                  <h2>{activeTimeline.title}</h2>
-                  {activeTimeline.description ? <p className="muted-text">{activeTimeline.description}</p> : null}
-                </div>
+      {activeTimeline ? (
+        <>
+          <section className="visual-timeline-card serpentine-timeline-card timeline-reading-card">
+            {datedEvents.length === 0 && undatedEvents.length === 0 ? (
+              <div className="timeline-empty-compact">
+                <div className="empty-illustration" aria-hidden="true">+</div>
+                <h3>No events yet.</h3>
+                <p className="muted-text">Add the first event and your timeline will appear here.</p>
                 <button className="primary-button inline-primary" type="button" onClick={() => openAddEventModal()}>Add Event</button>
               </div>
+            ) : null}
 
-              <div className="timeline-filters">
-                <label className="filter-field">
-                  <span>Character</span>
-                  <select value={filters.characterId} onChange={(event) => setFilters((current) => ({ ...current, characterId: event.target.value }))}>
-                    <option value="All">All</option>
-                    {ocs.map((oc) => <option key={oc.id} value={oc.id}>{oc.name}</option>)}
-                  </select>
-                </label>
-                <label className="filter-field">
-                  <span>World</span>
-                  <select value={filters.world} onChange={(event) => setFilters((current) => ({ ...current, world: event.target.value }))}>
-                    {worlds.map((world) => <option key={world} value={world}>{world}</option>)}
-                  </select>
-                </label>
-                <label className="filter-field">
-                  <span>Event type</span>
-                  <select value={filters.eventType} onChange={(event) => setFilters((current) => ({ ...current, eventType: event.target.value }))}>
-                    <option value="All">All</option>
-                    {TIMELINE_EVENT_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                  </select>
-                </label>
-                <label className="filter-field">
-                  <span>Location</span>
-                  <input value={filters.location} placeholder="Filter location..." onChange={(event) => setFilters((current) => ({ ...current, location: event.target.value }))} />
-                </label>
+            {datedEvents.length > 0 ? (
+              <div className="timeline-flow" style={{ "--events-per-row": EVENTS_PER_ROW }}>
+                {timelineRows.map((row, rowIndex) => (
+                  <div className={rowIndex % 2 === 0 ? "timeline-flow-row" : "timeline-flow-row reverse"} key={`row-${rowIndex}`}>
+                    {row.map((event, index) => (
+                      <TimelineFlowEvent
+                        event={event}
+                        index={index}
+                        isExpanded={expandedEventIds.includes(event.id)}
+                        isLastInRow={index === row.length - 1}
+                        isSelected={selectedEvent?.id === event.id}
+                        key={event.id}
+                        onAutoDragNotice={handleDatedDrag}
+                        onEdit={openEditEventModal}
+                        onSelect={setSelectedEventId}
+                        onToggleExpanded={toggleExpandedEvent}
+                        ocs={ocs}
+                      />
+                    ))}
+                  </div>
+                ))}
               </div>
+            ) : null}
 
-              <section className="visual-timeline-card">
-                <div className="timeline-range-labels">
-                  <span>{range.min}</span>
-                  <span>{range.max}</span>
+            {undatedEvents.length > 0 ? (
+              <section className="undated-timeline-section">
+                <div>
+                  <p className="eyebrow">Relative Events</p>
+                  <h3>Undated Events</h3>
                 </div>
-                <div className="visual-timeline-line" ref={lineRef} style={{ "--timeline-count": Math.max(activeEvents.length, 4) }} onClick={handleLineClick} data-line-click="true">
-                  {activeEvents.length === 0 ? <p className="timeline-line-empty">Click the line or use Add Event to place the first event.</p> : null}
-                  {activeEvents.map((event, index) => (
-                    <TimelinePoint
+                <div className="undated-event-list">
+                  {undatedEvents.map((event, index) => (
+                    <TimelineUndatedEvent
                       event={event}
-                      index={index}
+                      isExpanded={expandedEventIds.includes(event.id)}
+                      isFirst={index === 0}
+                      isLast={index === undatedEvents.length - 1}
                       isSelected={selectedEvent?.id === event.id}
                       key={event.id}
-                      onDragStart={startEventDrag}
                       onEdit={openEditEventModal}
+                      onMove={moveUndatedEvent}
+                      onMoveToTarget={moveUndatedEventToTarget}
                       onSelect={setSelectedEventId}
-                      position={getEventPosition(event, range)}
+                      onToggleExpanded={toggleExpandedEvent}
+                      ocs={ocs}
                     />
                   ))}
                 </div>
               </section>
+            ) : null}
+          </section>
 
-              <section className="timeline-detail-panel">
-                {selectedEvent ? (
-                  <TimelineDetails event={selectedEvent} ocs={ocs} onDelete={removeEvent} onEdit={openEditEventModal} />
-                ) : <p className="empty-state">Select an event point to see details.</p>}
-              </section>
-            </>
-          ) : <p className="empty-state">Create a timeline to start adding events.</p>}
-        </section>
-      </div>
+          {selectedEvent ? (
+            <section className="timeline-detail-panel">
+              <TimelineDetails event={selectedEvent} ocs={ocs} onDelete={removeEvent} onEdit={openEditEventModal} />
+            </section>
+          ) : null}
+        </>
+      ) : (
+        <div className="timeline-empty-compact timeline-no-timeline-state">
+          <div className="empty-illustration" aria-hidden="true">+</div>
+          <h3>No timeline yet.</h3>
+          <p className="muted-text">Create one timeline, then the page will stay focused on the events.</p>
+          <button className="primary-button inline-primary" type="button" onClick={openTimelineModal}>Add Timeline</button>
+        </div>
+      )}
+
+      {isTimelineModalOpen ? (
+        <TimelineModal
+          formData={timelineForm}
+          ocs={ocs}
+          onChange={updateTimelineField}
+          onClose={closeTimelineModal}
+          onSubmit={handleTimelineSubmit}
+          showClose={visibleTimelines.length > 0}
+          worlds={worlds}
+        />
+      ) : null}
 
       {isEventModalOpen ? (
         <EventModal
@@ -352,6 +325,55 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   );
 }
 
+function TimelineModal({ formData, ocs, onChange, onClose, onSubmit, showClose, worlds }) {
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <form className="confirm-dialog timeline-event-modal timeline-create-modal" role="dialog" aria-modal="true" aria-labelledby="timeline-dialog-title" onSubmit={onSubmit}>
+        <div className="modal-heading-row">
+          <div>
+            <p className="eyebrow">Timeline</p>
+            <h2 id="timeline-dialog-title">Add Timeline</h2>
+          </div>
+          {showClose ? <button className="secondary-button" type="button" onClick={onClose}>Close</button> : null}
+        </div>
+        <div className="field-grid">
+          <TextInput label="Timeline title" name="title" value={formData.title} onChange={onChange} required />
+          <label className="field">
+            <span>Timeline type</span>
+            <select name="type" value={formData.type} onChange={onChange}>
+              {TIMELINE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+            </select>
+          </label>
+          {formData.type === "Character Timeline" ? (
+            <label className="field">
+              <span>Main character</span>
+              <select name="connectedOcId" value={formData.connectedOcId} onChange={onChange}>
+                <option value="">No character selected</option>
+                {ocs.map((oc) => <option key={oc.id} value={oc.id}>{oc.name}</option>)}
+              </select>
+            </label>
+          ) : null}
+          <label className="field">
+            <span>Connected world</span>
+            <select name="connectedWorld" value={formData.connectedWorld} onChange={onChange}>
+              <option value="">No world selected</option>
+              {worlds.filter((world) => world !== "All").map((world) => <option key={world} value={world}>{world}</option>)}
+            </select>
+          </label>
+          <label className="field wide-field">
+            <span>Description</span>
+            <textarea name="description" value={formData.description} rows="3" onChange={onChange} />
+          </label>
+        </div>
+        <div className="dialog-actions horizontal-actions">
+          <button className="primary-button" type="submit">Add Timeline</button>
+          {showClose ? <button className="secondary-button" type="button" onClick={onClose}>Cancel</button> : null}
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function EventModal({ eventForm, editingEventId, ocs, onChange, onClose, onSubmit, onToggleCharacter, worlds }) {
   return (
     <div className="dialog-backdrop" role="presentation">
@@ -366,10 +388,20 @@ function EventModal({ eventForm, editingEventId, ocs, onChange, onClose, onSubmi
 
         <div className="field-grid">
           <TextInput label="Title *" name="title" value={eventForm.title} onChange={onChange} required />
-          <NumberInput label="Year *" name="dateYear" min="-9999" max="9999" value={eventForm.dateYear} onChange={onChange} required />
+          <TextInput label="Year or approximate range" name="dateYear" placeholder="1899 or c. 1895-1896" value={eventForm.dateYear} onChange={onChange} />
           <label className="field">
             <span>Optional full date</span>
             <input name="dateFull" type="date" value={eventForm.dateFull} onChange={onChange} />
+          </label>
+          <label className="field">
+            <span>Month if known</span>
+            <select name="dateMonth" value={eventForm.dateMonth} onChange={onChange}>
+              <option value="">No month selected</option>
+              {Array.from({ length: 12 }, (_, index) => {
+                const month = String(index + 1).padStart(2, "0");
+                return <option key={month} value={month}>{formatMonthName(month)}</option>;
+              })}
+            </select>
           </label>
           <label className="field">
             <span>Event type</span>
@@ -416,32 +448,63 @@ function EventModal({ eventForm, editingEventId, ocs, onChange, onClose, onSubmi
   );
 }
 
-function TimelinePoint({ event, index, isSelected, onDragStart, onEdit, onSelect, position }) {
-  const sideClass = index % 2 === 0 ? "above" : "below";
+function TimelineFlowEvent({ event, index, isExpanded, isLastInRow, isSelected, onAutoDragNotice, onEdit, onSelect, onToggleExpanded, ocs }) {
+  const sortParts = getSortParts(event);
+  const age = getEventAge(event, ocs);
+  const description = event.description || event.notes || "";
+  const isLong = description.length > 120;
 
   return (
-    <button
-      className={isSelected ? `timeline-point ${sideClass} selected` : `timeline-point ${sideClass}`}
-      style={{ "--point-position": `${position}%`, left: `${position}%` }}
-      type="button"
-      onClick={(clickEvent) => {
-        clickEvent.stopPropagation();
-        onSelect(event.id);
-      }}
-      onDoubleClick={(clickEvent) => {
-        clickEvent.stopPropagation();
-        onEdit(event);
-      }}
-      onPointerDown={(pointerEvent) => onDragStart(pointerEvent, event)}
-      title="Drag to move year. Double-click to edit."
-    >
-      <span className="timeline-point-dot" />
-      <span className="timeline-point-card">
+    <article className={isSelected ? "timeline-flow-event selected" : "timeline-flow-event"} data-timeline-year={shouldMarkYear(event) ? sortParts.year : undefined}>
+      <button className="timeline-node-button" type="button" draggable="true" onDragStart={onAutoDragNotice} onClick={() => onSelect(event.id)} aria-label={`Select ${event.title}`} title="This timeline is sorted automatically by date.">
+        <span className="timeline-node-dot" />
+        {!isLastInRow ? <span className="timeline-node-arrow" aria-hidden="true">-&gt;</span> : null}
+      </button>
+      <button className="timeline-event-card-button" type="button" onClick={() => onSelect(event.id)} onDoubleClick={() => onEdit(event)}>
+        <span className={`date-precision-pill precision-${sortParts.precision}`}>{getPrecisionLabel(sortParts.precision)}</span>
         <strong>{formatDate(event)}</strong>
-        <span>{event.title}</span>
-      </span>
-    </button>
+        <span className="timeline-flow-title">{event.title}</span>
+        <TimelineMeta event={event} age={age} />
+        {description ? (
+          <span className={isExpanded ? "timeline-description-preview expanded" : "timeline-description-preview"}>
+            {isExpanded || !isLong ? description : `${description.slice(0, 120).trim()}...`}
+          </span>
+        ) : null}
+      </button>
+      <div className="timeline-card-actions">
+        {isLong ? <button className="secondary-button" type="button" onClick={() => onToggleExpanded(event.id)}>{isExpanded ? "Less" : "Read more"}</button> : null}
+        <button className="secondary-button" type="button" onClick={() => onEdit(event)}>Edit</button>
+      </div>
+    </article>
   );
+}
+
+function TimelineUndatedEvent({ event, isExpanded, isFirst, isLast, isSelected, onEdit, onMove, onMoveToTarget, onSelect, onToggleExpanded, ocs }) {
+  const description = event.description || event.notes || "";
+  const isLong = description.length > 120;
+
+  return (
+    <article className={isSelected ? "undated-event-card selected" : "undated-event-card"} draggable="true" onDragStart={(dragEvent) => dragEvent.dataTransfer.setData("text/plain", event.id)} onDragOver={(dragEvent) => dragEvent.preventDefault()} onDrop={(dropEvent) => { dropEvent.preventDefault(); onMoveToTarget(dropEvent.dataTransfer.getData("text/plain"), event.id); }}>
+      <button className="timeline-event-card-button" type="button" onClick={() => onSelect(event.id)} onDoubleClick={() => onEdit(event)}>
+        <span className="date-precision-pill precision-unknown">Date unknown</span>
+        <strong>{event.title}</strong>
+        <TimelineMeta event={event} age={getEventAge(event, ocs)} />
+        {description ? <span className={isExpanded ? "timeline-description-preview expanded" : "timeline-description-preview"}>{isExpanded || !isLong ? description : `${description.slice(0, 120).trim()}...`}</span> : null}
+      </button>
+      <div className="timeline-card-actions">
+        <button className="secondary-button" type="button" disabled={isFirst} onClick={() => onMove(event.id, -1)}>Up</button>
+        <button className="secondary-button" type="button" disabled={isLast} onClick={() => onMove(event.id, 1)}>Down</button>
+        {isLong ? <button className="secondary-button" type="button" onClick={() => onToggleExpanded(event.id)}>{isExpanded ? "Less" : "Read more"}</button> : null}
+        <button className="secondary-button" type="button" onClick={() => onEdit(event)}>Edit</button>
+      </div>
+    </article>
+  );
+}
+
+function TimelineMeta({ age, event }) {
+  const parts = [age ? `Age ${age}` : "", event.connectedLocations, event.eventType].filter(Boolean);
+  if (!parts.length) return null;
+  return <span className="timeline-meta-line">{parts.join(" | ")}</span>;
 }
 
 function TimelineDetails({ event, ocs, onDelete, onEdit }) {
@@ -483,73 +546,85 @@ function TextInput({ label, name, onChange, placeholder = "", required = false, 
   );
 }
 
-function NumberInput({ label, max, min, name, onChange, required = false, value }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <input name={name} type="number" min={min} max={max} value={value} placeholder={label} required={required} onChange={onChange} />
-    </label>
-  );
-}
-
 function Fact({ label, value }) {
   if (!value) return null;
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
 }
 
-function compareEvents(a, b) {
-  const yearDifference = getEventYear(a) - getEventYear(b);
-  if (yearDifference !== 0) return yearDifference;
-  return String(a.dateFull || "").localeCompare(String(b.dateFull || "")) || a.order - b.order;
+function compareDatedEvents(a, b) {
+  const aParts = getSortParts(a);
+  const bParts = getSortParts(b);
+  return aParts.value - bParts.value || precisionRank(aParts.precision) - precisionRank(bParts.precision) || a.order - b.order;
 }
 
-function getEventYear(event) {
-  const year = Number(event.dateYear);
-  return Number.isFinite(year) ? year : 0;
+function chunkEvents(events, size) {
+  const chunks = [];
+  for (let index = 0; index < events.length; index += size) chunks.push(events.slice(index, index + size));
+  return chunks;
 }
 
-function getYearRange(events) {
-  if (events.length === 0) {
-    const currentYear = new Date().getFullYear();
-    return { min: currentYear - 5, max: currentYear + 5 };
+function arrayMove(items, fromIndex, toIndex) {
+  const next = [...items];
+  const [item] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, item);
+  return next;
+}
+
+function hasSortableDate(event) {
+  return Number.isFinite(getSortParts(event).value);
+}
+
+function getSortParts(event) {
+  if (event.dateFull) {
+    const date = new Date(`${event.dateFull}T00:00:00Z`);
+    if (!Number.isNaN(date.getTime())) {
+      return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, precision: "exact", value: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()), year: date.getUTCFullYear() };
+    }
   }
 
-  const years = events.map(getEventYear).filter(Number.isFinite);
-  let min = Math.min(...years);
-  let max = Math.max(...years);
-  if (min === max) {
-    min -= MIN_SPAN / 2;
-    max += MIN_SPAN / 2;
-  }
+  const year = extractStartYear(event.dateYear);
+  if (!Number.isFinite(year)) return { day: null, month: null, precision: "unknown", value: Number.POSITIVE_INFINITY, year: null };
 
-  if (max - min < MIN_SPAN) {
-    const padding = (MIN_SPAN - (max - min)) / 2;
-    min -= padding;
-    max += padding;
-  }
-
-  return { min: Math.floor(min), max: Math.ceil(max) };
+  const month = Number(event.dateMonth);
+  if (Number.isInteger(month) && month >= 1 && month <= 12) return { day: null, month, precision: "month", value: Date.UTC(year, month - 1, 1), year };
+  return { day: null, month: null, precision: isApproximateValue(event.dateYear) ? "approximate" : "year", value: Date.UTC(year, 0, 1), year };
 }
 
-function getEventPosition(event, range) {
-  const span = range.max - range.min || 1;
-  const raw = ((getEventYear(event) - range.min) / span) * 100;
-  return Math.min(96, Math.max(4, raw));
+function extractStartYear(value) {
+  const match = String(value || "").match(/-?\d{1,6}/);
+  return match ? Number(match[0]) : Number.NaN;
 }
 
-function getYearFromPointer(clientX, element, range) {
-  if (!element) return new Date().getFullYear();
-  const rect = element.getBoundingClientRect();
-  const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-  return Math.round(range.min + ratio * (range.max - range.min));
+function isApproximateValue(value) {
+  return /c\.|circa|approx|~|about|around|-/.test(String(value || "").toLowerCase());
+}
+
+function precisionRank(precision) {
+  return { exact: 0, month: 1, year: 2, approximate: 3, unknown: 4 }[precision] ?? 4;
 }
 
 function formatDate(event) {
-  if (event.dateFull) return formatDateWithMonthName(event.dateFull);
-  return event.dateYear ? String(event.dateYear) : "No year";
+  const parts = getSortParts(event);
+  if (parts.precision === "exact" && event.dateFull) return formatDateWithMonthName(event.dateFull);
+  if (parts.precision === "month") return `${formatMonthName(parts.month)} ${parts.year}`;
+  if (parts.precision === "approximate") return `c. ${String(event.dateYear).replace(/^c\.\s*/i, "")}`;
+  if (parts.precision === "year") return String(parts.year);
+  return "Date unknown";
 }
 
+function getPrecisionLabel(precision) {
+  return { exact: "Exact", month: "Month known", year: "Year known", approximate: "Approximate", unknown: "Unknown" }[precision] || "Unknown";
+}
 
+function shouldMarkYear(event) {
+  return Number.isFinite(getSortParts(event).year);
+}
 
-
-
+function getEventAge(event, ocs) {
+  if (!event.connectedCharacterIds?.length) return "";
+  const character = ocs.find((oc) => oc.id === event.connectedCharacterIds[0]);
+  const birthYear = extractStartYear(character?.birthDate || character?.birthYear || "");
+  const eventYear = getSortParts(event).year;
+  if (!Number.isFinite(birthYear) || !Number.isFinite(eventYear)) return "";
+  return eventYear - birthYear;
+}
