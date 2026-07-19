@@ -10,7 +10,7 @@ import StoryWorkspace from "./workspace/StoryWorkspace.jsx";
 import WorkspacePanel from "./workspace/WorkspacePanel.jsx";
 import WorldModule from "./workspace/WorldModule.jsx";
 
-const WORKSPACE_TABS = ["Profile", "World", "Network", "Timeline", "Story", "Inspiration", "Settings"];
+const PRIMARY_WORKSPACE_TABS = ["Profile", "World", "Network", "Timeline", "Story", "Inspiration"];
 
 export default function CharacterWorkspace({
   familyMembers,
@@ -35,6 +35,7 @@ export default function CharacterWorkspace({
 }) {
   const [activeTab, setActiveTab] = useState("Profile");
   const [editingProfile, setEditingProfile] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const banner = oc.bannerImageData || oc.bannerImageUrl;
   const profilePicture = oc.profilePictureData || oc.profilePictureUrl;
   const theme = getWorkspaceTheme(oc);
@@ -54,6 +55,7 @@ export default function CharacterWorkspace({
   }
 
   function switchTab(tab) {
+    setMoreOpen(false);
     requestWorkspaceNavigation(() => setActiveTab(tab));
   }
 
@@ -74,8 +76,16 @@ export default function CharacterWorkspace({
         </div>
       </header>
 
-      <nav className="workspace-tabs" aria-label="Character workspace sections">
-        {WORKSPACE_TABS.map((tab) => <button className={activeTab === tab ? "workspace-tab active" : "workspace-tab"} key={tab} type="button" onClick={() => switchTab(tab)}>{tab}</button>)}
+      <nav className="workspace-tabs workspace-tabs-polished" aria-label="Character workspace sections">
+        {PRIMARY_WORKSPACE_TABS.map((tab) => <button className={activeTab === tab ? "workspace-tab active" : "workspace-tab"} key={tab} type="button" onClick={() => switchTab(tab)}>{tab}</button>)}
+        <div className="workspace-more-menu-wrap">
+          <button className={activeTab === "Settings" ? "workspace-tab active" : "workspace-tab"} aria-expanded={moreOpen} type="button" onClick={() => setMoreOpen((open) => !open)}>More</button>
+          {moreOpen ? (
+            <div className="workspace-more-menu">
+              <button type="button" onClick={() => switchTab("Settings")}>Settings</button>
+            </div>
+          ) : null}
+        </div>
       </nav>
 
       {activeTab === "Profile" ? (
@@ -138,4 +148,8 @@ function getWorkspaceTheme(oc) {
 function slugifyTheme(theme) {
   return String(theme || "Modern").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "modern";
 }
+
+
+
+
 

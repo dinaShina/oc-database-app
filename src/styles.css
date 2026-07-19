@@ -7239,3 +7239,1090 @@ textarea.writing-area {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 }
+
+/* Final UX polish pass: premium spacing, hierarchy, and calmer surfaces */
+:root {
+  --premium-page-max: 1540px;
+  --premium-readable-max: 820px;
+  --premium-gap-xs: 6px;
+  --premium-gap-sm: 10px;
+  --premium-gap-md: 16px;
+  --premium-gap-lg: 24px;
+  --premium-gap-xl: 32px;
+  --premium-radius: 18px;
+  --premium-radius-lg: 24px;
+  --premium-shadow: 0 18px 48px rgba(34, 27, 21, 0.075);
+  --premium-shadow-soft: 0 8px 24px rgba(34, 27, 21, 0.055);
+}
+
+.app-frame {
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+
+.app-shell {
+  padding: 34px clamp(20px, 3vw, 44px) 72px;
+  width: min(var(--premium-page-max), 100%);
+}
+
+.panel,
+.dashboard-hero-card,
+.dashboard-panel,
+.library-card,
+.world-card,
+.favorite-card,
+.desk-card,
+.quick-create-card,
+.settings-group-card,
+.workspace-hero,
+.workspace-panel,
+.sub-form,
+.story-entry-card,
+.writing-editor,
+.prepared-card,
+.inspiration-entry-card,
+.timeline-detail-card,
+.visual-timeline-card,
+.timeline-flow-event,
+.undated-event-card,
+.profile-details,
+.relationship-card,
+.edge-row,
+.tree-node,
+.map-node {
+  border-color: color-mix(in srgb, var(--app-border, #ded8cf) 78%, transparent);
+  border-radius: var(--premium-radius);
+  box-shadow: var(--premium-shadow-soft);
+}
+
+.panel,
+.workspace-panel,
+.dashboard-panel,
+.library-page-panel {
+  padding: clamp(18px, 2vw, 28px);
+}
+
+.dashboard-home,
+.polished-dashboard,
+.mobile-dashboard-page,
+.workspace-shell,
+.story-workspace,
+.inspiration-clean-workspace,
+.character-network-page,
+.timeline-focus-page {
+  gap: var(--premium-gap-lg);
+}
+
+.page-heading,
+.library-topbar,
+.dashboard-topline,
+.story-toolbar,
+.inspiration-clean-header,
+.timeline-simple-header,
+.section-heading-row {
+  margin-bottom: 0;
+}
+
+.page-heading h2,
+.library-topbar h2,
+.dashboard-topline h2,
+.mobile-hero-panel h2,
+.workspace-identity h2,
+.story-welcome h2 {
+  letter-spacing: 0;
+}
+
+.library-topbar h2,
+.dashboard-topline h2,
+.workspace-identity h2 {
+  font-size: clamp(1.8rem, 2.5vw, 2.65rem);
+  line-height: 1.08;
+}
+
+.section-heading-row h2,
+.dashboard-panel h2,
+.mobile-stack-section h2,
+.story-toolbar h3,
+.inspiration-clean-header h2,
+.timeline-simple-header h2 {
+  font-size: clamp(1.15rem, 1.35vw, 1.45rem);
+  line-height: 1.18;
+}
+
+.muted-text,
+.app-summary,
+.count-line,
+.card-copy span,
+.card-copy small,
+.world-card-description,
+.story-list-heading p,
+.timeline-meta-line,
+.timeline-description-preview {
+  line-height: 1.55;
+}
+
+/* Dashboard: content first, creation secondary. */
+.dashboard-home-clean {
+  align-items: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr);
+}
+
+.dashboard-topline {
+  align-items: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--app-surface-strong, #fffaf2) 92%, var(--app-accent-soft, #eef7f3)), var(--app-surface-strong, #fffaf2));
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: var(--premium-radius-lg);
+  box-shadow: var(--premium-shadow);
+  display: flex;
+  gap: var(--premium-gap-lg);
+  grid-column: 1 / -1;
+  justify-content: space-between;
+  padding: clamp(22px, 2.4vw, 34px);
+}
+
+.continue-section {
+  grid-column: 1 / -1;
+}
+
+.continue-section .dashboard-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.dashboard-card-grid {
+  gap: var(--premium-gap-md);
+}
+
+.dashboard-section-item > .desk-card,
+.mobile-section-item > .mobile-desk-card {
+  height: 100%;
+}
+
+.desk-card,
+.quick-create-card,
+.library-card,
+.world-card,
+.favorite-card,
+.dashboard-row {
+  background: color-mix(in srgb, var(--app-surface-strong, #fffaf2) 92%, white);
+  padding: clamp(16px, 1.6vw, 22px);
+}
+
+.character-desk-card,
+.compact-character-card {
+  align-items: center;
+  gap: var(--premium-gap-md);
+}
+
+.desk-card-picture,
+.compact-card-picture {
+  border-radius: 16px;
+  height: 74px;
+  width: 74px;
+}
+
+.card-copy {
+  gap: 5px;
+}
+
+.card-copy strong,
+.library-card h3,
+.world-card h3,
+.desk-card strong,
+.favorite-card h3 {
+  font-size: 1.06rem;
+  line-height: 1.25;
+}
+
+/* Libraries and world cards: browse, not database. */
+.library-page-panel,
+.world-library-panel,
+.character-library-panel {
+  display: grid;
+  gap: var(--premium-gap-lg);
+}
+
+.library-topbar-integrated {
+  align-items: end;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-border, #ded8cf) 75%, transparent);
+  padding-bottom: var(--premium-gap-md);
+}
+
+.library-controls {
+  padding: 14px;
+}
+
+.library-grid,
+.compact-character-grid {
+  gap: var(--premium-gap-md);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+.world-grid.spacious-world-grid {
+  gap: var(--premium-gap-lg);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+}
+
+.world-card,
+.polished-world-card {
+  gap: var(--premium-gap-md);
+  padding: clamp(20px, 2vw, 26px);
+}
+
+.world-card-description {
+  color: var(--app-text-muted, #596273);
+  font-size: .96rem;
+  line-height: 1.68;
+}
+
+.world-card .fact-list div {
+  padding: 10px 12px;
+}
+
+/* Character workspace: artbook/wiki rhythm. */
+.workspace-shell {
+  margin-inline: auto;
+  max-width: min(100%, 1560px);
+}
+
+.workspace-shell > .secondary-button:first-child {
+  justify-self: start;
+  width: auto;
+}
+
+.workspace-hero {
+  border-radius: 26px;
+  box-shadow: var(--premium-shadow);
+}
+
+.workspace-banner {
+  height: clamp(230px, 24vw, 360px);
+}
+
+.workspace-identity {
+  gap: var(--premium-gap-lg);
+  padding: 0 clamp(24px, 3vw, 38px) clamp(24px, 3vw, 34px);
+}
+
+.workspace-avatar {
+  border-radius: 28px;
+  height: clamp(130px, 11vw, 172px);
+  width: clamp(130px, 11vw, 172px);
+}
+
+.workspace-tabs-polished {
+  align-items: center;
+  background: color-mix(in srgb, var(--workspace-card, #fffaf2) 86%, transparent);
+  border-radius: 18px;
+  box-shadow: var(--premium-shadow-soft);
+  gap: 6px;
+  padding: 8px;
+  position: relative;
+}
+
+.workspace-tab {
+  border-radius: 12px;
+  min-height: 44px;
+}
+
+.workspace-more-menu-wrap {
+  position: relative;
+}
+
+.workspace-more-menu {
+  background: var(--workspace-card, var(--app-surface-strong, #fffaf2));
+  border: 1px solid var(--workspace-border, var(--app-border, #ded8cf));
+  border-radius: 14px;
+  box-shadow: var(--premium-shadow);
+  display: grid;
+  min-width: 160px;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+}
+
+.workspace-more-menu button {
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: inherit;
+  min-height: 40px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.workspace-more-menu button:hover {
+  background: color-mix(in srgb, var(--workspace-accent, #2f6652) 12%, transparent);
+}
+
+.profile-clean-stack,
+.workspace-section-stack {
+  gap: var(--premium-gap-md);
+}
+
+.profile-details {
+  padding: 16px 18px;
+}
+
+.profile-details summary {
+  font-size: .98rem;
+  padding: 4px 0;
+}
+
+.profile-details[open] {
+  padding-bottom: 20px;
+}
+
+.profile-details[open] summary {
+  margin-bottom: 12px;
+}
+
+.fact-list {
+  gap: 10px;
+}
+
+.fact-list div {
+  padding: 12px;
+}
+
+.text-block p {
+  line-height: 1.72;
+  max-width: var(--premium-readable-max);
+}
+
+/* Story workspace: writing area should feel intentional. */
+.story-layout {
+  gap: var(--premium-gap-lg);
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+}
+
+.story-entry-list,
+.writing-editor {
+  border-radius: var(--premium-radius-lg);
+}
+
+.writing-editor {
+  padding: clamp(22px, 2.6vw, 36px);
+}
+
+.writing-title-input {
+  max-width: var(--premium-readable-max);
+}
+
+.writing-area {
+  line-height: 1.78;
+  max-width: 940px;
+}
+
+/* Inspiration and network polish. */
+.inspiration-clean-header,
+.story-toolbar,
+.recovery-banner,
+.network-hero,
+.timeline-detail-card {
+  border-radius: var(--premium-radius);
+  padding: clamp(16px, 2vw, 24px);
+}
+
+.inspiration-item-grid {
+  gap: var(--premium-gap-lg);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+.inspiration-entry-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.graph-canvas,
+.tree-canvas,
+.map-canvas {
+  border-radius: var(--premium-radius-lg);
+}
+
+/* Timeline: preserve the simplified calm layout. */
+.timeline-simple-page {
+  max-width: min(100%, 1580px);
+}
+
+.timeline-reading-card {
+  border-radius: 26px;
+  padding: clamp(22px, 2.5vw, 38px);
+}
+
+.timeline-flow {
+  gap: 40px;
+}
+
+.timeline-flow-event,
+.undated-event-card {
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.timeline-flow-event {
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.timeline-flow-event:hover {
+  transform: translateY(-2px);
+}
+
+/* Motion should feel soft and stable. */
+@media (prefers-reduced-motion: no-preference) {
+  .panel,
+  .desk-card,
+  .library-card,
+  .world-card,
+  .favorite-card,
+  .quick-create-card,
+  .workspace-panel,
+  .timeline-flow-event,
+  .inspiration-entry-card {
+    transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease, background-color .16s ease;
+  }
+}
+
+@media (max-width: 1100px) {
+  .dashboard-home-clean {
+    grid-template-columns: 1fr;
+  }
+
+  .story-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 18px 14px 110px;
+  }
+
+  .panel,
+  .workspace-panel,
+  .dashboard-panel,
+  .library-page-panel {
+    padding: 16px;
+  }
+
+  .dashboard-topline,
+  .library-topbar-integrated,
+  .story-toolbar,
+  .inspiration-clean-header,
+  .timeline-simple-header {
+    align-items: stretch;
+    display: grid;
+    gap: 14px;
+  }
+
+  .mobile-hero-panel h2,
+  .library-topbar h2,
+  .dashboard-topline h2,
+  .workspace-identity h2 {
+    font-size: clamp(1.75rem, 9vw, 2.25rem);
+  }
+
+  .mobile-dashboard-page,
+  .mobile-page,
+  .workspace-shell {
+    gap: 16px;
+  }
+
+  .mobile-card-strip {
+    gap: 12px;
+  }
+
+  .desk-card-picture,
+  .compact-card-picture {
+    height: 68px;
+    width: 68px;
+  }
+
+  .workspace-banner {
+    height: clamp(170px, 45vw, 240px);
+  }
+
+  .workspace-identity {
+    padding: 0 16px 18px;
+  }
+
+  .workspace-avatar {
+    height: 112px;
+    width: 112px;
+  }
+
+  .workspace-tabs-polished {
+    overflow-x: auto;
+  }
+
+  .text-block p,
+  .writing-area {
+    max-width: 100%;
+  }
+
+  .story-entry-list {
+    display: grid;
+    gap: 10px;
+  }
+}
+
+/* Mobile-only polish pass: compact, app-like, no desktop changes */
+@media (max-width: 820px) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .app-shell,
+  .mobile-preview-active .app-shell {
+    padding: 12px 10px calc(92px + env(safe-area-inset-bottom));
+    width: min(100% - 12px, 430px);
+  }
+
+  .app-header {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .app-header h1,
+  .mobile-hero-panel h2,
+  .library-topbar h2,
+  .dashboard-topline h2,
+  .workspace-identity h2 {
+    font-size: clamp(1.45rem, 7.2vw, 2rem);
+    line-height: 1.08;
+  }
+
+  .eyebrow {
+    font-size: .68rem;
+  }
+
+  .muted-text,
+  .app-summary,
+  .count-line,
+  .card-copy span,
+  .card-copy small,
+  .world-card-description,
+  .timeline-meta-line,
+  .timeline-description-preview {
+    font-size: .84rem;
+    line-height: 1.42;
+  }
+
+  .mobile-page,
+  .mobile-dashboard-page,
+  .workspace-shell,
+  .story-workspace,
+  .inspiration-clean-workspace,
+  .timeline-simple-page,
+  .library-page-panel,
+  .world-library-panel,
+  .character-library-panel {
+    gap: 10px;
+  }
+
+  .panel,
+  .dashboard-panel,
+  .character-library-panel,
+  .world-library-panel,
+  .workspace-panel,
+  .list-panel,
+  .library-page-panel,
+  .settings-group-card {
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  .dashboard-topline,
+  .mobile-hero-panel,
+  .library-topbar-integrated,
+  .story-toolbar,
+  .inspiration-clean-header,
+  .timeline-simple-header,
+  .mobile-character-header,
+  .timeline-reading-card,
+  .timeline-detail-card,
+  .profile-details,
+  .world-card,
+  .desk-card,
+  .library-card,
+  .favorite-card,
+  .story-entry-card,
+  .prepared-card,
+  .inspiration-entry-card,
+  .timeline-flow-event,
+  .undated-event-card {
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  .dashboard-topline,
+  .library-topbar-integrated,
+  .story-toolbar,
+  .inspiration-clean-header,
+  .timeline-simple-header {
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .section-heading-row,
+  .story-list-heading,
+  .modal-heading-row {
+    gap: 6px;
+  }
+
+  .section-heading-row h2,
+  .dashboard-panel h2,
+  .mobile-stack-section h2,
+  .mobile-quick-create h2,
+  .timeline-simple-header h2,
+  .story-toolbar h3,
+  .inspiration-clean-header h2 {
+    font-size: 1.06rem;
+    line-height: 1.18;
+  }
+
+  input,
+  select,
+  textarea,
+  .primary-button,
+  .secondary-button,
+  .delete-button,
+  .danger-outline-button,
+  .choice-button,
+  .workspace-tab,
+  .story-tab,
+  .tab-button,
+  .theme-mode-card,
+  .mobile-customize-section-toggle {
+    border-radius: 11px;
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+
+  textarea {
+    min-height: 104px;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .delete-button,
+  .danger-outline-button,
+  .choice-button {
+    font-size: .88rem;
+  }
+
+  .card-actions,
+  .form-actions,
+  .dialog-actions,
+  .horizontal-actions,
+  .timeline-card-actions,
+  .inspiration-card-actions,
+  .story-toolbar-actions,
+  .timeline-simple-actions {
+    gap: 7px;
+  }
+
+  .mobile-stack-section .mobile-card-strip {
+    gap: 10px;
+    margin-inline: -12px;
+    padding: 0 12px 2px;
+  }
+
+  .mobile-stack-section:first-of-type .mobile-card-strip,
+  .mobile-stack-section:last-of-type .mobile-card-strip,
+  .mobile-dashboard-page > .mobile-stack-section:nth-of-type(2) .mobile-card-strip,
+  .mobile-dashboard-page > .mobile-stack-section:last-of-type .mobile-card-strip {
+    gap: 10px;
+  }
+
+  .mobile-section-item,
+  .mobile-stack-section .mobile-section-item {
+    flex-basis: min(88vw, 350px);
+  }
+
+  .mobile-desk-card,
+  .compact-character-card,
+  .character-desk-card {
+    align-items: center;
+    gap: 12px;
+    grid-template-columns: 74px minmax(0, 1fr);
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .profile-picture-preview,
+  .desk-card-picture,
+  .compact-card-picture {
+    border-radius: 14px;
+  }
+
+  .desk-card-picture,
+  .compact-card-picture,
+  .card-picture {
+    height: 74px;
+    width: 74px;
+  }
+
+  .card-copy {
+    gap: 3px;
+  }
+
+  .card-copy strong,
+  .library-card h3,
+  .world-card h3,
+  .desk-card strong,
+  .favorite-card h3,
+  .timeline-flow-title {
+    font-size: .98rem;
+    line-height: 1.18;
+  }
+
+  .quick-create-grid,
+  .mobile-quick-create .quick-create-grid {
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-create-card,
+  .mobile-quick-create .quick-create-card {
+    min-height: 72px;
+    padding: 10px;
+  }
+
+  .quick-create-card span {
+    font-size: 1.2rem;
+    height: 26px;
+    width: 26px;
+  }
+
+  .library-controls,
+  .compact-library-controls {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .library-create-button {
+    min-height: 40px;
+  }
+
+  .character-library-panel > .library-topbar .primary-button {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    min-height: 46px;
+    padding: 10px 14px;
+    right: 12px;
+  }
+
+  .world-grid.spacious-world-grid,
+  .world-grid,
+  .library-grid,
+  .compact-character-grid,
+  .inspiration-item-grid,
+  .prepared-grid,
+  .dashboard-card-grid {
+    gap: 10px;
+  }
+
+  .world-card,
+  .polished-world-card {
+    gap: 9px;
+  }
+
+  .world-card h3 {
+    font-size: 1.02rem;
+    padding-right: 14px;
+  }
+
+  .world-card-description {
+    line-height: 1.5;
+  }
+
+  .fact-list,
+  .world-card .fact-list {
+    gap: 7px;
+  }
+
+  .fact-list div,
+  .world-card .fact-list div {
+    padding: 8px 9px;
+  }
+
+  .fact-list dt {
+    font-size: .68rem;
+  }
+
+  .fact-list dd {
+    font-size: .86rem;
+  }
+
+  .mobile-character-workspace {
+    padding: 8px;
+  }
+
+  .mobile-character-header {
+    gap: 10px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 10px;
+  }
+
+  .mobile-back-button,
+  .icon-only-button {
+    min-height: 38px;
+  }
+
+  .mobile-header-avatar {
+    height: 48px;
+    width: 48px;
+  }
+
+  .mobile-character-title-block {
+    gap: 8px;
+  }
+
+  .mobile-character-title-block h2 {
+    font-size: 1.12rem;
+  }
+
+  .mobile-primary-tabs,
+  .workspace-tabs,
+  .tab-list,
+  .story-tabs {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .mobile-primary-tabs .workspace-tab,
+  .workspace-tab,
+  .tab-button,
+  .story-tab {
+    font-size: .82rem;
+    min-height: 38px;
+    min-width: 92px;
+    padding: 7px 10px;
+  }
+
+  .workspace-panel > h2 {
+    margin-bottom: 4px;
+  }
+
+  .profile-clean-stack,
+  .workspace-section-stack {
+    gap: 9px;
+  }
+
+  .profile-details summary {
+    font-size: .9rem;
+  }
+
+  .workspace-banner {
+    height: clamp(138px, 36vw, 190px);
+  }
+
+  .workspace-identity {
+    gap: 8px;
+    padding: 0 12px 12px;
+    transform: translateY(-18px);
+  }
+
+  .workspace-avatar {
+    height: 96px;
+    width: 96px;
+  }
+
+  .story-layout {
+    gap: 10px;
+  }
+
+  .story-entry-list {
+    gap: 8px;
+  }
+
+  .story-entry-card,
+  .empty-story-button {
+    min-height: 0;
+    padding: 10px;
+  }
+
+  .writing-editor {
+    padding: 14px;
+  }
+
+  .writing-title-input {
+    font-size: clamp(1.35rem, 7vw, 1.85rem);
+  }
+
+  .writing-area {
+    line-height: 1.62;
+    min-height: 44vh;
+  }
+
+  .writing-stats {
+    gap: 6px;
+  }
+
+  .timeline-simple-header {
+    padding: 0 0 2px;
+  }
+
+  .timeline-simple-actions {
+    gap: 8px;
+  }
+
+  .timeline-year-search {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .timeline-reading-card {
+    padding: 14px 12px;
+  }
+
+  .timeline-flow {
+    gap: 14px;
+    padding-left: 18px;
+  }
+
+  .timeline-flow-row,
+  .timeline-flow-row.reverse {
+    gap: 14px;
+  }
+
+  .timeline-flow-event,
+  .undated-event-card {
+    gap: 7px;
+    padding: 11px;
+  }
+
+  .timeline-node-button {
+    left: -30px;
+    top: 16px;
+    width: 24px;
+  }
+
+  .timeline-node-dot {
+    border-width: 3px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--workspace-accent, #2f6652) 14%, transparent);
+    height: 18px;
+    width: 18px;
+  }
+
+  .date-precision-pill {
+    font-size: .62rem;
+    padding: 3px 7px;
+  }
+
+  .timeline-event-card-button {
+    gap: 4px;
+  }
+
+  .timeline-card-actions {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .timeline-card-actions .secondary-button {
+    font-size: .74rem;
+    min-height: 32px;
+    padding: 5px 8px;
+    width: auto;
+  }
+
+  .timeline-detail-panel {
+    margin-top: 0;
+  }
+
+  .inspiration-entry-card {
+    gap: 9px;
+  }
+
+  .workspace-media-preview {
+    height: 152px;
+  }
+
+  .mobile-bottom-nav,
+  .mobile-preview-active .mobile-bottom-nav {
+    background: color-mix(in srgb, var(--app-surface-strong) 82%, transparent);
+    backdrop-filter: blur(18px);
+    border: 1px solid color-mix(in srgb, var(--app-border) 86%, transparent);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 30px rgba(34, 27, 21, 0.16);
+    padding: 7px 7px calc(7px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav-link {
+    border-radius: 14px;
+    font-size: .68rem;
+    gap: 2px;
+    min-height: 48px;
+    padding: 5px 2px;
+  }
+
+  .mobile-nav-link.active {
+    background: color-mix(in srgb, var(--app-accent) 17%, var(--app-surface-strong));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-accent) 28%, transparent), 0 5px 14px rgba(34, 27, 21, .08);
+    color: var(--app-accent);
+  }
+
+  .mobile-nav-icon {
+    height: 24px;
+    width: 25px;
+  }
+
+  .mobile-nav-icon::before,
+  .mobile-nav-icon::after {
+    border-width: 2.25px;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell,
+  .mobile-preview-active .app-shell {
+    width: min(100% - 10px, 430px);
+  }
+
+  .panel,
+  .dashboard-panel,
+  .character-library-panel,
+  .world-library-panel,
+  .workspace-panel,
+  .list-panel,
+  .dashboard-topline,
+  .mobile-hero-panel,
+  .library-topbar-integrated,
+  .story-toolbar,
+  .inspiration-clean-header,
+  .timeline-simple-header,
+  .mobile-character-header,
+  .timeline-reading-card,
+  .timeline-detail-card,
+  .profile-details,
+  .world-card,
+  .desk-card,
+  .library-card,
+  .favorite-card,
+  .story-entry-card,
+  .prepared-card,
+  .inspiration-entry-card,
+  .timeline-flow-event,
+  .undated-event-card {
+    padding: 10px;
+  }
+
+  .mobile-desk-card,
+  .compact-character-card,
+  .character-desk-card {
+    grid-template-columns: 70px minmax(0, 1fr);
+  }
+
+  .desk-card-picture,
+  .compact-card-picture,
+  .card-picture {
+    height: 70px;
+    width: 70px;
+  }
+
+  .quick-create-card,
+  .mobile-quick-create .quick-create-card {
+    min-height: 68px;
+  }
+}
