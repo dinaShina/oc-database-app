@@ -1,4 +1,4 @@
-﻿import { Component, useEffect, useMemo, useState } from "react";
+import { Component, useEffect, useMemo, useState } from "react";
 import useIsMobile from "./hooks/useIsMobile.js";
 import CharacterWorkspaceDesktop from "./components/layouts/CharacterWorkspaceDesktop.jsx";
 import CharacterWorkspaceMobile from "./components/layouts/CharacterWorkspaceMobile.jsx";
@@ -119,8 +119,12 @@ export default function App() {
       setActiveOCId(null);
       setShowCharacterForm(false);
     }
+    window.addEventListener("hashchange", handleAppRouteChange);
     window.addEventListener("popstate", handleAppRouteChange);
-    return () => window.removeEventListener("popstate", handleAppRouteChange);
+    return () => {
+      window.removeEventListener("hashchange", handleAppRouteChange);
+      window.removeEventListener("popstate", handleAppRouteChange);
+    };
   }, []);
   useEffect(() => {
     if (!unsavedEditor.isDirty) return undefined;
@@ -458,7 +462,7 @@ function DeveloperPreviewSwitch({ appSettings, detectedMobile, isMobile, onSetti
           <option value="mobile">Mobile Preview</option>
         </select>
       </label>
-      <small>{isMobile ? "Mobile layout" : "Desktop layout"} · detected {detectedMobile ? "mobile" : "desktop"}</small>
+      <small>{isMobile ? "Mobile layout" : "Desktop layout"} - detected {detectedMobile ? "mobile" : "desktop"}</small>
     </aside>
   );
 }
@@ -540,8 +544,12 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
     function handleRouteChange() {
       setActiveCategory(getSettingsCategoryFromLocation() || "appearance");
     }
+    window.addEventListener("hashchange", handleRouteChange);
     window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
+    return () => {
+      window.removeEventListener("hashchange", handleRouteChange);
+      window.removeEventListener("popstate", handleRouteChange);
+    };
   }, []);
 
   function openCategory(category) {
@@ -644,7 +652,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
   const selectedGroup = groups.find((group) => group.id === activeCategory) || groups[0];
 
   if (isSettingsMobile && !getSettingsCategoryFromLocation()) {
-    return <section className="settings-page settings-mobile-overview"><div className="settings-overview-list">{groups.map((group) => <button className="settings-overview-button" key={group.id} type="button" onClick={() => openCategory(group.id)}><span><strong>{group.title}</strong><small>{group.summary}</small></span><span aria-hidden="true">›</span></button>)}</div></section>;
+    return <section className="settings-page settings-mobile-overview"><div className="settings-overview-list">{groups.map((group) => <button className="settings-overview-button" key={group.id} type="button" onClick={() => openCategory(group.id)}><span><strong>{group.title}</strong><small>{group.summary}</small></span><span aria-hidden="true">&gt;</span></button>)}</div></section>;
   }
 
   if (isSettingsMobile) {
@@ -658,12 +666,25 @@ function SettingsGroupCard({ group }) {
 }
 function getInitialAppSection() {
   if (typeof window === "undefined") return "dashboard";
-  const path = stripBasePath(window.location.pathname);
-  if (path.startsWith("settings")) return "settings";
-  if (path.startsWith("worlds")) return "worlds";
-  if (path.startsWith("favorites")) return "favorites";
-  if (path.startsWith("characters") || path.startsWith("library")) return "library";
+  const route = getCurrentAppRoute();
+  if (route.startsWith("settings")) return "settings";
+  if (route.startsWith("worlds")) return "worlds";
+  if (route.startsWith("favorites")) return "favorites";
+  if (route.startsWith("characters") || route.startsWith("library")) return "library";
   return "dashboard";
+}
+
+function getCurrentAppRoute() {
+  const hashRoute = getHashRoute();
+  if (hashRoute) return hashRoute;
+  return stripBasePath(window.location.pathname);
+}
+
+function getHashRoute() {
+  if (typeof window === "undefined") return "";
+  const hash = window.location.hash || "";
+  if (!hash.startsWith("#/")) return "";
+  return hash.slice(2).replace(/^\/+/, "").replace(/\/+$/, "");
 }
 
 function stripBasePath(pathname) {
@@ -677,22 +698,24 @@ function updateAppRoute(section, settingsCategory = "") {
   if (typeof window === "undefined") return;
   const routeMap = { dashboard: "", library: "characters", worlds: "worlds", favorites: "favorites", settings: settingsCategory ? `settings/${settingsCategory}` : "settings" };
   const route = routeMap[section] ?? "characters";
-  const nextPath = `${APP_BASE_PATH}/${route}`.replace(/\/+/g, "/") || "/";
-  const current = `${window.location.pathname}${window.location.search}`;
+  const nextPath = buildAppHref(route);
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
   if (current !== nextPath) window.history.pushState(null, "", nextPath);
 }
 
 function getSettingsCategoryFromLocation() {
   if (typeof window === "undefined") return "";
-  const path = stripBasePath(window.location.pathname);
-  const match = path.match(/^settings\/(appearance|account|privacy|data|application|about)$/);
+  const route = getCurrentAppRoute();
+  const match = route.match(/^settings\/(appearance|account|privacy|data|application|about)$/);
   if (match) return match[1];
   if (window.location.hash === "#data-account") return "data";
   return "";
 }
 
-function buildAppHref(route) {
-  return `${APP_BASE_PATH}/${route}`.replace(/\/+/g, "/") || "/";
+function buildAppHref(route = "") {
+  const base = `${APP_BASE_PATH}/`.replace(/\/+/g, "/") || "/";
+  const cleanRoute = String(route || "").replace(/^\/+/, "").replace(/\/+$/, "");
+  return cleanRoute ? `${base}#/${cleanRoute}` : base;
 }
 function getSectionTitle(section) {
   if (section === "dashboard") return "Dashboard";
