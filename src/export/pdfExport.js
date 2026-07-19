@@ -1,5 +1,6 @@
 ﻿import { getWritingEntries } from "../storage/writingRepository.js";
 import { getWorldTitle, getBirthSummary } from "../components/OCList.jsx";
+import { formatDateWithMonthName } from "../utils/dateFormat.js";
 
 export const CHARACTER_EXPORT_OPTIONS = [
   ["coverPage", "Cover page"],
@@ -105,7 +106,7 @@ function buildCompleteWorldArchive({ ocs = [], options = DEFAULT_ARCHIVE_EXPORT_
 }
 
 function renderCover({ banner = "", image = "", subtitle = "", title }) {
-  return `<section class="pdf-cover page-break-after">${banner ? `<img class="pdf-banner" src="${escapeAttr(banner)}" alt="">` : ""}<div class="pdf-cover-content">${image ? `<img class="pdf-avatar" src="${escapeAttr(image)}" alt="">` : ""}<p class="pdf-kicker">Atlas Archive Export</p><h1>${escapeHtml(title)}</h1>${subtitle ? `<p class="pdf-subtitle">${escapeHtml(subtitle)}</p>` : ""}<p class="pdf-date">Exported ${escapeHtml(new Date().toLocaleDateString())}</p></div></section>`;
+  return `<section class="pdf-cover page-break-after">${banner ? `<img class="pdf-banner" src="${escapeAttr(banner)}" alt="">` : ""}<div class="pdf-cover-content">${image ? `<img class="pdf-avatar" src="${escapeAttr(image)}" alt="">` : ""}<p class="pdf-kicker">Atlas Archive Export</p><h1>${escapeHtml(title)}</h1>${subtitle ? `<p class="pdf-subtitle">${escapeHtml(subtitle)}</p>` : ""}<p class="pdf-date">Exported ${escapeHtml(formatDateWithMonthName(new Date()))}</p></div></section>`;
 }
 
 function renderToc(items) {
@@ -139,7 +140,12 @@ function renderInspirationCard(item, options) {
 function renderTimelinesForCharacter(oc, ocs, timelineData) {
   const events = timelineData.events.filter((event) => event.connectedCharacterIds?.includes(oc.id) || timelineData.timelines.find((timeline) => timeline.id === event.timelineId)?.connectedOcId === oc.id).sort((a, b) => Number(a.dateYear || 0) - Number(b.dateYear || 0));
   if (!events.length) return `<section class="pdf-section page-break-after"><p class="pdf-kicker">Timeline</p><h2>Timeline</h2><p class="pdf-muted">No connected timeline events yet.</p></section>`;
-  return `<section class="pdf-section page-break-after"><p class="pdf-kicker">Timeline</p><h2>Timeline</h2><div class="pdf-timeline">${events.map((event) => `<article><strong>${escapeHtml(event.dateFull || event.dateYear || "No date")}</strong><h3>${escapeHtml(event.title)}</h3>${event.description ? `<p>${escapeHtml(event.description)}</p>` : ""}${event.connectedCharacterIds?.length ? `<p class="pdf-muted">Characters: ${escapeHtml(event.connectedCharacterIds.map((id) => ocs.find((item) => item.id === id)?.name).filter(Boolean).join(", "))}</p>` : ""}</article>`).join("")}</div></section>`;
+  return `<section class="pdf-section page-break-after"><p class="pdf-kicker">Timeline</p><h2>Timeline</h2><div class="pdf-timeline">${events.map((event) => `<article><strong>${escapeHtml(formatTimelineDate(event))}</strong><h3>${escapeHtml(event.title)}</h3>${event.description ? `<p>${escapeHtml(event.description)}</p>` : ""}${event.connectedCharacterIds?.length ? `<p class="pdf-muted">Characters: ${escapeHtml(event.connectedCharacterIds.map((id) => ocs.find((item) => item.id === id)?.name).filter(Boolean).join(", "))}</p>` : ""}</article>`).join("")}</div></section>`;
+}
+
+function formatTimelineDate(event) {
+  if (event.dateFull) return formatDateWithMonthName(event.dateFull);
+  return event.dateYear || "No date";
 }
 
 function renderNetwork({ familyMembers, oc, ocs, relationshipMap, relationships }) {
@@ -216,4 +222,6 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value).replace(/'/g, "&#39;");
 }
+
+
 

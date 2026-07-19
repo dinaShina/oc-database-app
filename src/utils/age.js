@@ -1,13 +1,9 @@
-﻿export function getBirthLabel(oc) {
-  const parts = [];
+﻿import { formatPartialDate } from "./dateFormat.js";
 
-  if (oc.birthDay) parts.push(padDatePart(oc.birthDay));
-  if (oc.birthMonth) parts.push(padDatePart(oc.birthMonth));
-  if (oc.birthYear) parts.push(oc.birthYear);
-
-  return parts.length > 0 ? parts.join(".") : "Unknown";
-}
-
-function padDatePart(value) {
-  return String(value).padStart(2, "0");
+export function getBirthLabel(oc) {
+  return formatPartialDate({
+    day: oc.birthDay,
+    month: oc.birthMonth,
+    year: oc.birthYear
+  }) || "Unknown";
 }

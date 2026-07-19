@@ -1,4 +1,5 @@
 ﻿import { getWorldTitle } from "./OCList.jsx";
+import { formatDateWithMonthName } from "../utils/dateFormat.js";
 import { buildWorldSummaries } from "./WorldLibrary.jsx";
 
 export default function Dashboard({ ocs, onCreateOC, onCreateTimeline, onCreateWorld, onCreateStory, onOpenOC, timelineData, worlds }) {
@@ -68,9 +69,16 @@ function WorldCard({ world }) {
 }
 
 function EventCard({ event }) {
-  return <article className="desk-card"><strong>{event.title}</strong><span>{event.dateFull || event.dateYear || event.eventType || "Timeline event"}</span><small>{event.connectedWorld || event.eventType || "event"}</small></article>;
+  return <article className="desk-card"><strong>{event.title}</strong><span>{formatTimelineDate(event)}</span><small>{event.connectedWorld || event.eventType || "event"}</small></article>;
 }
 
 function QuickCreateButton({ label, onClick }) {
   return <button className="quick-create-card" type="button" onClick={onClick}><span>+</span><strong>{label}</strong></button>;
 }
+
+function formatTimelineDate(event) {
+  if (event.dateFull) return formatDateWithMonthName(event.dateFull);
+  return event.dateYear || event.eventType || "Timeline event";
+}
+
+

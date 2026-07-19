@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { formatDateTime } from "../../utils/dateFormat.js";
+import { useEffect, useMemo, useState } from "react";
 import { INITIAL_STORY_ENTRY, STORY_CATEGORIES } from "../../data/writingSchema.js";
 import {
   clearRecoveredDraft,
@@ -213,5 +214,6 @@ function getSingularLabel(category) {
 
 function formatEditedDate(value) {
   if (!value) return "never";
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  return formatDateTime(value);
 }
+

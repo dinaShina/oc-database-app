@@ -24,6 +24,7 @@ import { deleteTimelineReferencesForOC, getTimelineData, saveTimelineData } from
 import { getRecoverableStorageSources, getStorageManifest, getStorageSnapshot, getStorageStatusForKey, loadFromStorage, saveToStorage, STORAGE_ENGINE } from "./storage/localStorage.js";
 import { getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
 import { APP_PALETTES, getAppThemeStyle } from "./utils/themeContrast.js";
+import { formatDateTime } from "./utils/dateFormat.js";
 import { clearSession, createUserCharacter, deleteUserCharacter, downloadJson, fetchUserCharacters, getCurrentUser, getStoredSession, isSupabaseConfigured, requestAccountDeletion, signOut, updateUserCharacter } from "./services/supabaseBeta.js";
 
 const CLEAN_UNSAVED_STATE = { isDirty: false, save: null };
@@ -421,6 +422,7 @@ export default function App() {
       </main>
 
       <DeveloperPreviewSwitch appSettings={appSettings} detectedMobile={detectedMobile} isMobile={isMobile} onSettingsChange={setAndSaveAppSettings} />
+      <MobileLayoutEscape appSettings={appSettings} detectedMobile={detectedMobile} onSettingsChange={setAndSaveAppSettings} />
 
       {isMobile ? <MobileNavigation activeSection={activeSection} onNavigate={(section) => requestNavigation(() => navigateToSection(section))} /> : null}
 
@@ -461,6 +463,19 @@ function DeveloperPreviewSwitch({ appSettings, detectedMobile, isMobile, onSetti
   );
 }
 
+function MobileLayoutEscape({ appSettings, detectedMobile, onSettingsChange }) {
+  if (!detectedMobile || appSettings.previewMode !== "desktop") return null;
+
+  return (
+    <button
+      className="mobile-layout-escape"
+      type="button"
+      onClick={() => onSettingsChange({ ...appSettings, previewMode: "mobile" })}
+    >
+      Switch to Mobile Layout
+    </button>
+  );
+}
 function MobileNavigation({ activeSection, onNavigate }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const items = [["dashboard", "Dashboard", "grid"], ["library", "Characters", "user"], ["worlds", "Worlds", "map"], ["favorites", "Favorites", "star"]];
@@ -584,8 +599,8 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
             <article><strong>{betaEnabled ? "Supabase + local recovery" : STORAGE_ENGINE}</strong><span>Current storage</span></article>
             <article><strong>{exportData?.ocs?.length || 0}</strong><span>Characters loaded now</span></article>
             <article><strong>{storedAreaCount}</strong><span>Saved app areas</span></article>
-            <article><strong>{characterStorageStatus.lastSuccessfulSave ? new Date(characterStorageStatus.lastSuccessfulSave).toLocaleString() : "Not saved yet"}</strong><span>Last character save</span></article>
-            <article><strong>{characterStorageStatus.lastBackup ? new Date(characterStorageStatus.lastBackup).toLocaleString() : "No backup yet"}</strong><span>Last character backup</span></article>
+            <article><strong>{characterStorageStatus.lastSuccessfulSave ? formatDateTime(characterStorageStatus.lastSuccessfulSave) : "Not saved yet"}</strong><span>Last character save</span></article>
+            <article><strong>{characterStorageStatus.lastBackup ? formatDateTime(characterStorageStatus.lastBackup) : "No backup yet"}</strong><span>Last character backup</span></article>
             <article><strong>{characterStorageStatus.error || "None"}</strong><span>Storage error</span></article>
           </div>
           <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button><button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button></div>
@@ -819,6 +834,8 @@ function getLegalTitle(page) {
   if (page === "terms") return "Terms / Beta Rules";
   return "Contact";
 }
+
+
 
 
 

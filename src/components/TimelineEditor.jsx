@@ -15,6 +15,7 @@ import {
   updateTimelineEvent
 } from "../storage/timelineRepository.js";
 import { getWorldTitle } from "./OCList.jsx";
+import { formatDateWithMonthName } from "../utils/dateFormat.js";
 
 const MIN_SPAN = 10;
 
@@ -544,8 +545,11 @@ function getYearFromPointer(clientX, element, range) {
 }
 
 function formatDate(event) {
-  if (event.dateFull) return event.dateFull;
+  if (event.dateFull) return formatDateWithMonthName(event.dateFull);
   return event.dateYear ? String(event.dateYear) : "No year";
 }
+
+
+
 
 

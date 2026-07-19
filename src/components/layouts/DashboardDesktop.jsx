@@ -1,6 +1,7 @@
 ﻿import { useState } from "react";
 import EmptyState from "../EmptyState.jsx";
 import { getWorldTitle } from "../OCList.jsx";
+import { formatDateWithMonthName } from "../../utils/dateFormat.js";
 import { buildWorldSummaries } from "../WorldLibrary.jsx";
 
 export default function DashboardDesktop({ ocs, onCreateOC, onCreateTimeline, onCreateWorld, onCreateStory, onOpenOC, timelineData, worlds }) {
@@ -62,7 +63,7 @@ function CharacterCard({ oc, onOpenOC }) {
   return (
     <button className="desk-card character-desk-card" type="button" onClick={() => onOpenOC(oc.id)}>
       <div className="profile-picture-preview desk-card-picture">{image ? <img src={image} alt={oc.name} /> : <span>No picture</span>}</div>
-      <div className="card-copy"><strong title={oc.name}>{oc.name}</strong><span title={meta}>{meta}</span><small>{oc.updatedAt ? `Last edited ${new Date(oc.updatedAt).toLocaleDateString()}` : "No recent edit"}</small></div>
+      <div className="card-copy"><strong title={oc.name}>{oc.name}</strong><span title={meta}>{meta}</span><small>{oc.updatedAt ? `Last edited ${formatDateWithMonthName(oc.updatedAt)}` : "No recent edit"}</small></div>
     </button>
   );
 }
@@ -72,7 +73,15 @@ function WorldCard({ world }) {
 }
 
 function EventCard({ event }) {
-  return <article className="desk-card"><div className="card-copy"><strong title={event.title}>{event.title}</strong><span>{event.dateFull || event.dateYear || event.eventType || "Timeline event"}</span><small>{event.connectedWorld || event.eventType || "event"}</small></div></article>;
+  return <article className="desk-card"><div className="card-copy"><strong title={event.title}>{event.title}</strong><span>{formatTimelineDate(event)}</span><small>{event.connectedWorld || event.eventType || "event"}</small></div></article>;
+}
+
+
+
+
+function formatTimelineDate(event) {
+  if (event.dateFull) return formatDateWithMonthName(event.dateFull);
+  return event.dateYear || event.eventType || "Timeline event";
 }
 
 
