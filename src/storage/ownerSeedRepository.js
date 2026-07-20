@@ -10,8 +10,12 @@ export const OWNER_SEED_INSTALLED_KEY = "atlasArchive.ownerSeedInstalled";
 export function enableOwnerSeedModeFromUrl() {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search || "");
-  if (params.get("owner") !== OWNER_SEED_TOKEN) return isOwnerSeedModeEnabled();
-  saveToStorage(OWNER_SEED_MODE_KEY, { enabled: true, enabledAt: new Date().toISOString() });
+  const enabledForThisLoad = params.get("owner") === OWNER_SEED_TOKEN;
+  if (!enabledForThisLoad) {
+    saveToStorage(OWNER_SEED_MODE_KEY, { enabled: false, disabledAt: new Date().toISOString(), reason: "Seed restore requires an explicit owner URL token." });
+    return false;
+  }
+  saveToStorage(OWNER_SEED_MODE_KEY, { enabled: true, enabledAt: new Date().toISOString(), scope: "current-url-token" });
   return true;
 }
 
@@ -67,20 +71,6 @@ export function restoreMissingOwnerSeeds({ inspirationItems = getInspirationItem
   return result;
 }
 
-function mergeMissingOrUneditedSeedById(currentItems = [], seedItems = []) {
-  const byId = new Map(currentItems.map((item) => [item?.id, item]));
-  seedItems.forEach((seed) => {
-    if (!seed?.id) return;
-    const existing = byId.get(seed.id);
-    if (!existing) {
-      byId.set(seed.id, cloneSeed(seed));
-      return;
-    }
-    const uneditedSeed = existing.ownerSeed && existing.updatedAt === seed.updatedAt;
-    if (uneditedSeed) byId.set(seed.id, cloneSeed(seed));
-  });
-  return Array.from(byId.values());
-}
 function mergeMissingById(currentItems = [], seedItems = []) {
   const existingIds = new Set(currentItems.map((item) => item?.id).filter(Boolean));
   const missing = seedItems.filter((item) => item?.id && !existingIds.has(item.id)).map(cloneSeed);

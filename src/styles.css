@@ -9806,10 +9806,10 @@ textarea.writing-area {
   background: currentColor;
   content: "";
   display: block;
-  height: 76%;
+  height: 58%;
   mask: var(--atlas-logo-url) center / contain no-repeat;
   -webkit-mask: var(--atlas-logo-url) center / contain no-repeat;
-  width: 76%;
+  width: 58%;
 }
 
 .sidebar-brand-mark.atlas-logo-mark {
@@ -9823,8 +9823,8 @@ textarea.writing-area {
 }
 
 .account-logo-mark::before {
-  height: 72%;
-  width: 72%;
+  height: 58%;
+  width: 58%;
 }
 
 .beta-brand-heading {
@@ -9839,8 +9839,8 @@ textarea.writing-area {
 }
 
 .beta-logo-mark::before {
-  height: 74%;
-  width: 74%;
+  height: 60%;
+  width: 60%;
 }
 
 @media (max-width: 620px) {
