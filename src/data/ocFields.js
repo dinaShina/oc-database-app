@@ -1,4 +1,4 @@
-﻿export const WORLD_TYPES = [
+export const WORLD_TYPES = [
   "Canon Universe",
   "Own World",
   "Alternative Universe / AU",
@@ -115,7 +115,9 @@ export const INITIAL_OC_FORM = {
   playlistLink: "",
   referenceLink: "",
   otherLink: "",
-  notes: ""
+  notes: "",
+  customFields: [],
+  customSections: []
 };
 
 export const NAME_DETAIL_FIELDS = [

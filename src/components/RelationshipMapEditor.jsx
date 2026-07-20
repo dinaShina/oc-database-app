@@ -251,6 +251,56 @@ export default function RelationshipMapEditor({
     setZoom(nextZoom);
     setCanvasPan({ x: mouseX - logicalX * nextZoom, y: mouseY - logicalY * nextZoom });
   }
+  function trackTouchPointer(event) {
+    if (event.pointerType !== "touch") return;
+    touchPointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  }
+
+  function startPinchGesture() {
+    const points = Array.from(touchPointersRef.current.values()).slice(0, 2);
+    const distance = getDistance(points[0], points[1]);
+    const center = getMidpoint(points[0], points[1]);
+    pinchRef.current = { distance, zoom, center, pan: canvasPan };
+  }
+
+  function updatePinchGesture() {
+    if (!canvasRef.current || !pinchRef.current) return;
+    const points = Array.from(touchPointersRef.current.values()).slice(0, 2);
+    const nextDistance = getDistance(points[0], points[1]);
+    const nextCenter = getMidpoint(points[0], points[1]);
+    const rect = canvasRef.current.getBoundingClientRect();
+    const nextZoom = clamp(Number((pinchRef.current.zoom * (nextDistance / Math.max(pinchRef.current.distance, 1))).toFixed(2)), 0.5, 1.8);
+    const centerX = pinchRef.current.center.x - rect.left;
+    const centerY = pinchRef.current.center.y - rect.top;
+    const logicalX = (centerX - pinchRef.current.pan.x) / pinchRef.current.zoom;
+    const logicalY = (centerY - pinchRef.current.pan.y) / pinchRef.current.zoom;
+    setZoom(nextZoom);
+    setCanvasPan({
+      x: nextCenter.x - rect.left - logicalX * nextZoom,
+      y: nextCenter.y - rect.top - logicalY * nextZoom
+    });
+  }
+
+  function centerCharacter() {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const mainNode = nodes.find((node) => node.id === "main");
+    if (!rect || !mainNode) return;
+    setZoom(1);
+    setCanvasPan({ x: rect.width / 2 - (mainNode.x + NODE_WIDTH / 2), y: CANVAS_HEIGHT / 2 - (mainNode.y + NODE_HEIGHT / 2) });
+  }
+
+  function fitAllNodes() {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect || nodes.length === 0) return;
+    const minX = Math.min(...nodes.map((node) => node.x));
+    const minY = Math.min(...nodes.map((node) => node.y));
+    const maxX = Math.max(...nodes.map((node) => node.x + NODE_WIDTH));
+    const maxY = Math.max(...nodes.map((node) => node.y + NODE_HEIGHT));
+    const padding = 56;
+    const nextZoom = clamp(Math.min((rect.width - padding) / Math.max(maxX - minX, 1), (CANVAS_HEIGHT - padding) / Math.max(maxY - minY, 1)), 0.5, 1.25);
+    setZoom(Number(nextZoom.toFixed(2)));
+    setCanvasPan({ x: (rect.width - (maxX - minX) * nextZoom) / 2 - minX * nextZoom, y: (CANVAS_HEIGHT - (maxY - minY) * nextZoom) / 2 - minY * nextZoom });
+  }
   function changeZoom(delta) {
     setZoom((current) => clamp(Number((current + delta).toFixed(2)), 0.55, 1.65));
   }
@@ -359,11 +409,13 @@ export default function RelationshipMapEditor({
       <section className="map-focus-wrap">
         <div className="graph-view-toolbar" aria-label="Relationship map view controls">
           <button className="secondary-button" type="button" onClick={resetView}>Reset View</button>
-          <span>{Math.round(zoom * 100)}% - wheel to zoom, drag blank space to pan</span>
+          <button className="secondary-button" type="button" onClick={centerCharacter}>Center Character</button>
+          <button className="secondary-button" type="button" onClick={fitAllNodes}>Fit All</button>
+          <span>{Math.round(zoom * 100)}% - wheel or pinch to zoom, drag blank space to pan</span>
         </div>
         <button className="floating-add-button map-add-button" type="button" onClick={openEditor} aria-label="Add relationship">+</button>
 
-      <div className={canvasPanning ? "graph-canvas is-panning" : "graph-canvas"} ref={canvasRef} onWheel={handleWheelZoom} onPointerDown={startCanvasPan} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerLeave={stopDrag} style={{ height: CANVAS_HEIGHT }}>
+      <div className={canvasPanning ? "graph-canvas is-panning" : "graph-canvas"} ref={canvasRef} onWheel={handleWheelZoom} onPointerDown={startCanvasPan} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerLeave={stopDrag} onDoubleClick={resetView} style={{ height: CANVAS_HEIGHT }}>
         <div className="graph-viewport" style={{ transform: `translate(${canvasPan.x}px, ${canvasPan.y}px) scale(${zoom})` }}>
           <svg className="graph-lines" aria-hidden="true">
             {edges.map((edge) => <GraphEdge key={edge.id} edge={edge} nodes={nodes} />)}
@@ -374,12 +426,14 @@ export default function RelationshipMapEditor({
               className={node.id === "main" ? "graph-node main-graph-node" : "graph-node"}
               key={node.id}
               onPointerDown={(event) => startDrag(event, node)}
+              onClick={() => setSelectedNodeId(node.id)}
               style={{ left: node.x, top: node.y }}
             >
               <ProfileImage source={node.profilePictureData || node.profilePictureUrl} name={node.name} />
               <div className="graph-node-body">
                 <h3>{node.name || "Unnamed character"}</h3>
                 <p>{getNodeTypeLabel(node.type)}</p>
+                <p className="mobile-node-relation">{getPrimaryRelationshipLabel(edges, node.id)}</p>
                 <ExpandablePreview className="muted-text graph-note" id={node.id} isExpanded={expandedNodeIds.includes(node.id)} onToggle={toggleExpandedNode} text={node.notes} />
               </div>
               <div className="graph-node-actions" onPointerDown={(event) => event.stopPropagation()}>
@@ -392,6 +446,7 @@ export default function RelationshipMapEditor({
       </div>
       </section>
 
+      {selectedNodeId ? <RelationshipNodeSheet node={nodes.find((node) => node.id === selectedNodeId)} edges={edges} nodes={nodes} onClose={() => setSelectedNodeId(null)} onDelete={deleteNode} onEdit={startNodeEdit} /> : null}
       <div className="edge-list">
         <h3>Relationship lines</h3>
         {edges.length === 0 ? <p className="empty-state">No relationship lines yet.</p> : edges.map((edge) => (
@@ -414,6 +469,30 @@ export default function RelationshipMapEditor({
   );
 }
 
+function RelationshipNodeSheet({ edges, node, nodes, onClose, onDelete, onEdit }) {
+  if (!node) return null;
+  const connectedEdges = edges.filter((edge) => edge.fromNodeId === node.id || edge.toNodeId === node.id);
+  const canEdit = node.id !== "main";
+  return (
+    <aside className="relationship-node-sheet" aria-label="Relationship node details">
+      <div className="modal-heading-row">
+        <div>
+          <p className="eyebrow">Relationship Node</p>
+          <h3>{node.name || "Unnamed character"}</h3>
+        </div>
+        <button className="icon-close-button" type="button" onClick={onClose} aria-label="Close">x</button>
+      </div>
+      <p className="muted-text">{getNodeTypeLabel(node.type)}</p>
+      {node.notes ? <p>{node.notes}</p> : null}
+      {connectedEdges.length ? (
+        <div className="node-sheet-lines">
+          {connectedEdges.map((edge) => <span key={edge.id}>{edge.label || "Relationship"}: {getNodeName(nodes, edge.fromNodeId)}{" -> "}{getNodeName(nodes, edge.toNodeId)}</span>)}
+        </div>
+      ) : null}
+      {canEdit ? <div className="form-actions compact-actions"><button className="secondary-button" type="button" onClick={() => { onClose(); onEdit(node); }}>Edit</button><button className="delete-button" type="button" onClick={() => { onClose(); onDelete(node.id); }}>Delete</button></div> : null}
+    </aside>
+  );
+}
 function GraphEdge({ edge, nodes }) {
   const from = nodes.find((node) => node.id === edge.fromNodeId);
   const to = nodes.find((node) => node.id === edge.toNodeId);
@@ -585,3 +664,16 @@ function clamp(value, min, max) {
 
 
 
+
+function getPrimaryRelationshipLabel(edges, nodeId) {
+  if (nodeId === "main") return "Main character";
+  return edges.find((edge) => edge.fromNodeId === nodeId || edge.toNodeId === nodeId)?.label || "Relationship";
+}
+
+function getDistance(a, b) {
+  return Math.hypot((a?.x || 0) - (b?.x || 0), (a?.y || 0) - (b?.y || 0));
+}
+
+function getMidpoint(a, b) {
+  return { x: ((a?.x || 0) + (b?.x || 0)) / 2, y: ((a?.y || 0) + (b?.y || 0)) / 2 };
+}

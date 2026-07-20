@@ -1,4 +1,4 @@
-﻿import WorkspacePanel from "./WorkspacePanel.jsx";
+import WorkspacePanel from "./WorkspacePanel.jsx";
 import { getBirthSummary } from "../OCList.jsx";
 
 const PROFILE_FACTS = [
@@ -24,6 +24,8 @@ export default function ProfileModule({ oc, onEdit }) {
   const facts = PROFILE_FACTS.map(([label, key]) => [label, key === "birth" ? getBirthSummary(oc) : oc[key]]).filter(([, value]) => value && value !== "Unknown");
   const appearance = APPEARANCE_FACTS.filter(([, key]) => oc[key]).map(([label, key]) => [label, oc[key]]);
   const links = LINK_FACTS.filter(([, key]) => oc[key]).map(([label, key]) => [label, oc[key]]);
+  const customFields = getVisibleCustomFields(oc.customFields);
+  const customSections = getVisibleCustomSections(oc.customSections);
 
   return (
     <WorkspacePanel title="Profile">
@@ -37,6 +39,8 @@ export default function ProfileModule({ oc, onEdit }) {
         <CollapsibleText label="Weaknesses" value={oc.weaknesses} />
         <CollapsibleText label="Notes" value={oc.notes || oc.genderNotes} />
         <CollapsibleFacts label="Links" facts={links} linkMode />
+        <CollapsibleFacts label="Additional Details" facts={customFields} />
+        {customSections.map((section) => <CollapsibleText key={section.id} label={section.title} value={section.content} />)}
       </div>
     </WorkspacePanel>
   );
@@ -55,4 +59,22 @@ function CollapsibleText({ label, value }) {
 function Fact({ label, linkMode, value }) {
   if (!value) return null;
   return <div><dt>{label}</dt><dd>{linkMode ? <a href={value} target="_blank" rel="noreferrer">Open link</a> : value}</dd></div>;
+}
+
+function getVisibleCustomFields(fields) {
+  if (!Array.isArray(fields)) return [];
+  return fields
+    .map((field) => [String(field?.name || "").trim(), String(field?.value || "").trim()])
+    .filter(([label, value]) => label && value);
+}
+
+function getVisibleCustomSections(sections) {
+  if (!Array.isArray(sections)) return [];
+  return sections
+    .map((section) => ({
+      id: section?.id || `${section?.title || "custom"}-${section?.content || ""}`,
+      title: String(section?.title || "").trim(),
+      content: String(section?.content || "").trim()
+    }))
+    .filter((section) => section.title && section.content);
 }

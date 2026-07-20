@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ExportDialog from "../ExportDialog.jsx";
 import NetworkDesktop from "./NetworkDesktop.jsx";
 import OCForm from "../OCForm.jsx";
@@ -40,6 +40,7 @@ export default function CharacterWorkspaceDesktop({
   const [editingProfile, setEditingProfile] = useState(false);
   const [customizingWorkspace, setCustomizingWorkspace] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const sections = useMemo(() => getWorkspaceConfigForOC(workspaceConfigs, oc.id), [oc.id, workspaceConfigs]);
   const visibleSections = sections.filter((section) => section.visible !== false);
   const banner = oc.bannerImageData || oc.bannerImageUrl;
@@ -118,7 +119,7 @@ export default function CharacterWorkspaceDesktop({
         <nav className="workspace-tabs" aria-label="Character workspace sections">
           {visibleSections.map((tab) => <button className={activeTab === tab.id ? "workspace-tab active" : "workspace-tab"} key={tab.id} type="button" onClick={() => switchTab(tab.id)}>{tab.label}</button>)}
         </nav>
-        <div className="workspace-action-buttons"><button className="secondary-button workspace-customize-button" type="button" onClick={() => setExportOpen(true)}>Export</button><button className="secondary-button workspace-customize-button" type="button" onClick={() => setCustomizingWorkspace(true)}>Customize Workspace</button></div>
+        <div className="workspace-action-buttons workspace-more-wrap"><button className="secondary-button workspace-customize-button" type="button" aria-expanded={actionMenuOpen} onClick={() => setActionMenuOpen((open) => !open)}>More</button>{actionMenuOpen ? <div className="workspace-more-menu"><button type="button" onClick={() => { setActionMenuOpen(false); setExportOpen(true); }}>Export</button><button type="button" onClick={() => { setActionMenuOpen(false); setCustomizingWorkspace(true); }}>Organize Tabs</button><button type="button" onClick={() => { setActionMenuOpen(false); switchTab("Appearance"); }}>Customize</button><button type="button" onClick={() => { setActionMenuOpen(false); switchTab("Settings"); }}>Settings</button></div> : null}</div>
       </div>
 
       {activeTab === "Profile" ? (

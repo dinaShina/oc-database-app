@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   APPEARANCE_FIELD_GROUPS,
   DIVERSE_GENDER_OPTIONS,
@@ -64,6 +64,49 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
     setFormData((current) => ({ ...current, profilePictureData: data, profilePictureUrl: url }));
   }
 
+  function addCustomField() {
+    setFormData((current) => ({
+      ...current,
+      customFields: [...getCustomFields(current), { id: crypto.randomUUID(), name: "", value: "" }]
+    }));
+  }
+
+  function updateCustomField(id, key, value) {
+    setFormData((current) => ({
+      ...current,
+      customFields: getCustomFields(current).map((field) => (field.id === id ? { ...field, [key]: value } : field))
+    }));
+  }
+
+  function deleteCustomField(id) {
+    setFormData((current) => ({ ...current, customFields: getCustomFields(current).filter((field) => field.id !== id) }));
+  }
+
+  function moveCustomField(id, direction) {
+    setFormData((current) => ({ ...current, customFields: moveItem(getCustomFields(current), id, direction) }));
+  }
+
+  function addCustomSection() {
+    setFormData((current) => ({
+      ...current,
+      customSections: [...getCustomSections(current), { id: crypto.randomUUID(), title: "", content: "" }]
+    }));
+  }
+
+  function updateCustomSection(id, key, value) {
+    setFormData((current) => ({
+      ...current,
+      customSections: getCustomSections(current).map((section) => (section.id === id ? { ...section, [key]: value } : section))
+    }));
+  }
+
+  function deleteCustomSection(id) {
+    setFormData((current) => ({ ...current, customSections: getCustomSections(current).filter((section) => section.id !== id) }));
+  }
+
+  function moveCustomSection(id, direction) {
+    setFormData((current) => ({ ...current, customSections: moveItem(getCustomSections(current), id, direction) }));
+  }
   const saveCurrentForm = useCallback(() => {
     if (!formData.name.trim()) {
       window.alert("Please add a character name before saving.");
@@ -213,6 +256,56 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
         </div>
       </CompactDetails>
 
+      <CompactDetails label="Additional Details">
+        <div className="custom-detail-editor">
+          <div className="section-heading-row">
+            <div>
+              <h3>Custom fields</h3>
+              <p className="muted-text">Add any details that matter for this OC.</p>
+            </div>
+            <button className="secondary-button inline-primary" type="button" onClick={addCustomField}>Add field</button>
+          </div>
+          {getCustomFields(formData).length === 0 ? <p className="empty-state compact-empty-state">No custom fields yet.</p> : getCustomFields(formData).map((field, index) => (
+            <div className="custom-detail-row" key={field.id}>
+              <TextInput label="Field name" name={`custom-field-name-${field.id}`} value={field.name} onChange={(event) => updateCustomField(field.id, "name", event.target.value)} />
+              <label className="field wide-field">
+                <span>Field value</span>
+                <textarea value={field.value} rows="2" onChange={(event) => updateCustomField(field.id, "value", event.target.value)} />
+              </label>
+              <div className="custom-detail-actions">
+                <button className="secondary-button" type="button" onClick={() => moveCustomField(field.id, -1)} disabled={index === 0}>Up</button>
+                <button className="secondary-button" type="button" onClick={() => moveCustomField(field.id, 1)} disabled={index === getCustomFields(formData).length - 1}>Down</button>
+                <button className="delete-button" type="button" onClick={() => deleteCustomField(field.id)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="custom-detail-editor">
+          <div className="section-heading-row">
+            <div>
+              <h3>Custom sections</h3>
+              <p className="muted-text">Create longer sections for anything that needs room.</p>
+            </div>
+            <button className="secondary-button inline-primary" type="button" onClick={addCustomSection}>Add section</button>
+          </div>
+          {getCustomSections(formData).length === 0 ? <p className="empty-state compact-empty-state">No custom sections yet.</p> : getCustomSections(formData).map((section, index) => (
+            <div className="custom-section-row" key={section.id}>
+              <TextInput label="Section title" name={`custom-section-title-${section.id}`} value={section.title} onChange={(event) => updateCustomSection(section.id, "title", event.target.value)} />
+              <label className="field wide-field">
+                <span>Section content</span>
+                <textarea value={section.content} rows="4" onChange={(event) => updateCustomSection(section.id, "content", event.target.value)} />
+              </label>
+              <div className="custom-detail-actions">
+                <button className="secondary-button" type="button" onClick={() => moveCustomSection(section.id, -1)} disabled={index === 0}>Up</button>
+                <button className="secondary-button" type="button" onClick={() => moveCustomSection(section.id, 1)} disabled={index === getCustomSections(formData).length - 1}>Down</button>
+                <button className="delete-button" type="button" onClick={() => deleteCustomSection(section.id)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CompactDetails>
+
       {editingOC ? (
         <div className="editor-shortcuts">
           <button className="secondary-button" type="button" onClick={() => onOpenCharacterNetwork(editingOC.id)}>
@@ -272,3 +365,21 @@ function NumberInput({ label, max, min, name, onChange, value }) {
 
 
 
+
+function getCustomFields(formData) {
+  return Array.isArray(formData.customFields) ? formData.customFields : [];
+}
+
+function getCustomSections(formData) {
+  return Array.isArray(formData.customSections) ? formData.customSections : [];
+}
+
+function moveItem(items, id, direction) {
+  const next = [...items];
+  const index = next.findIndex((item) => item.id === id);
+  const targetIndex = index + direction;
+  if (index < 0 || targetIndex < 0 || targetIndex >= next.length) return next;
+  const [item] = next.splice(index, 1);
+  next.splice(targetIndex, 0, item);
+  return next;
+}

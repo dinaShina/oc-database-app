@@ -1,4 +1,4 @@
-﻿import { INITIAL_OC_FORM, WORLD_TYPES } from "../data/ocFields.js";
+import { INITIAL_OC_FORM, WORLD_TYPES } from "../data/ocFields.js";
 import { loadFromStorage, parseStoredValue, readRawStorage, saveToStorage } from "./localStorage.js";
 
 export const CHARACTER_STORAGE_KEY = "atlasArchive.characters";
@@ -196,10 +196,33 @@ function migrateOC(oc) {
     scent: oc.scent || "",
     auraPresence: oc.auraPresence || "",
     skillsPowers: oc.skillsPowers || oc.abilities || "",
-    pinterestLink: oc.pinterestLink || oc.moodboardLink || ""
+    pinterestLink: oc.pinterestLink || oc.moodboardLink || "",
+    customFields: normalizeCustomFields(oc.customFields),
+    customSections: normalizeCustomSections(oc.customSections)
   });
 }
 
+function normalizeCustomFields(fields) {
+  if (!Array.isArray(fields)) return [];
+  return fields
+    .filter((field) => field && typeof field === "object")
+    .map((field) => ({
+      id: field.id || crypto.randomUUID(),
+      name: typeof field.name === "string" ? field.name : "",
+      value: typeof field.value === "string" ? field.value : ""
+    }));
+}
+
+function normalizeCustomSections(sections) {
+  if (!Array.isArray(sections)) return [];
+  return sections
+    .filter((section) => section && typeof section === "object")
+    .map((section) => ({
+      id: section.id || crypto.randomUUID(),
+      title: typeof section.title === "string" ? section.title : "",
+      content: typeof section.content === "string" ? section.content : ""
+    }));
+}
 function getMigratedWorldType(oc) {
   if (WORLD_TYPES.includes(oc.worldType)) return oc.worldType;
   return oc.ownWorld ? "Own World" : "Canon Universe";
