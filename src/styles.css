@@ -306,7 +306,7 @@ textarea { min-height: 92px; resize: vertical; }
   display: grid;
   gap: 8px;
   grid-template-columns: 56px 1fr;
-  min-height: 140px;
+  min-height: 180px;
   padding: 10px;
   position: absolute;
   user-select: none;
@@ -1760,7 +1760,7 @@ textarea { min-height: 92px; resize: vertical; }
 .quick-create-card {
   align-items: center;
   justify-items: start;
-  min-height: 84px;
+  min-height: 124px;
 }
 
 .quick-create-card span {
@@ -1803,7 +1803,7 @@ textarea { min-height: 92px; resize: vertical; }
 }
 
 .compact-character-card {
-  min-height: 140px;
+  min-height: 180px;
   padding: 14px;
 }
 
@@ -2422,7 +2422,7 @@ textarea {
   }
 
   .workspace-avatar {
-    height: 140px;
+    height: 180px;
     width: 112px;
   }
 
@@ -2941,7 +2941,7 @@ button:focus-visible {
   border: 0;
   border-radius: var(--radius-lg);
   color: var(--app-text-muted);
-  min-height: 96px;
+  min-height: 132px;
 }
 
 .sidebar-link.active,
@@ -3104,7 +3104,7 @@ button:focus-visible {
 .desk-card-picture,
 .compact-card-picture {
   flex: 0 0 68px;
-  height: 82px;
+  height: 110px;
   width: 68px;
 }
 
@@ -3198,7 +3198,7 @@ button:focus-visible {
 }
 
 .mobile-quick-create .quick-create-card {
-  min-height: 96px;
+  min-height: 132px;
   text-align: left;
 }
 
@@ -3716,7 +3716,7 @@ button:active {
   border-radius: 24px;
   box-shadow: 0 10px 24px rgba(34, 27, 21, 0.07);
   display: flex;
-  height: 76px;
+  height: 112px;
   justify-content: center;
   position: relative;
   width: 76px;
@@ -3949,7 +3949,7 @@ button:active {
   }
 
   .empty-state-illustration {
-    height: 84px;
+    height: 124px;
     width: 66px;
   }
 }
@@ -5072,7 +5072,7 @@ button:active {
   cursor: pointer;
   display: grid;
   gap: 8px;
-  min-height: 76px;
+  min-height: 112px;
   min-width: 0;
   padding: 12px;
   text-align: left;
@@ -5268,7 +5268,7 @@ button:active {
   border: 0;
   color: var(--workspace-text, var(--app-text));
   cursor: pointer;
-  min-height: 96px;
+  min-height: 132px;
   padding: 14px;
   text-align: left;
   width: 100%;
@@ -5483,7 +5483,7 @@ button:active {
   .preset-choice-card {
     align-items: center;
     grid-template-columns: 64px minmax(0, 1fr);
-    min-height: 76px;
+    min-height: 112px;
     padding: 10px;
   }
 
@@ -5901,7 +5901,7 @@ button:active {
   display: flex;
   font-size: 1rem;
   justify-content: space-between;
-  min-height: 96px;
+  min-height: 132px;
   padding: 14px 16px;
   text-align: left;
   width: 100%;
@@ -5957,7 +5957,7 @@ button:active {
   align-items: center;
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
-  min-height: 76px;
+  min-height: 112px;
   padding: 10px;
 }
 
@@ -7014,7 +7014,7 @@ textarea[name="backstory"],
 textarea[name="skillsPowers"],
 textarea[name="weaknesses"],
 textarea[name="relationships"] {
-  min-height: 140px;
+  min-height: 180px;
 }
 
 @media (max-width: 760px) {
@@ -7736,7 +7736,7 @@ textarea.writing-area {
 
   .desk-card-picture,
   .compact-card-picture {
-    height: 82px;
+    height: 110px;
     width: 68px;
   }
 
@@ -7749,7 +7749,7 @@ textarea.writing-area {
   }
 
   .workspace-avatar {
-    height: 140px;
+    height: 180px;
     width: 112px;
   }
 
@@ -8126,7 +8126,7 @@ textarea.writing-area {
   }
 
   .workspace-avatar {
-    height: 116px;
+    height: 150px;
     width: 96px;
   }
 
@@ -8323,7 +8323,7 @@ textarea.writing-area {
 
   .quick-create-card,
   .mobile-quick-create .quick-create-card {
-    min-height: 96px;
+    min-height: 132px;
   }
 }
 
@@ -8654,7 +8654,7 @@ textarea.writing-area {
   display: flex;
   font-size: 1.15rem;
   font-weight: 900;
-  height: 76px;
+  height: 112px;
   justify-content: center;
   width: 76px;
 }
@@ -8829,7 +8829,7 @@ textarea.writing-area {
 
   .account-avatar-placeholder {
     border-radius: 18px;
-    height: 76px;
+    height: 112px;
     width: 58px;
   }
 
@@ -9335,8 +9335,8 @@ textarea.writing-area {
 /* Desktop hover sidebar polish and Atlas Lore branding */
 @media (min-width: 901px) {
   .desktop-preview-active {
-    --sidebar-collapsed-width: 104px;
-    --sidebar-expanded-width: 276px;
+    --sidebar-collapsed-width: 132px;
+    --sidebar-expanded-width: 306px;
     grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
     transition: grid-template-columns 180ms ease;
   }
@@ -9391,7 +9391,7 @@ textarea.writing-area {
     display: grid;
     gap: 12px;
     grid-template-columns: auto minmax(0, 1fr);
-    min-height: 96px;
+    min-height: 132px;
     min-width: 0;
   }
 
@@ -9456,7 +9456,7 @@ textarea.writing-area {
     display: grid;
     gap: 12px;
     grid-template-columns: auto minmax(0, 1fr);
-    min-height: 96px;
+    min-height: 132px;
     min-width: 0;
     padding: 4px;
     text-align: left;
@@ -9802,7 +9802,7 @@ textarea.writing-area {
 
 .atlas-logo-image {
   display: block;
-  height: 82px;
+  height: 110px;
   image-rendering: auto;
   max-height: 100%;
   max-width: 100%;
@@ -9815,11 +9815,11 @@ textarea.writing-area {
 }
 
 .sidebar-brand-mark .atlas-logo-image {
-  height: 76px;
+  height: 112px;
 }
 
 .account-logo-mark .atlas-logo-image {
-  height: 140px;
+  height: 180px;
 }
 
 .beta-brand-heading {
@@ -9829,7 +9829,7 @@ textarea.writing-area {
 }
 
 .beta-logo-mark .atlas-logo-image {
-  height: 140px;
+  height: 180px;
 }
 
 .desktop-preview-active .sidebar-brand-mark.atlas-logo-mark,
@@ -9845,7 +9845,7 @@ textarea.writing-area {
 
 .desktop-preview-active .app-sidebar:hover .sidebar-brand-mark .atlas-logo-image,
 .desktop-preview-active .app-sidebar:focus-within .sidebar-brand-mark .atlas-logo-image {
-  height: 84px;
+  height: 124px;
 }
 
 @media (max-width: 620px) {
@@ -9854,6 +9854,6 @@ textarea.writing-area {
   }
 
   .beta-logo-mark .atlas-logo-image {
-    height: 116px;
+    height: 150px;
   }
 }
