@@ -306,7 +306,7 @@ textarea { min-height: 92px; resize: vertical; }
   display: grid;
   gap: 8px;
   grid-template-columns: 56px 1fr;
-  min-height: 118px;
+  min-height: 140px;
   padding: 10px;
   position: absolute;
   user-select: none;
@@ -1803,7 +1803,7 @@ textarea { min-height: 92px; resize: vertical; }
 }
 
 .compact-character-card {
-  min-height: 118px;
+  min-height: 140px;
   padding: 14px;
 }
 
@@ -2422,7 +2422,7 @@ textarea {
   }
 
   .workspace-avatar {
-    height: 112px;
+    height: 140px;
     width: 112px;
   }
 
@@ -2941,7 +2941,7 @@ button:focus-visible {
   border: 0;
   border-radius: var(--radius-lg);
   color: var(--app-text-muted);
-  min-height: 68px;
+  min-height: 96px;
 }
 
 .sidebar-link.active,
@@ -3104,7 +3104,7 @@ button:focus-visible {
 .desk-card-picture,
 .compact-card-picture {
   flex: 0 0 68px;
-  height: 68px;
+  height: 82px;
   width: 68px;
 }
 
@@ -3198,7 +3198,7 @@ button:focus-visible {
 }
 
 .mobile-quick-create .quick-create-card {
-  min-height: 82px;
+  min-height: 96px;
   text-align: left;
 }
 
@@ -3949,7 +3949,7 @@ button:active {
   }
 
   .empty-state-illustration {
-    height: 66px;
+    height: 84px;
     width: 66px;
   }
 }
@@ -5268,7 +5268,7 @@ button:active {
   border: 0;
   color: var(--workspace-text, var(--app-text));
   cursor: pointer;
-  min-height: 82px;
+  min-height: 96px;
   padding: 14px;
   text-align: left;
   width: 100%;
@@ -5901,7 +5901,7 @@ button:active {
   display: flex;
   font-size: 1rem;
   justify-content: space-between;
-  min-height: 82px;
+  min-height: 96px;
   padding: 14px 16px;
   text-align: left;
   width: 100%;
@@ -7736,7 +7736,7 @@ textarea.writing-area {
 
   .desk-card-picture,
   .compact-card-picture {
-    height: 68px;
+    height: 82px;
     width: 68px;
   }
 
@@ -7749,7 +7749,7 @@ textarea.writing-area {
   }
 
   .workspace-avatar {
-    height: 112px;
+    height: 140px;
     width: 112px;
   }
 
@@ -8126,7 +8126,7 @@ textarea.writing-area {
   }
 
   .workspace-avatar {
-    height: 96px;
+    height: 116px;
     width: 96px;
   }
 
@@ -8323,7 +8323,7 @@ textarea.writing-area {
 
   .quick-create-card,
   .mobile-quick-create .quick-create-card {
-    min-height: 68px;
+    min-height: 96px;
   }
 }
 
@@ -8829,7 +8829,7 @@ textarea.writing-area {
 
   .account-avatar-placeholder {
     border-radius: 18px;
-    height: 58px;
+    height: 76px;
     width: 58px;
   }
 
@@ -9335,8 +9335,8 @@ textarea.writing-area {
 /* Desktop hover sidebar polish and Atlas Lore branding */
 @media (min-width: 901px) {
   .desktop-preview-active {
-    --sidebar-collapsed-width: 88px;
-    --sidebar-expanded-width: 260px;
+    --sidebar-collapsed-width: 104px;
+    --sidebar-expanded-width: 276px;
     grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
     transition: grid-template-columns 180ms ease;
   }
@@ -9391,7 +9391,7 @@ textarea.writing-area {
     display: grid;
     gap: 12px;
     grid-template-columns: auto minmax(0, 1fr);
-    min-height: 82px;
+    min-height: 96px;
     min-width: 0;
   }
 
@@ -9456,7 +9456,7 @@ textarea.writing-area {
     display: grid;
     gap: 12px;
     grid-template-columns: auto minmax(0, 1fr);
-    min-height: 82px;
+    min-height: 96px;
     min-width: 0;
     padding: 4px;
     text-align: left;
@@ -9802,7 +9802,7 @@ textarea.writing-area {
 
 .atlas-logo-image {
   display: block;
-  height: 68px;
+  height: 82px;
   image-rendering: auto;
   max-height: 100%;
   max-width: 100%;
@@ -9815,11 +9815,11 @@ textarea.writing-area {
 }
 
 .sidebar-brand-mark .atlas-logo-image {
-  height: 58px;
+  height: 76px;
 }
 
 .account-logo-mark .atlas-logo-image {
-  height: 112px;
+  height: 140px;
 }
 
 .beta-brand-heading {
@@ -9829,7 +9829,7 @@ textarea.writing-area {
 }
 
 .beta-logo-mark .atlas-logo-image {
-  height: 118px;
+  height: 140px;
 }
 
 .desktop-preview-active .sidebar-brand-mark.atlas-logo-mark,
@@ -9845,7 +9845,7 @@ textarea.writing-area {
 
 .desktop-preview-active .app-sidebar:hover .sidebar-brand-mark .atlas-logo-image,
 .desktop-preview-active .app-sidebar:focus-within .sidebar-brand-mark .atlas-logo-image {
-  height: 66px;
+  height: 84px;
 }
 
 @media (max-width: 620px) {
@@ -9854,6 +9854,6 @@ textarea.writing-area {
   }
 
   .beta-logo-mark .atlas-logo-image {
-    height: 96px;
+    height: 116px;
   }
 }
