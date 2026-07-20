@@ -106,7 +106,7 @@ function buildCompleteWorldArchive({ ocs = [], options = DEFAULT_ARCHIVE_EXPORT_
 }
 
 function renderCover({ banner = "", image = "", subtitle = "", title }) {
-  return `<section class="pdf-cover page-break-after">${banner ? `<img class="pdf-banner" src="${escapeAttr(banner)}" alt="">` : ""}<div class="pdf-cover-content">${image ? `<img class="pdf-avatar" src="${escapeAttr(image)}" alt="">` : ""}<p class="pdf-kicker">Atlas Archive Export</p><h1>${escapeHtml(title)}</h1>${subtitle ? `<p class="pdf-subtitle">${escapeHtml(subtitle)}</p>` : ""}<p class="pdf-date">Exported ${escapeHtml(formatDateWithMonthName(new Date()))}</p></div></section>`;
+  return `<section class="pdf-cover page-break-after">${banner ? `<img class="pdf-banner" src="${escapeAttr(banner)}" alt="">` : ""}<div class="pdf-cover-content">${image ? `<img class="pdf-avatar" src="${escapeAttr(image)}" alt="">` : ""}<p class="pdf-kicker">Atlas Lore Export</p><h1>${escapeHtml(title)}</h1>${subtitle ? `<p class="pdf-subtitle">${escapeHtml(subtitle)}</p>` : ""}<p class="pdf-date">Exported ${escapeHtml(formatDateWithMonthName(new Date()))}</p></div></section>`;
 }
 
 function renderToc(items) {
@@ -204,7 +204,7 @@ function htmlToPdfLines(html) {
   documentHtml.querySelectorAll("script, style").forEach((node) => node.remove());
   const headings = Array.from(documentHtml.body.querySelectorAll("h1, h2, h3, p, li, dt, dd, blockquote"));
   const rawLines = headings.map((node) => node.textContent.trim()).filter(Boolean);
-  return rawLines.length ? rawLines : [documentHtml.body.textContent.trim() || "Atlas Archive Export"];
+  return rawLines.length ? rawLines : [documentHtml.body.textContent.trim() || "Atlas Lore Export"];
 }
 
 function createSimplePdf(lines, title) {
@@ -213,7 +213,7 @@ function createSimplePdf(lines, title) {
   const margin = 54;
   const lineHeight = 15;
   const maxChars = 82;
-  const wrapped = [`Atlas Archive - ${title}`, ""].concat(lines.flatMap((line) => wrapPdfLine(line, maxChars))).flatMap((line) => line === "" ? [""] : [line]);
+  const wrapped = [`Atlas Lore - ${title}`, ""].concat(lines.flatMap((line) => wrapPdfLine(line, maxChars))).flatMap((line) => line === "" ? [""] : [line]);
   const pages = [];
   let pageLines = [];
   const maxLines = Math.floor((pageHeight - margin * 2) / lineHeight);
@@ -337,6 +337,7 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value).replace(/'/g, "&#39;");
 }
+
 
 
 

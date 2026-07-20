@@ -10,13 +10,13 @@
 export default function Sidebar({ activeSection, hasUnsavedChanges = false, onNavigate }) {
   return (
     <aside className="app-sidebar">
-      <div className="sidebar-brand"><p className="eyebrow">Workspace</p><h2>OC Studio</h2></div>
+      <div className="sidebar-brand"><span className="sidebar-brand-mark" aria-hidden="true">AL</span><div className="sidebar-brand-copy"><p className="eyebrow">Atlas Lore</p><h2>Atlas Lore</h2></div></div>
       {hasUnsavedChanges ? <p className="sidebar-unsaved-indicator">Unsaved Changes</p> : null}
       <nav className="sidebar-nav" aria-label="Workspace navigation">
         {NAV_ITEMS.map(([id, label, Icon]) => (
           <button className={activeSection === id ? "sidebar-link active" : "sidebar-link"} key={id} type="button" onClick={() => onNavigate(id)}>
             <span className="sidebar-icon" aria-hidden="true"><Icon /></span>
-            <span>{label}</span>
+            <span className="sidebar-link-label">{label}</span>
           </button>
         ))}
       </nav>
@@ -82,4 +82,5 @@ function SettingsIcon() {
     </svg>
   );
 }
+
 

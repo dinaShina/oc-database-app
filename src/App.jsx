@@ -422,7 +422,7 @@ export default function App() {
     }
   }
 
-  if (betaEnabled && !authReady) return <main className="beta-auth-page"><section className="beta-auth-card"><h1>Loading private beta...</h1></section></main>;
+  if (betaEnabled && !authReady) return <main className="beta-auth-page"><section className="beta-auth-card"><h1>Loading Atlas Lore...</h1></section></main>;
   if (betaEnabled && !authSession?.access_token) return <><BetaAuth onAuthenticated={handleAuthenticated} /><LegalFooter /></>;
 
   return (
@@ -431,14 +431,14 @@ export default function App() {
       <main className="app-shell">
         <header className="app-header">
           <div>
-            <p className="eyebrow">Creative Workspace</p>
+            <p className="eyebrow">Atlas Lore</p>
             <div className="header-title-row">
               <h1>{activeOC ? activeOC.name : getSectionTitle(activeSection)}</h1>
               {unsavedEditor.isDirty ? <span className="unsaved-indicator">Unsaved Changes</span> : null}
             </div>
           </div>
           <div className="app-header-side">
-            <p className="app-summary">A calmer studio for characters, worlds, timelines, and story planning.</p>
+            <p className="app-summary">A focused lore studio for characters, worlds, timelines, and stories.</p>
             <div className="top-account-actions">
               <button className="secondary-button inline-primary" type="button" onClick={() => requestNavigation(() => navigateToSection("account"))}>Account</button>
               {betaEnabled && authSession?.access_token ? <button className="text-button" type="button" onClick={handleSignOut}>Sign out</button> : null}
@@ -452,11 +452,11 @@ export default function App() {
         ) : activeSection === "dashboard" ? (
           <DashboardLayout ocs={ocs} onCreateOC={openCharacterCreation} onCreateStory={() => requestNavigation(() => navigateToSection("library"))} onCreateTimeline={() => requestNavigation(() => navigateToSection("library"))} onCreateWorld={() => requestNavigation(() => navigateToSection("worlds"))} onOpenOC={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} timelineData={timelineData} worlds={worldRecords} />
         ) : activeSection === "worlds" ? (
-          <WorldLibrary ocs={ocs} onWorldsChange={setWorldRecords} timelineData={timelineData} worlds={worldRecords} />
+          <WorldLibrary ocs={ocs} onTimelineDataChange={setTimelineData} onWorldsChange={setWorldRecords} timelineData={timelineData} worlds={worldRecords} />
         ) : activeSection === "favorites" ? (
           <FavoritesView ocs={ocs} onOpenOC={(ocId) => requestNavigation(() => openOCWorkspace(ocId))} onToggleOCFavorite={toggleOCFavorite} onToggleWorldFavorite={toggleWorldFavorite} timelineData={timelineData} worlds={worldRecords} />
         ) : activeSection === "account" ? (
-          <AccountPage authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onSignOut={handleSignOut} />
+          <AccountPage authSession={authSession} betaEnabled={betaEnabled} onNavigate={navigateToSection} onSignOut={handleSignOut} />
         ) : activeSection === "settings" ? (
           <SettingsErrorBoundary><GlobalSettings appSettings={appSettings} authSession={authSession} betaEnabled={betaEnabled} exportData={{ familyMembers, inspirationItems, ocs, relationshipMaps, relationships, timelineData, worlds: worldRecords }} onAccountDeletionRequest={handleAccountDeletionRequest} onEmergencyBackup={downloadEmergencyBackup} onExportAccountData={exportAccountData} onNavigate={navigateToSection} onRestoreCharacters={restoreLocalCharacters} onRestoreMyCharacters={restoreMyCharacters} ownerSeedMode={ownerSeedMode} onSettingsChange={setAndSaveAppSettings} onSignOut={handleSignOut} /></SettingsErrorBoundary>
         ) : (
@@ -535,56 +535,43 @@ function UnsavedChangesDialog({ onCancel, onDiscard, onSave, open }) {
   return <div className="dialog-backdrop" role="presentation"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="unsaved-dialog-title"><h2 id="unsaved-dialog-title">Unsaved Changes</h2><p>You have unsaved changes.</p><p>What would you like to do?</p><div className="dialog-actions"><button className="primary-button" type="button" onClick={onSave}>Save and Continue</button><button className="danger-outline-button" type="button" onClick={onDiscard}>Discard Changes</button><button className="secondary-button" type="button" onClick={onCancel}>Cancel</button></div></section></div>;
 }
 
-function AccountPage({ authSession, betaEnabled, exportData, onExportAccountData, onNavigate, onSignOut }) {
+function AccountPage({ authSession, betaEnabled, onNavigate, onSignOut }) {
   const accountEmail = authSession?.user?.email || "Not connected yet";
-  const characterCount = exportData?.ocs?.length || 0;
-  const worldCount = exportData?.worlds?.length || 0;
-  const timelineCount = exportData?.timelineData?.events?.length || 0;
 
   return (
     <section className="account-page">
       <header className="account-hero panel">
-        <div className="account-avatar-placeholder" aria-hidden="true">AA</div>
+        <div className="account-avatar-placeholder" aria-hidden="true">AL</div>
         <div>
-          <p className="eyebrow">Future Account</p>
+          <p className="eyebrow">Atlas Lore Account</p>
           <h2>Account</h2>
-          <p className="muted-text">This page is prepared for login, profiles, cloud sync, and multi-device work. Authentication is not implemented in this step.</p>
+          <p className="muted-text">Future profile, login, cloud sync, and multi-device features will live here. Authentication is not implemented yet.</p>
         </div>
         <span className="coming-soon-pill">Coming Soon</span>
       </header>
 
-      <div className="account-section-grid">
+      <div className="account-section-grid account-profile-grid">
         <section className="panel account-info-card">
           <p className="eyebrow">Profile</p>
           <h3>User Profile</h3>
           <dl className="account-fact-list">
             <div><dt>Email</dt><dd>{accountEmail}</dd></div>
-            <div><dt>Username</dt><dd>Prepared for future accounts</dd></div>
-            <div><dt>Avatar</dt><dd>Upload support planned</dd></div>
-          </dl>
-        </section>
-
-        <section className="panel account-info-card">
-          <p className="eyebrow">Workspace</p>
-          <h3>Local Archive</h3>
-          <dl className="account-fact-list">
-            <div><dt>Characters</dt><dd>{characterCount}</dd></div>
-            <div><dt>Worlds</dt><dd>{worldCount}</dd></div>
-            <div><dt>Timeline Events</dt><dd>{timelineCount}</dd></div>
+            <div><dt>Username</dt><dd>Reserved for future profiles</dd></div>
+            <div><dt>Avatar</dt><dd>Profile image upload planned</dd></div>
           </dl>
         </section>
 
         <section className="panel account-info-card">
           <p className="eyebrow">Cloud Sync</p>
           <h3>Multiple Devices</h3>
-          <p className="muted-text">Cloud synchronization, backups, and account recovery will connect here later.</p>
+          <p className="muted-text">Cloud synchronization, backup history, device recovery, and account restore will connect here later.</p>
           <button className="secondary-button inline-primary" type="button" disabled>Cloud Sync Coming Soon</button>
         </section>
 
         <section className="panel account-info-card">
           <p className="eyebrow">Authentication</p>
           <h3>Login / Register</h3>
-          <p className="muted-text">Login, registration, password reset, and email verification are prepared as UI areas only.</p>
+          <p className="muted-text">Login, registration, password reset, and email verification are prepared as interface areas only.</p>
           <div className="account-action-grid">
             <button className="primary-button inline-primary" type="button" disabled>Login Coming Soon</button>
             <button className="secondary-button inline-primary" type="button" disabled>Register Coming Soon</button>
@@ -592,12 +579,11 @@ function AccountPage({ authSession, betaEnabled, exportData, onExportAccountData
           </div>
         </section>
 
-        <section className="panel account-info-card account-wide-card">
-          <p className="eyebrow">Data</p>
-          <h3>Account-ready data tools</h3>
-          <p className="muted-text">Exports stay available now, and this structure can later connect to a backend without changing the main app pages.</p>
+        <section className="panel account-info-card">
+          <p className="eyebrow">Account Data</p>
+          <h3>Privacy and data tools</h3>
+          <p className="muted-text">Data export, backup, restore, and deletion controls stay in Settings until account storage is connected.</p>
           <div className="account-action-grid">
-            <button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export Current Data</button>
             <button className="secondary-button inline-primary" type="button" onClick={() => onNavigate("settings", "data")}>Open Data & Storage</button>
             {betaEnabled && authSession?.access_token ? <button className="secondary-button inline-primary" type="button" onClick={onSignOut}>Sign out</button> : null}
           </div>
@@ -691,7 +677,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
       id: "appearance",
       title: "Appearance",
       eyebrow: "Theme",
-      summary: "Choose the global Atlas Archive mode and interface palette.",
+      summary: "Choose the global Atlas Lore mode and interface palette.",
       content: (
         <>
           <div className="theme-mode-grid" role="radiogroup" aria-label="Application theme mode">
@@ -730,7 +716,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
           </div>
           <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button>{ownerSeedMode ? <button className="secondary-button inline-primary" type="button" onClick={onRestoreMyCharacters}>Restore My Characters</button> : null}<button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button><button className="danger-outline-button" type="button" disabled>Reset Data Coming Soon</button></div>
           <section className="recovery-panel">
-            <div><h3>Recover Local Data</h3><p className="muted-text">Found Atlas Archive and legacy browser-storage sources. Restoring merges by character ID and creates a backup first.</p></div>
+            <div><h3>Recover Local Data</h3><p className="muted-text">Found Atlas Lore and legacy browser-storage sources. Restoring merges by character ID and creates a backup first.</p></div>
             <div className="recovery-source-list">
               {characterSources.length ? characterSources.map((source) => <article className="recovery-source-card" key={source.key}><div><strong>{source.key}</strong><span>{source.ok ? `${source.characterCount} characters found` : `Unreadable data preserved: ${source.error}`}</span></div><button className="secondary-button" type="button" disabled={!source.ok || source.characterCount === 0} onClick={() => onRestoreCharacters(source.key)}>Restore / Merge</button></article>) : <p className="muted-text">No local character backups or legacy keys were found in this browser.</p>}
             </div>
@@ -760,7 +746,7 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
     {
       id: "about",
       title: "About",
-      eyebrow: "Atlas Archive",
+      eyebrow: "Atlas Lore",
       summary: "What is ready now and what stays prepared for later.",
       content: <><div className="prepared-grid compact-prepared-grid">{["Notebook mode", "Fantasy themes", "Export formats", "Backend sync"].map((item) => <article className="prepared-card future-setting-card" key={item}><h3>{item}</h3><p className="muted-text">Prepared for a later step.</p></article>)}</div><div className="legal-link-row"><button className="secondary-button inline-primary" type="button" onClick={() => onNavigate("account")}>Open Account Page</button><a href={buildAppHref("privacy")}>Privacy Policy</a><a href={buildAppHref("terms")}>Beta Terms</a><a href={buildAppHref("contact")}>Contact</a></div></>
     }
@@ -996,6 +982,9 @@ function getLegalTitle(page) {
   if (page === "terms") return "Terms / Beta Rules";
   return "Contact";
 }
+
+
+
 
 
 

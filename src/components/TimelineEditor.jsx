@@ -17,13 +17,15 @@ import { formatDateWithMonthName, formatMonthName } from "../utils/dateFormat.js
 
 const EVENTS_PER_ROW = 4;
 
-export default function TimelineEditor({ embedded = false, ocs, onBack, onTimelineDataChange, timelineData, workspaceOcId = "" }) {
-  const visibleTimelines = workspaceOcId
-    ? timelineData.timelines.filter((timeline) => timeline.connectedOcId === workspaceOcId || timeline.type !== "Character Timeline")
-    : timelineData.timelines;
+export default function TimelineEditor({ embedded = false, ocs, onBack, onTimelineDataChange, timelineData, workspaceOcId = "", workspaceWorldName = "" }) {
+  const visibleTimelines = workspaceWorldName
+    ? timelineData.timelines.filter((timeline) => timeline.connectedWorld === workspaceWorldName)
+    : workspaceOcId
+      ? timelineData.timelines.filter((timeline) => timeline.connectedOcId === workspaceOcId || timeline.type !== "Character Timeline")
+      : timelineData.timelines;
 
   const [activeTimelineId, setActiveTimelineId] = useState(visibleTimelines[0]?.id || "");
-  const [timelineForm, setTimelineForm] = useState({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
+  const [timelineForm, setTimelineForm] = useState({ ...INITIAL_TIMELINE, type: workspaceWorldName ? "World Timeline" : INITIAL_TIMELINE.type, connectedOcId: workspaceOcId, connectedWorld: workspaceWorldName });
   const [eventForm, setEventForm] = useState(INITIAL_TIMELINE_EVENT);
   const [editingEventId, setEditingEventId] = useState(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -32,7 +34,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   const [expandedEventIds, setExpandedEventIds] = useState([]);
   const [yearSearch, setYearSearch] = useState("");
 
-  const worlds = useMemo(() => ["All", ...Array.from(new Set(ocs.map(getWorldTitle).filter(Boolean))).sort()], [ocs]);
+  const worlds = useMemo(() => ["All", ...Array.from(new Set([...ocs.map(getWorldTitle).filter(Boolean), workspaceWorldName].filter(Boolean))).sort()], [ocs, workspaceWorldName]);
   const activeTimeline = timelineData.timelines.find((timeline) => timeline.id === activeTimelineId) || visibleTimelines[0] || null;
   const activeTimelineIdSafe = activeTimeline?.id || "";
 
@@ -71,13 +73,13 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   }
 
   function openTimelineModal() {
-    setTimelineForm({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
+    setTimelineForm({ ...INITIAL_TIMELINE, type: workspaceWorldName ? "World Timeline" : INITIAL_TIMELINE.type, connectedOcId: workspaceOcId, connectedWorld: workspaceWorldName });
     setIsTimelineModalOpen(true);
   }
 
   function closeTimelineModal() {
     if (visibleTimelines.length === 0) return;
-    setTimelineForm({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
+    setTimelineForm({ ...INITIAL_TIMELINE, type: workspaceWorldName ? "World Timeline" : INITIAL_TIMELINE.type, connectedOcId: workspaceOcId, connectedWorld: workspaceWorldName });
     setIsTimelineModalOpen(false);
   }
 
@@ -87,7 +89,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
     const nextTimeline = createTimeline(timelineForm);
     persist({ ...timelineData, timelines: [nextTimeline, ...timelineData.timelines] });
     setActiveTimelineId(nextTimeline.id);
-    setTimelineForm({ ...INITIAL_TIMELINE, connectedOcId: workspaceOcId });
+    setTimelineForm({ ...INITIAL_TIMELINE, type: workspaceWorldName ? "World Timeline" : INITIAL_TIMELINE.type, connectedOcId: workspaceOcId, connectedWorld: workspaceWorldName });
     setIsTimelineModalOpen(false);
   }
 
@@ -98,7 +100,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
       ...INITIAL_TIMELINE_EVENT,
       dateYear: year ? String(year) : "",
       connectedCharacterIds: workspaceOcId ? [workspaceOcId] : [],
-      connectedWorld: activeTimeline?.connectedWorld || ""
+      connectedWorld: workspaceWorldName || activeTimeline?.connectedWorld || ""
     });
     setIsEventModalOpen(true);
   }
@@ -603,6 +605,9 @@ function getEventAge(event, ocs) {
   if (!Number.isFinite(birthYear) || !Number.isFinite(eventYear)) return "";
   return eventYear - birthYear;
 }
+
+
+
 
 
 

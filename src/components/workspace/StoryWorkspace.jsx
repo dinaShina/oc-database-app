@@ -12,6 +12,7 @@ import {
   updateWritingEntry
 } from "../../storage/writingRepository.js";
 import WorkspacePanel from "./WorkspacePanel.jsx";
+import { formatSelection, getFormattingFallback } from "../../utils/storyFormatting.js";
 
 const AUTOSAVE_LABEL_DELAY = 1400;
 const STORY_FONT_OPTIONS = [
@@ -97,20 +98,6 @@ export default function StoryWorkspace({ oc }) {
       saveStoryEditorStyle(oc.id, next);
       return next;
     });
-  }
-
-  function uploadCustomFont(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setEditorStyle((current) => {
-        const next = { ...current, customFontData: String(reader.result || ""), customFontName: file.name };
-        saveStoryEditorStyle(oc.id, next);
-        return next;
-      });
-    };
-    reader.readAsDataURL(file);
   }
 
   function applyFormat(type) {
@@ -212,7 +199,6 @@ export default function StoryWorkspace({ oc }) {
               <input className="writing-subtitle-input" value={activeEntry.subtitle} placeholder="Optional subtitle" onChange={(event) => updateActiveEntry("subtitle", event.target.value)} />
               <StoryFormatToolbar
                 editorStyle={editorStyle}
-                onCustomFontUpload={uploadCustomFont}
                 onFormat={applyFormat}
                 onStyleChange={updateEditorStyle}
               />
@@ -255,7 +241,7 @@ export default function StoryWorkspace({ oc }) {
   );
 }
 
-function StoryFormatToolbar({ editorStyle, onCustomFontUpload, onFormat, onStyleChange }) {
+function StoryFormatToolbar({ editorStyle, onFormat, onStyleChange }) {
   return (
     <div className="story-format-toolbar" aria-label="Story formatting toolbar">
       <label className="compact-tool-field">
@@ -272,42 +258,12 @@ function StoryFormatToolbar({ editorStyle, onCustomFontUpload, onFormat, onStyle
       </label>
       <div className="format-button-group">
         <button type="button" onClick={() => onFormat("heading")}>H</button>
-        <button type="button" onClick={() => onFormat("bold")}><strong>B</strong></button>
         <button type="button" onClick={() => onFormat("italic")}><em>I</em></button>
-        <button type="button" onClick={() => onFormat("underline")}><span className="underline-icon">U</span></button>
-        <button type="button" onClick={() => onFormat("bullet")}>• List</button>
+        <button type="button" onClick={() => onFormat("bullet")}>- List</button>
         <button type="button" onClick={() => onFormat("number")}>1. List</button>
-        <button type="button" onClick={() => onFormat("quote")}>Quote</button>
-        <button type="button" onClick={() => onFormat("link")}>Link</button>
-        <button type="button" onClick={() => onFormat("image")}>Image</button>
       </div>
-      <label className="custom-font-upload">
-        <span>{editorStyle.customFontName ? editorStyle.customFontName : "Custom font"}</span>
-        <input accept=".ttf,.otf,.woff,.woff2" type="file" onChange={onCustomFontUpload} />
-      </label>
     </div>
   );
-}
-
-function getFormattingFallback(type) {
-  if (type === "image") return "image description";
-  if (type === "link") return "link text";
-  if (type === "heading") return "Heading";
-  return "text";
-}
-
-function formatSelection(type, value) {
-  const selected = String(value || "");
-  if (type === "bold") return `**${selected}**`;
-  if (type === "italic") return `*${selected}*`;
-  if (type === "underline") return `<u>${selected}</u>`;
-  if (type === "bullet") return selected.split("\n").map((line) => `- ${line || "List item"}`).join("\n");
-  if (type === "number") return selected.split("\n").map((line, index) => `${index + 1}. ${line || "List item"}`).join("\n");
-  if (type === "quote") return selected.split("\n").map((line) => `> ${line || "Quote"}`).join("\n");
-  if (type === "heading") return `## ${selected}`;
-  if (type === "image") return `![${selected}](image-url)`;
-  if (type === "link") return `[${selected}](https://)`;
-  return selected;
 }
 
 function getStoryEditorStyle(ocId) {
@@ -356,6 +312,8 @@ function formatEditedDate(value) {
   if (!value) return "never";
   return formatDateTime(value);
 }
+
+
 
 
 

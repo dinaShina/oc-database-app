@@ -34,7 +34,7 @@ export default function BetaAuth({ onAuthenticated }) {
       <section className="beta-auth-card">
         <div>
           <p className="eyebrow">Private Beta</p>
-          <h1>Atlas Archive</h1>
+          <h1>Atlas Lore</h1>
           <p className="muted-text">Sign in with your own tester account. Your characters are private and owned by your account.</p>
         </div>
         <div className="segmented-control two-options">
@@ -59,3 +59,4 @@ export default function BetaAuth({ onAuthenticated }) {
     </main>
   );
 }
+

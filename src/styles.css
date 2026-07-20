@@ -3969,7 +3969,7 @@ button:active {
   z-index: 42;
 }
 
-/* Atlas Archive Phase 1: customizable workspace and focused inspiration */
+/* Atlas Lore Phase 1: customizable workspace and focused inspiration */
 .workspace-nav-row {
   align-items: start;
   display: grid;
@@ -8375,7 +8375,7 @@ textarea.writing-area {
 }
 
 .graph-view-toolbar span {
-  color: var(--app-muted, #596273);
+  color: var(--app-text-muted, #596273);
   font-size: 0.85rem;
   font-weight: 850;
   margin-left: auto;
@@ -8699,7 +8699,7 @@ textarea.writing-area {
 }
 
 .account-fact-list dt {
-  color: var(--app-muted, #596273);
+  color: var(--app-text-muted, #596273);
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -8748,7 +8748,7 @@ textarea.writing-area {
 }
 
 .settings-accordion-card summary small {
-  color: var(--app-muted, #596273);
+  color: var(--app-text-muted, #596273);
   font-size: 0.9rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
@@ -8759,7 +8759,7 @@ textarea.writing-area {
   background: var(--app-surface-strong, #fffaf2);
   border: 1px solid var(--app-border, #ded8cf);
   border-radius: 999px;
-  color: var(--app-muted, #596273);
+  color: var(--app-text-muted, #596273);
   display: flex;
   flex: 0 0 auto;
   font-weight: 900;
@@ -8915,7 +8915,7 @@ textarea.writing-area {
   background: var(--app-surface-strong, #fffaf2);
   border: 1px solid var(--app-border, #ded8cf);
   border-radius: 999px;
-  color: var(--app-muted, #596273);
+  color: var(--app-text-muted, #596273);
   cursor: pointer;
   display: flex;
   font-size: 1.1rem;
@@ -9109,4 +9109,532 @@ textarea.writing-area {
   .customize-card {
     padding: 12px;
   }
+}
+
+/* World wiki workspace. */
+.wiki-world-grid {
+  align-items: stretch;
+}
+
+.wiki-world-card {
+  cursor: pointer;
+  gap: 12px;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.wiki-world-card:hover {
+  border-color: color-mix(in srgb, var(--app-accent, #2f6652) 34%, var(--app-border, #ded8cf));
+  box-shadow: 0 18px 38px rgba(36, 28, 22, 0.12);
+  transform: translateY(-2px);
+}
+
+.world-cover {
+  align-items: center;
+  aspect-ratio: 16 / 8;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--app-accent-soft, #eef7f3) 72%, #ffffff), var(--app-surface-strong, #fffaf2));
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: 14px;
+  color: var(--app-accent, #2f6652);
+  display: flex;
+  font-size: 1.35rem;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 120px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.world-cover img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.world-cover-large {
+  aspect-ratio: 16 / 6;
+  min-height: 180px;
+}
+
+.world-wiki-page {
+  display: grid;
+  gap: var(--space-6, 24px);
+}
+
+.world-wiki-hero {
+  align-items: start;
+  display: grid;
+  gap: var(--space-5, 16px);
+  grid-template-columns: auto minmax(260px, 420px) minmax(0, 1fr) auto;
+}
+
+.world-wiki-title-block {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.world-wiki-title-block h2 {
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.world-wiki-title-block p {
+  overflow-wrap: anywhere;
+}
+
+.world-wiki-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.world-wiki-section {
+  padding: 0;
+}
+
+.world-wiki-section summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  padding: 18px 20px;
+}
+
+.world-wiki-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.world-wiki-section summary h3 {
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+
+.world-wiki-section summary span {
+  align-items: center;
+  background: var(--app-surface-strong, #fffaf2);
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: 999px;
+  color: var(--app-text-muted, #596273);
+  display: flex;
+  flex: 0 0 auto;
+  font-weight: 900;
+  height: 30px;
+  justify-content: center;
+  transition: transform 160ms ease;
+  width: 30px;
+}
+
+.world-wiki-section[open] summary span {
+  color: var(--app-accent, #2f6652);
+  transform: rotate(90deg);
+}
+
+.world-wiki-section-body {
+  border-top: 1px solid color-mix(in srgb, var(--app-border, #ded8cf) 72%, transparent);
+  display: grid;
+  gap: 16px;
+  padding: 18px 20px 20px;
+}
+
+.world-overview-card {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+}
+
+.world-overview-card p,
+.world-detail-editor textarea,
+.world-reference-card textarea,
+.world-wiki-section textarea {
+  overflow-wrap: anywhere;
+}
+
+.world-detail-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.world-detail-presets .secondary-button {
+  min-height: 34px;
+  padding: 7px 10px;
+  width: auto;
+}
+
+.world-detail-list,
+.world-reference-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.world-detail-editor,
+.world-reference-card {
+  background: var(--app-surface, #ffffff);
+  border: 1px solid var(--app-border, #ded8cf);
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.add-world-section-button {
+  justify-self: start;
+}
+
+@media (max-width: 980px) {
+  .world-wiki-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .world-wiki-hero > .secondary-button,
+  .world-wiki-hero > .inline-primary {
+    justify-self: start;
+  }
+
+  .world-overview-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .world-wiki-page {
+    gap: 14px;
+  }
+
+  .world-wiki-section summary,
+  .world-wiki-section-body {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .world-cover-large {
+    aspect-ratio: 16 / 9;
+    min-height: 150px;
+  }
+
+  .world-detail-presets .secondary-button {
+    flex: 1 1 calc(50% - 8px);
+  }
+}
+
+/* Desktop hover sidebar polish and Atlas Lore branding */
+@media (min-width: 901px) {
+  .desktop-preview-active {
+    --sidebar-collapsed-width: 76px;
+    --sidebar-expanded-width: 244px;
+    grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
+    transition: grid-template-columns 180ms ease;
+  }
+
+  .desktop-preview-active:has(.app-sidebar:hover),
+  .desktop-preview-active:has(.app-sidebar:focus-within) {
+    grid-template-columns: var(--sidebar-expanded-width) minmax(0, 1fr);
+  }
+
+  .desktop-preview-active::before {
+    background: var(--app-surface-strong, #fffaf2);
+    border-right: 1px solid var(--app-border, #dfd5c7);
+    content: "";
+    height: 100vh;
+    left: 0;
+    position: fixed;
+    top: 0;
+    transition: width 180ms ease, background-color 180ms ease, border-color 180ms ease;
+    width: var(--sidebar-collapsed-width);
+    z-index: 0;
+  }
+
+  .desktop-preview-active:has(.app-sidebar:hover)::before,
+  .desktop-preview-active:has(.app-sidebar:focus-within)::before {
+    width: var(--sidebar-expanded-width);
+  }
+
+  .desktop-preview-active .app-sidebar {
+    align-content: start;
+    background: var(--app-surface-strong, #fffaf2);
+    border-right: 1px solid var(--app-border, #dfd5c7);
+    box-shadow: 12px 0 34px color-mix(in srgb, var(--app-text, #1e2329) 7%, transparent);
+    gap: 20px;
+    height: 100vh;
+    overflow: hidden;
+    padding: 18px 12px;
+    position: sticky;
+    top: 0;
+    transition: width 180ms ease, padding 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    width: var(--sidebar-collapsed-width);
+    z-index: 2;
+  }
+
+  .desktop-preview-active .app-sidebar:hover,
+  .desktop-preview-active .app-sidebar:focus-within {
+    padding: 22px 16px;
+    width: var(--sidebar-expanded-width);
+  }
+
+  .desktop-preview-active .sidebar-brand {
+    align-items: center;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 52px;
+    min-width: 0;
+  }
+
+  .desktop-preview-active .sidebar-brand-mark {
+    align-items: center;
+    background: var(--app-accent-soft, #eef7f3);
+    border: 1px solid color-mix(in srgb, var(--app-accent, #2f6652) 32%, var(--app-border, #dfd5c7));
+    border-radius: 16px;
+    color: var(--app-accent, #2f6652);
+    display: flex;
+    font-weight: 950;
+    height: 48px;
+    justify-content: center;
+    letter-spacing: 0;
+    width: 48px;
+  }
+
+  .desktop-preview-active .sidebar-brand-copy,
+  .desktop-preview-active .sidebar-link-label,
+  .desktop-preview-active .sidebar-unsaved-indicator {
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateX(-6px);
+    transition: opacity 150ms ease, transform 150ms ease;
+    white-space: nowrap;
+  }
+
+  .desktop-preview-active .app-sidebar:hover .sidebar-brand-copy,
+  .desktop-preview-active .app-sidebar:focus-within .sidebar-brand-copy,
+  .desktop-preview-active .app-sidebar:hover .sidebar-link-label,
+  .desktop-preview-active .app-sidebar:focus-within .sidebar-link-label,
+  .desktop-preview-active .app-sidebar:hover .sidebar-unsaved-indicator,
+  .desktop-preview-active .app-sidebar:focus-within .sidebar-unsaved-indicator {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  .desktop-preview-active .sidebar-brand-copy .eyebrow {
+    color: var(--app-accent, #2f6652);
+    font-size: 0.68rem;
+  }
+
+  .desktop-preview-active .sidebar-brand-copy h2 {
+    color: var(--app-text, #1e2329);
+    font-size: 1.02rem;
+    line-height: 1.1;
+  }
+
+  .desktop-preview-active .sidebar-nav {
+    display: grid;
+    gap: 10px;
+  }
+
+  .desktop-preview-active .sidebar-link {
+    align-items: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 18px;
+    color: var(--app-text-muted, #596273);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 52px;
+    min-width: 0;
+    padding: 4px;
+    text-align: left;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    width: 100%;
+  }
+
+  .desktop-preview-active .sidebar-link:hover,
+  .desktop-preview-active .sidebar-link:focus-visible {
+    background: color-mix(in srgb, var(--app-accent, #2f6652) 8%, var(--app-surface, #ffffff));
+    border-color: color-mix(in srgb, var(--app-accent, #2f6652) 22%, transparent);
+    color: var(--app-accent, #2f6652);
+    transform: translateX(2px);
+  }
+
+  .desktop-preview-active .sidebar-link.active {
+    background: color-mix(in srgb, var(--app-accent, #2f6652) 14%, var(--app-surface, #ffffff));
+    border-color: color-mix(in srgb, var(--app-accent, #2f6652) 34%, transparent);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--app-accent, #2f6652) 16%, transparent);
+    color: var(--app-accent, #2f6652);
+  }
+
+  .desktop-preview-active .sidebar-icon {
+    align-items: center;
+    background: color-mix(in srgb, var(--app-accent, #2f6652) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--app-accent, #2f6652) 12%, transparent);
+    border-radius: 16px;
+    color: currentColor;
+    display: flex;
+    flex: 0 0 48px;
+    height: 48px;
+    justify-content: center;
+    margin: 0;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    width: 48px;
+  }
+
+  .desktop-preview-active .sidebar-icon svg {
+    height: 28px;
+    width: 28px;
+  }
+
+  .desktop-preview-active .sidebar-link.active .sidebar-icon,
+  .desktop-preview-active .sidebar-link:hover .sidebar-icon,
+  .desktop-preview-active .sidebar-link:focus-visible .sidebar-icon {
+    background: var(--app-accent, #2f6652);
+    border-color: var(--app-accent, #2f6652);
+    color: var(--app-accent-text, #ffffff);
+    transform: scale(1.03);
+  }
+
+  .desktop-preview-active .sidebar-link-label {
+    font-size: 0.95rem;
+    font-weight: 900;
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
+
+  .desktop-preview-active .sidebar-unsaved-indicator {
+    background: color-mix(in srgb, var(--app-accent, #2f6652) 10%, var(--app-surface, #ffffff));
+    border: 1px solid color-mix(in srgb, var(--app-accent, #2f6652) 22%, transparent);
+    border-radius: 999px;
+    color: var(--app-accent, #2f6652);
+    font-size: 0.78rem;
+    font-weight: 900;
+    padding: 8px 10px;
+  }
+}
+
+
+
+
+
+
+/* World management controls */
+.world-hero-actions,
+.world-editor-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.world-hero-actions {
+  align-self: start;
+}
+
+.world-editor-actions {
+  border-top: 1px solid color-mix(in srgb, var(--app-border, #ded8cf) 72%, transparent);
+  padding-top: 10px;
+}
+
+.world-editor-actions .secondary-button,
+.world-editor-actions .delete-button {
+  min-height: 34px;
+  padding: 7px 10px;
+  width: auto;
+}
+
+.delete-world-dialog .delete-button,
+.delete-world-dialog .secondary-button {
+  width: auto;
+}
+
+@media (max-width: 620px) {
+  .world-hero-actions,
+  .world-editor-actions {
+    justify-content: stretch;
+  }
+
+  .world-hero-actions > *,
+  .world-editor-actions > * {
+    flex: 1 1 140px;
+  }
+}
+
+/* Stability contrast tokens and readable surfaces */
+.app-frame {
+  --background: var(--app-bg, #f6f3ee);
+  --surface: var(--app-surface, #fffdf8);
+  --surface-elevated: var(--app-surface-strong, #ffffff);
+  --text-primary: var(--app-text, #20252b);
+  --text-secondary: var(--app-text-muted, #65707a);
+  --border: var(--app-border, #e5ddd3);
+  --accent: var(--app-accent, #356b58);
+  --accent-contrast: var(--app-accent-text, #ffffff);
+  --danger: var(--app-danger, #a84040);
+  --danger-contrast: #ffffff;
+}
+
+.app-frame :is(.panel, .large-modal, .confirm-dialog, .export-dialog, .account-info-card, .account-hero, .settings-option-card, .customize-card, .world-detail-editor, .world-reference-card, .world-wiki-section, .story-toolbar, .story-entry-list, .writing-editor, .relationship-card, .edge-row, .map-node, .graph-node-body, .network-tab-panel, .timeline-flow-event, .undated-event-card, .timeline-detail-card, .timeline-event-modal, .family-tree-card, .workspace-panel) {
+  background: var(--surface-elevated);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.app-frame :is(input, select, textarea, .writing-title-input, .writing-subtitle-input, .writing-area) {
+  background: var(--surface-elevated);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.app-frame :is(input, textarea)::placeholder {
+  color: color-mix(in srgb, var(--text-secondary) 82%, var(--surface-elevated));
+  opacity: 1;
+}
+
+.app-frame :is(.muted-text, .app-summary, .field span, .filter-field span, .group-label, .inline-check span, .story-entry-card span, .story-entry-card small, .timeline-meta-line, .timeline-description-preview, .graph-edge-label, .graph-note, .world-card-description, .account-fact-list dt, .account-fact-list dd) {
+  color: var(--text-secondary);
+}
+
+.app-frame :is(.primary-button, .quick-create-card span, .mobile-nav-link.active .mobile-nav-icon, .theme-preview-button) {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.app-frame :is(.secondary-button, .choice-button.active, .workspace-tab.active, .story-tab.active, .timeline-switch.active) {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-elevated));
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  color: var(--accent);
+}
+
+.app-frame :is(.delete-button, .danger-outline-button) {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  color: var(--danger);
+}
+
+.app-frame :is(.relationship-card, .edge-row, .map-node, .graph-node-body, .graph-edge-label) {
+  background: color-mix(in srgb, var(--surface-elevated) 94%, var(--accent) 6%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--text-primary) 8%, transparent);
+  text-shadow: none;
+}
+
+.app-frame :is(.relationship-card *, .edge-row *, .map-node *, .graph-node-body *, .graph-edge-label *) {
+  color: inherit;
+}
+
+.app-frame .graph-edge-label {
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-weight: 900;
+}
+
+.workspace-shell {
+  --surface: var(--workspace-card, var(--app-surface));
+  --surface-elevated: var(--workspace-card, var(--app-surface-strong));
+  --text-primary: var(--workspace-text, var(--app-text));
+  --text-secondary: var(--workspace-muted-text, var(--app-text-muted));
+  --border: var(--workspace-border, var(--app-border));
+  --accent: var(--workspace-accent, var(--app-accent));
+  --accent-contrast: var(--workspace-button-text, var(--app-accent-text));
 }
