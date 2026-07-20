@@ -25,7 +25,7 @@ import { getRecoverableStorageSources, getStorageManifest, getStorageSnapshot, g
 import { getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
 import { enableOwnerSeedModeFromUrl, markOwnerSeedsInstalled, restoreMissingOwnerSeeds, shouldInstallOwnerSeeds } from "./storage/ownerSeedRepository.js";
 import { APP_PALETTES, getAppThemeStyle } from "./utils/themeContrast.js";
-import atlasLoreLogo from "./assets/atlas-lore-logo.png";
+import atlasLoreLogo from "./assets/atlas-lore-logo-original.png";
 import { formatDateTime } from "./utils/dateFormat.js";
 import { clearSession, createUserCharacter, deleteUserCharacter, downloadJson, fetchUserCharacters, getCurrentUser, getStoredSession, isSupabaseConfigured, requestAccountDeletion, signOut, updateUserCharacter } from "./services/supabaseBeta.js";
 
@@ -542,7 +542,7 @@ function AccountPage({ authSession, betaEnabled, onNavigate, onSignOut }) {
   return (
     <section className="account-page">
       <header className="account-hero panel">
-        <div className="account-avatar-placeholder atlas-logo-mark account-logo-mark" style={{ "--atlas-logo-url": `url(${atlasLoreLogo})` }} aria-hidden="true" />
+        <div className="atlas-logo-mark account-logo-mark" aria-hidden="true"><img className="atlas-logo-image" src={atlasLoreLogo} alt="" /></div>
         <div>
           <p className="eyebrow">Atlas Lore Account</p>
           <h2>Account</h2>

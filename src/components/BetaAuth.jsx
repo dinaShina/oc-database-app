@@ -1,5 +1,5 @@
 import { useState } from "react";
-import atlasLoreLogo from "../assets/atlas-lore-logo.png";
+import atlasLoreLogo from "../assets/atlas-lore-logo-original.png";
 import { requestPasswordReset, signInWithEmail, signUpWithEmail } from "../services/supabaseBeta.js";
 
 export default function BetaAuth({ onAuthenticated }) {
@@ -34,7 +34,7 @@ export default function BetaAuth({ onAuthenticated }) {
     <main className="beta-auth-page">
       <section className="beta-auth-card">
         <div className="beta-brand-heading">
-          <span className="atlas-logo-mark beta-logo-mark" style={{ "--atlas-logo-url": `url(${atlasLoreLogo})` }} aria-hidden="true" />
+          <span className="atlas-logo-mark beta-logo-mark" aria-hidden="true"><img className="atlas-logo-image" src={atlasLoreLogo} alt="" /></span>
           <div>
             <p className="eyebrow">Private Beta</p>
             <h1>Atlas Lore</h1>

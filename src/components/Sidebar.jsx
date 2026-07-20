@@ -1,4 +1,4 @@
-import atlasLoreLogo from "../assets/atlas-lore-logo.png";
+import atlasLoreLogo from "../assets/atlas-lore-logo-original.png";
 
 const NAV_ITEMS = [
   ["dashboard", "Dashboard", DashboardIcon],
@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 export default function Sidebar({ activeSection, hasUnsavedChanges = false, onNavigate }) {
   return (
     <aside className="app-sidebar">
-      <div className="sidebar-brand"><span className="sidebar-brand-mark atlas-logo-mark" style={{ "--atlas-logo-url": `url(${atlasLoreLogo})` }} aria-hidden="true" /><div className="sidebar-brand-copy"><p className="eyebrow">Atlas Lore</p><h2>Atlas Lore</h2></div></div>
+      <div className="sidebar-brand"><span className="sidebar-brand-mark atlas-logo-mark" aria-hidden="true"><img className="atlas-logo-image" src={atlasLoreLogo} alt="" /></span><div className="sidebar-brand-copy"><p className="eyebrow">Atlas Lore</p><h2>Atlas Lore</h2></div></div>
       {hasUnsavedChanges ? <p className="sidebar-unsaved-indicator">Unsaved Changes</p> : null}
       <nav className="sidebar-nav" aria-label="Workspace navigation">
         {NAV_ITEMS.map(([id, label, Icon]) => (
