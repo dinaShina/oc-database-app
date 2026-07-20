@@ -1,4 +1,4 @@
-﻿import { DEFAULT_WORKSPACE_SECTIONS, resetWorkspaceConfigForOC, updateWorkspaceConfigForOC } from "../../storage/workspaceRepository.js";
+import { DEFAULT_WORKSPACE_SECTIONS, resetWorkspaceConfigForOC, updateWorkspaceConfigForOC } from "../../storage/workspaceRepository.js";
 
 export default function WorkspaceCustomizer({ configs, ocId, onChange, onClose, sections }) {
   function updateSections(nextSections) {
@@ -43,8 +43,8 @@ export default function WorkspaceCustomizer({ configs, ocId, onChange, onClose, 
                 <span>{section.label}</span>
               </label>
               <div className="section-order-actions">
-                <button className="secondary-button" type="button" disabled={index === 0} onClick={() => moveSection(section.id, -1)}>Up</button>
-                <button className="secondary-button" type="button" disabled={index === sections.length - 1} onClick={() => moveSection(section.id, 1)}>Down</button>
+                {index > 0 ? <button className="secondary-button" type="button" onClick={() => moveSection(section.id, -1)}>Up</button> : null}
+                {index < sections.length - 1 ? <button className="secondary-button" type="button" onClick={() => moveSection(section.id, 1)}>Down</button> : null}
               </div>
             </article>
           ))}

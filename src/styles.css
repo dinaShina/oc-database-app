@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   color: #1e2329;
   background: #f5f2ec;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -8670,6 +8670,12 @@ textarea.writing-area {
   white-space: nowrap;
 }
 
+
+.coming-soon-pill.danger-pill {
+  background: color-mix(in srgb, var(--app-danger, #a84040) 10%, #ffffff);
+  border-color: color-mix(in srgb, var(--app-danger, #a84040) 28%, transparent);
+  color: var(--app-danger, #a84040);
+}
 .account-section-grid {
   display: grid;
   gap: var(--space-5, 16px);
@@ -8827,7 +8833,13 @@ textarea.writing-area {
     width: 58px;
   }
 
-  .account-section-grid {
+  
+.coming-soon-pill.danger-pill {
+  background: color-mix(in srgb, var(--app-danger, #a84040) 10%, #ffffff);
+  border-color: color-mix(in srgb, var(--app-danger, #a84040) 28%, transparent);
+  color: var(--app-danger, #a84040);
+}
+.account-section-grid {
     grid-template-columns: 1fr;
   }
 
@@ -9637,4 +9649,207 @@ textarea.writing-area {
   --border: var(--workspace-border, var(--app-border));
   --accent: var(--workspace-accent, var(--app-accent));
   --accent-contrast: var(--workspace-button-text, var(--app-accent-text));
+}
+/* Relationship map readability and full-card workspace theming. */
+.workspace-shell .graph-canvas,
+.app-frame .workspace-shell .graph-canvas {
+  background: color-mix(in srgb, var(--workspace-bg, var(--app-surface)) 78%, var(--workspace-card, var(--app-surface-strong)));
+  border-color: var(--workspace-border, var(--app-border));
+}
+
+.workspace-shell .graph-canvas::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--workspace-border, var(--app-border)) 42%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--workspace-border, var(--app-border)) 42%, transparent) 1px, transparent 1px);
+}
+
+.workspace-shell .graph-node,
+.app-frame .workspace-shell .graph-node {
+  background: var(--workspace-card, var(--app-surface-strong));
+  border: 1px solid var(--workspace-border, var(--app-border));
+  border-radius: 16px;
+  box-shadow: 0 14px 28px rgba(20, 18, 16, 0.14);
+  color: var(--workspace-text, var(--app-text));
+  gap: 10px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  min-height: 142px;
+  padding: 12px;
+  width: 230px;
+}
+
+.workspace-shell .main-graph-node,
+.app-frame .workspace-shell .main-graph-node {
+  background: color-mix(in srgb, var(--workspace-card, var(--app-surface-strong)) 86%, var(--workspace-accent, var(--app-accent)));
+  border-color: var(--workspace-accent, var(--app-accent));
+}
+
+.workspace-shell .graph-node-picture,
+.app-frame .workspace-shell .graph-node-picture {
+  background: color-mix(in srgb, var(--workspace-accent, var(--app-accent)) 16%, var(--workspace-card, var(--app-surface-strong)));
+  border-color: var(--workspace-border, var(--app-border));
+  color: var(--workspace-muted-text, var(--app-text-muted));
+  height: 72px;
+  width: 72px;
+}
+
+.workspace-shell .graph-node-body,
+.app-frame .workspace-shell .graph-node-body {
+  background: transparent;
+  color: inherit;
+  min-width: 0;
+}
+
+.workspace-shell .graph-node-body h3,
+.app-frame .workspace-shell .graph-node-body h3 {
+  color: var(--workspace-heading, var(--workspace-text, var(--app-text)));
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.workspace-shell .graph-node-body p,
+.workspace-shell .graph-note,
+.app-frame .workspace-shell .graph-node-body p,
+.app-frame .workspace-shell .graph-note {
+  color: var(--workspace-muted-text, var(--app-text-muted));
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.workspace-shell .graph-node-actions,
+.app-frame .workspace-shell .graph-node-actions {
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.workspace-shell .graph-node-actions .secondary-button,
+.workspace-shell .graph-node-actions .delete-button,
+.app-frame .workspace-shell .graph-node-actions .secondary-button,
+.app-frame .workspace-shell .graph-node-actions .delete-button {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  min-height: 28px;
+  padding: 5px 8px;
+  width: auto;
+}
+
+.workspace-shell .graph-line,
+.app-frame .workspace-shell .graph-line {
+  stroke: var(--workspace-accent, var(--app-accent));
+}
+
+.workspace-shell .graph-arrow,
+.app-frame .workspace-shell .graph-arrow {
+  fill: var(--workspace-accent, var(--app-accent));
+}
+
+.workspace-shell .graph-edge-label,
+.app-frame .workspace-shell .graph-edge-label,
+.workspace-shell .edge-row,
+.app-frame .workspace-shell .edge-row {
+  background: var(--workspace-card, var(--app-surface-strong));
+  border-color: var(--workspace-border, var(--app-border));
+  color: var(--workspace-text, var(--app-text));
+}
+
+.workspace-shell .edge-row p,
+.workspace-shell .edge-row .muted-text,
+.app-frame .workspace-shell .edge-row p,
+.app-frame .workspace-shell .edge-row .muted-text {
+  color: var(--workspace-muted-text, var(--app-text-muted));
+}
+
+.workspace-shell .text-link-button,
+.app-frame .workspace-shell .text-link-button {
+  color: var(--workspace-accent, var(--app-accent));
+  font-size: 0.78rem;
+}
+
+@media (max-width: 620px) {
+  .workspace-shell .graph-node,
+  .app-frame .workspace-shell .graph-node {
+    grid-template-columns: 64px minmax(0, 1fr);
+    min-height: 132px;
+    width: 214px;
+  }
+
+  .workspace-shell .graph-node-picture,
+  .app-frame .workspace-shell .graph-node-picture {
+    height: 64px;
+    width: 64px;
+  }
+}
+.mobile-menu-note {
+  color: var(--app-text-muted, #596273);
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 9px 12px;
+}
+/* Atlas Lore logo uses the current accent color so it follows every app theme. */
+.atlas-logo-mark {
+  align-items: center;
+  background: color-mix(in srgb, var(--app-accent, #356b58) 12%, var(--app-surface-strong, #ffffff));
+  border: 1px solid color-mix(in srgb, var(--app-accent, #356b58) 30%, var(--app-border, #e5ddd3));
+  border-radius: 16px;
+  color: var(--app-accent, #356b58);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0;
+  height: 48px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 48px;
+}
+
+.atlas-logo-mark::before {
+  background: currentColor;
+  content: "";
+  display: block;
+  height: 76%;
+  mask: var(--atlas-logo-url) center / contain no-repeat;
+  -webkit-mask: var(--atlas-logo-url) center / contain no-repeat;
+  width: 76%;
+}
+
+.sidebar-brand-mark.atlas-logo-mark {
+  color: var(--app-accent, #356b58);
+}
+
+.account-logo-mark {
+  border-radius: 24px;
+  height: 76px;
+  width: 76px;
+}
+
+.account-logo-mark::before {
+  height: 72%;
+  width: 72%;
+}
+
+.beta-brand-heading {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+}
+
+.beta-logo-mark {
+  height: 58px;
+  width: 58px;
+}
+
+.beta-logo-mark::before {
+  height: 74%;
+  width: 74%;
+}
+
+@media (max-width: 620px) {
+  .beta-brand-heading {
+    align-items: flex-start;
+  }
+
+  .beta-logo-mark {
+    height: 50px;
+    width: 50px;
+  }
 }

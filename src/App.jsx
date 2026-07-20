@@ -1,4 +1,4 @@
-﻿import { Component, useEffect, useMemo, useState } from "react";
+import { Component, useEffect, useMemo, useState } from "react";
 import useIsMobile from "./hooks/useIsMobile.js";
 import CharacterWorkspaceDesktop from "./components/layouts/CharacterWorkspaceDesktop.jsx";
 import CharacterWorkspaceMobile from "./components/layouts/CharacterWorkspaceMobile.jsx";
@@ -25,6 +25,7 @@ import { getRecoverableStorageSources, getStorageManifest, getStorageSnapshot, g
 import { getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
 import { enableOwnerSeedModeFromUrl, markOwnerSeedsInstalled, restoreMissingOwnerSeeds, shouldInstallOwnerSeeds } from "./storage/ownerSeedRepository.js";
 import { APP_PALETTES, getAppThemeStyle } from "./utils/themeContrast.js";
+import atlasLoreLogo from "./assets/atlas-lore-logo.png";
 import { formatDateTime } from "./utils/dateFormat.js";
 import { clearSession, createUserCharacter, deleteUserCharacter, downloadJson, fetchUserCharacters, getCurrentUser, getStoredSession, isSupabaseConfigured, requestAccountDeletion, signOut, updateUserCharacter } from "./services/supabaseBeta.js";
 
@@ -55,7 +56,7 @@ export default function App() {
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [pendingDeleteOCId, setPendingDeleteOCId] = useState(null);
   const [appSettings, setAppSettings] = useState(() => getAppSettings());
-  const [ownerSeedMode] = useState(() => enableOwnerSeedModeFromUrl() || true);
+  const [ownerSeedMode] = useState(() => enableOwnerSeedModeFromUrl());
   const [workspaceConfigs, setWorkspaceConfigs] = useState(() => getWorkspaceConfigs());
   const [isStorageHydrated, setIsStorageHydrated] = useState(false);
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => getSystemPrefersDark());
@@ -541,7 +542,7 @@ function AccountPage({ authSession, betaEnabled, onNavigate, onSignOut }) {
   return (
     <section className="account-page">
       <header className="account-hero panel">
-        <div className="account-avatar-placeholder" aria-hidden="true">AL</div>
+        <div className="account-avatar-placeholder atlas-logo-mark account-logo-mark" style={{ "--atlas-logo-url": `url(${atlasLoreLogo})` }} aria-hidden="true" />
         <div>
           <p className="eyebrow">Atlas Lore Account</p>
           <h2>Account</h2>
@@ -565,7 +566,7 @@ function AccountPage({ authSession, betaEnabled, onNavigate, onSignOut }) {
           <p className="eyebrow">Cloud Sync</p>
           <h3>Multiple Devices</h3>
           <p className="muted-text">Cloud synchronization, backup history, device recovery, and account restore will connect here later.</p>
-          <button className="secondary-button inline-primary" type="button" disabled>Cloud Sync Coming Soon</button>
+          <span className="coming-soon-pill">Cloud Sync Coming Soon</span>
         </section>
 
         <section className="panel account-info-card">
@@ -573,9 +574,9 @@ function AccountPage({ authSession, betaEnabled, onNavigate, onSignOut }) {
           <h3>Login / Register</h3>
           <p className="muted-text">Login, registration, password reset, and email verification are prepared as interface areas only.</p>
           <div className="account-action-grid">
-            <button className="primary-button inline-primary" type="button" disabled>Login Coming Soon</button>
-            <button className="secondary-button inline-primary" type="button" disabled>Register Coming Soon</button>
-            <button className="secondary-button inline-primary" type="button" disabled>Password Reset</button>
+            <span className="coming-soon-pill">Login Coming Soon</span>
+            <span className="coming-soon-pill">Register Coming Soon</span>
+            <span className="coming-soon-pill">Password Reset Coming Soon</span>
           </div>
         </section>
 
@@ -714,11 +715,11 @@ function GlobalSettings({ appSettings, authSession, betaEnabled, exportData, onA
             <article><strong>{characterStorageStatus.lastBackup ? formatDateTime(characterStorageStatus.lastBackup) : "No backup yet"}</strong><span>Last character backup</span></article>
             <article><strong>{characterStorageStatus.error || "None"}</strong><span>Storage error</span></article>
           </div>
-          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button>{ownerSeedMode ? <button className="secondary-button inline-primary" type="button" onClick={onRestoreMyCharacters}>Restore My Characters</button> : null}<button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><button className="secondary-button inline-primary" type="button" disabled>Import from file</button><button className="secondary-button inline-primary" type="button" disabled>Recently Deleted</button><button className="danger-outline-button" type="button" disabled>Reset Data Coming Soon</button></div>
+          <div className="account-action-grid"><button className="primary-button inline-primary" type="button" onClick={onExportAccountData}>Export data backup</button>{ownerSeedMode ? <button className="secondary-button inline-primary" type="button" onClick={onRestoreMyCharacters}>Restore My Characters</button> : null}<button className="secondary-button inline-primary" type="button" onClick={onEmergencyBackup}>Download Emergency Backup</button><span className="coming-soon-pill">Import from file Coming Soon</span><span className="coming-soon-pill">Recently Deleted Coming Soon</span><span className="coming-soon-pill danger-pill">Reset Data Coming Soon</span></div>
           <section className="recovery-panel">
             <div><h3>Recover Local Data</h3><p className="muted-text">Found Atlas Lore and legacy browser-storage sources. Restoring merges by character ID and creates a backup first.</p></div>
             <div className="recovery-source-list">
-              {characterSources.length ? characterSources.map((source) => <article className="recovery-source-card" key={source.key}><div><strong>{source.key}</strong><span>{source.ok ? `${source.characterCount} characters found` : `Unreadable data preserved: ${source.error}`}</span></div><button className="secondary-button" type="button" disabled={!source.ok || source.characterCount === 0} onClick={() => onRestoreCharacters(source.key)}>Restore / Merge</button></article>) : <p className="muted-text">No local character backups or legacy keys were found in this browser.</p>}
+              {characterSources.length ? characterSources.map((source) => <article className="recovery-source-card" key={source.key}><div><strong>{source.key}</strong><span>{source.ok ? `${source.characterCount} characters found` : `Unreadable data preserved: ${source.error}`}</span></div>{source.ok && source.characterCount > 0 ? <button className="secondary-button" type="button" onClick={() => onRestoreCharacters(source.key)}>Restore / Merge</button> : <span className="coming-soon-pill">No restorable data</span>}</article>) : <p className="muted-text">No local character backups or legacy keys were found in this browser.</p>}
             </div>
           </section>
         </>

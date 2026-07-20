@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   INITIAL_RELATIONSHIP_EDGE,
   INITIAL_RELATIONSHIP_NODE,
@@ -9,8 +9,8 @@ import MediaInput from "./MediaInput.jsx";
 import { saveRelationshipMaps, upsertRelationshipMap } from "../storage/relationshipMapRepository.js";
 
 const CANVAS_HEIGHT = 680;
-const NODE_WIDTH = 190;
-const NODE_HEIGHT = 118;
+const NODE_WIDTH = 230;
+const NODE_HEIGHT = 142;
 
 export default function RelationshipMapEditor({
   embedded = false,
@@ -535,7 +535,7 @@ function ProfileImage({ source, name }) {
 
 function ExpandablePreview({ className = "", id, isExpanded, onToggle, text }) {
   if (!text) return null;
-  const preview = getPreviewText(text, 74);
+  const preview = getPreviewText(text, 58);
   const isLong = preview !== text;
   return (
     <p className={className}>

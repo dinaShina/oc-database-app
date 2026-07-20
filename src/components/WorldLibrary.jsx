@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import EmptyState from "./EmptyState.jsx";
 import MediaInput from "./MediaInput.jsx";
 import TimelineEditor from "./TimelineEditor.jsx";
@@ -12,7 +12,10 @@ import {
 } from "../data/worldSchema.js";
 import { createWorld, deleteWorld, duplicateWorldRecord, saveWorlds, updateWorld } from "../storage/worldRepository.js";
 import { saveTimelineData } from "../storage/timelineRepository.js";
+import { loadFromStorage, saveToStorage } from "../storage/localStorage.js";
 import { getWorldTitle } from "./OCList.jsx";
+
+const HIDDEN_DERIVED_WORLDS_KEY = "atlas-lore:hidden-derived-worlds";
 
 export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange, timelineData, worlds }) {
   const [formData, setFormData] = useState(INITIAL_WORLD);
@@ -21,13 +24,15 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
   const [searchTerm, setSearchTerm] = useState("");
   const [activeWorldId, setActiveWorldId] = useState("");
   const [pendingDeleteWorld, setPendingDeleteWorld] = useState(null);
+  const [hiddenDerivedWorlds, setHiddenDerivedWorlds] = useState(() => getHiddenDerivedWorlds());
 
   const summaries = buildWorldSummaries(ocs, timelineData, worlds);
   const visibleWorlds = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
-    if (!query) return summaries;
-    return summaries.filter((world) => `${world.name} ${world.worldType} ${world.description}`.toLowerCase().includes(query));
-  }, [searchTerm, summaries]);
+    const availableSummaries = summaries.filter((world) => world.id || !hiddenDerivedWorlds.includes(getDerivedWorldKey(world)));
+    if (!query) return availableSummaries;
+    return availableSummaries.filter((world) => `${world.name} ${world.worldType} ${world.description}`.toLowerCase().includes(query));
+  }, [hiddenDerivedWorlds, searchTerm, summaries]);
   const activeWorld = worlds.find((world) => world.id === activeWorldId);
 
   function persist(nextWorlds) {
@@ -91,6 +96,7 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
   function ensureSavedWorld(world) {
     if (world.id) return worlds.find((item) => item.id === world.id) || world;
     const nextWorld = createWorld({ name: world.name, worldType: world.worldType, description: world.description || "" });
+    clearHiddenDerivedWorld(world);
     persist([nextWorld, ...worlds]);
     return nextWorld;
   }
@@ -129,15 +135,34 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
   }
 
   function requestDeleteWorld(world) {
-    if (!world?.id) return;
+    if (!world) return;
     setPendingDeleteWorld(world);
   }
 
   function confirmDeleteWorld() {
-    if (!pendingDeleteWorld?.id) return;
-    persist(deleteWorld(worlds, pendingDeleteWorld.id));
-    if (activeWorldId === pendingDeleteWorld.id) setActiveWorldId("");
+    if (!pendingDeleteWorld) return;
+    if (pendingDeleteWorld.id) {
+      persist(deleteWorld(worlds, pendingDeleteWorld.id));
+      if (activeWorldId === pendingDeleteWorld.id) setActiveWorldId("");
+    } else {
+      hideDerivedWorld(pendingDeleteWorld);
+    }
     setPendingDeleteWorld(null);
+  }
+
+  function hideDerivedWorld(world) {
+    const key = getDerivedWorldKey(world);
+    const nextHidden = Array.from(new Set([...hiddenDerivedWorlds, key]));
+    setHiddenDerivedWorlds(nextHidden);
+    saveHiddenDerivedWorlds(nextHidden);
+  }
+
+  function clearHiddenDerivedWorld(world) {
+    const key = getDerivedWorldKey(world);
+    if (!hiddenDerivedWorlds.includes(key)) return;
+    const nextHidden = hiddenDerivedWorlds.filter((item) => item !== key);
+    setHiddenDerivedWorlds(nextHidden);
+    saveHiddenDerivedWorlds(nextHidden);
   }
 
   if (activeWorld) {
@@ -178,7 +203,7 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
               <button className="secondary-button" type="button" onClick={() => startEdit(world)}>Edit</button>
               <button className="secondary-button" type="button" onClick={() => toggleFavorite(world)}>{world.isFavorite ? "Unfavorite" : "Favorite"}</button>
               <button className="secondary-button" type="button" onClick={() => duplicateWorld(world)}>Duplicate</button>
-              {world.id ? <button className="delete-button" type="button" onClick={() => requestDeleteWorld(world)}>Delete</button> : null}
+              <button className="delete-button" type="button" onClick={() => requestDeleteWorld(world)}>Delete</button>
             </div>
           </article>
         ))}
@@ -313,7 +338,7 @@ function WorldWikiPage({ ocs, onBack, onDelete, onDuplicate, onEdit, onTimelineD
 
         <WikiSection title="Ideas">
           <label className="field"><span>Brainstorming</span><textarea value={world.ideas || ""} rows="8" placeholder="Future concepts, loose thoughts, things to develop later..." onChange={(event) => updateWorldField("ideas", event.target.value)} /></label>
-          <div className="world-editor-actions"><button className="delete-button inline-primary" type="button" disabled={!world.ideas} onClick={clearIdeas}>Clear Ideas</button></div>
+          {world.ideas ? <div className="world-editor-actions"><button className="delete-button inline-primary" type="button" onClick={clearIdeas}>Clear Ideas</button></div> : null}
         </WikiSection>
 
         {(world.customSections || []).map((section, index) => <WikiSection key={section.id} title={section.title || "Custom Section"}><DetailEditor detail={section} index={index} onDelete={deleteCustomSection} onMove={moveCustomSection} onUpdate={updateCustomSection} total={(world.customSections || []).length} /></WikiSection>)}
@@ -333,8 +358,8 @@ function DetailEditor({ detail, index = 0, onDelete, onMove, onUpdate, total = 1
       <label className="field"><span>Title</span><input value={detail.title} onChange={(event) => onUpdate(detail.id, "title", event.target.value)} /></label>
       <label className="field"><span>Content</span><textarea value={detail.content} rows="5" onChange={(event) => onUpdate(detail.id, "content", event.target.value)} /></label>
       <div className="world-editor-actions">
-        <button className="secondary-button" type="button" disabled={index === 0} onClick={() => onMove(detail.id, -1)}>Move Up</button>
-        <button className="secondary-button" type="button" disabled={index >= total - 1} onClick={() => onMove(detail.id, 1)}>Move Down</button>
+        {index > 0 ? <button className="secondary-button" type="button" onClick={() => onMove(detail.id, -1)}>Move Up</button> : null}
+        {index < total - 1 ? <button className="secondary-button" type="button" onClick={() => onMove(detail.id, 1)}>Move Down</button> : null}
         <button className="delete-button" type="button" onClick={() => onDelete(detail.id)}>Delete</button>
       </div>
     </article>
@@ -349,8 +374,8 @@ function ReferenceEditor({ index = 0, onDelete, onMediaChange, onMove, onUpdate,
       <label className="field"><span>URL / Link</span><input value={reference.url} placeholder="https://..." onChange={(event) => onUpdate(reference.id, "url", event.target.value)} /></label>
       <label className="field"><span>Notes</span><textarea value={reference.notes} rows="3" onChange={(event) => onUpdate(reference.id, "notes", event.target.value)} /></label>
       <div className="world-editor-actions">
-        <button className="secondary-button" type="button" disabled={index === 0} onClick={() => onMove(reference.id, -1)}>Move Up</button>
-        <button className="secondary-button" type="button" disabled={index >= total - 1} onClick={() => onMove(reference.id, 1)}>Move Down</button>
+        {index > 0 ? <button className="secondary-button" type="button" onClick={() => onMove(reference.id, -1)}>Move Up</button> : null}
+        {index < total - 1 ? <button className="secondary-button" type="button" onClick={() => onMove(reference.id, 1)}>Move Down</button> : null}
         <button className="delete-button" type="button" onClick={() => onDelete(reference.id)}>Delete</button>
       </div>
     </article>
@@ -449,7 +474,15 @@ function getInitials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return parts.length ? parts.slice(0, 2).map((part) => part[0]).join("").toUpperCase() : "W";
 }
+function getDerivedWorldKey(world = {}) {
+  return `${String(world.name || "Untitled World").trim().toLowerCase()}::${String(world.worldType || "").trim().toLowerCase()}`;
+}
 
+function getHiddenDerivedWorlds() {
+  const saved = loadFromStorage(HIDDEN_DERIVED_WORLDS_KEY, []);
+  return Array.isArray(saved) ? saved.filter(Boolean) : [];
+}
 
-
-
+function saveHiddenDerivedWorlds(values) {
+  saveToStorage(HIDDEN_DERIVED_WORLDS_KEY, Array.isArray(values) ? values.filter(Boolean) : []);
+}

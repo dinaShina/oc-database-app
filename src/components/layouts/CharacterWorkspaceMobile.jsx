@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ExportDialog from "../ExportDialog.jsx";
 import OCForm from "../OCForm.jsx";
 import { getWorldTitle } from "../OCList.jsx";
@@ -125,7 +125,7 @@ export default function CharacterWorkspaceMobile({
             <div className="mobile-character-menu">
               <button type="button" onClick={() => switchTab("Appearance")}>Customize</button>
               <button type="button" onClick={openExport}>Export PDF</button>
-              <button type="button" disabled>Duplicate Character</button>
+              <span className="mobile-menu-note">Duplicate Character Coming Soon</span>
               <button type="button" onClick={() => switchTab("World")}>World</button>
               <button type="button" onClick={() => switchTab("Settings")}>Settings</button>
               <button type="button" onClick={() => { setMoreOpen(false); setCustomizingWorkspace(true); }}>Organize Tabs</button>

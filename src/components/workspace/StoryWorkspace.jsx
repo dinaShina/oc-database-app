@@ -1,5 +1,5 @@
-﻿import { formatDateTime } from "../../utils/dateFormat.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { formatDateTime } from "../../utils/dateFormat.js";
+import { useEffect, useMemo, useState } from "react";
 import { INITIAL_STORY_ENTRY, STORY_CATEGORIES } from "../../data/writingSchema.js";
 import {
   clearRecoveredDraft,
@@ -12,7 +12,6 @@ import {
   updateWritingEntry
 } from "../../storage/writingRepository.js";
 import WorkspacePanel from "./WorkspacePanel.jsx";
-import { formatSelection, getFormattingFallback } from "../../utils/storyFormatting.js";
 
 const AUTOSAVE_LABEL_DELAY = 1400;
 const STORY_FONT_OPTIONS = [
@@ -31,7 +30,6 @@ export default function StoryWorkspace({ oc }) {
   const [saveState, setSaveState] = useState("Saved");
   const [recoveredDraft, setRecoveredDraft] = useState(() => getRecoveredDraft(oc.id));
   const [editorStyle, setEditorStyle] = useState(() => getStoryEditorStyle(oc.id));
-  const textareaRef = useRef(null);
 
   const characterEntries = useMemo(
     () => entries.filter((entry) => entry.connectedOcId === oc.id),
@@ -100,23 +98,6 @@ export default function StoryWorkspace({ oc }) {
     });
   }
 
-  function applyFormat(type) {
-    if (!activeEntry || !textareaRef.current) return;
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart ?? 0;
-    const end = textarea.selectionEnd ?? start;
-    const content = activeEntry.content || "";
-    const selected = content.slice(start, end);
-    const fallback = selected || getFormattingFallback(type);
-    const replacement = formatSelection(type, fallback);
-    const nextContent = `${content.slice(0, start)}${replacement}${content.slice(end)}`;
-    updateActiveEntry("content", nextContent);
-    window.requestAnimationFrame(() => {
-      textarea.focus();
-      const cursorStart = start + replacement.length;
-      textarea.setSelectionRange(cursorStart, cursorStart);
-    });
-  }
   function restoreDraft() {
     if (!recoveredDraft) return;
     createEntry(recoveredDraft.category || "drafts", recoveredDraft);
@@ -199,12 +180,10 @@ export default function StoryWorkspace({ oc }) {
               <input className="writing-subtitle-input" value={activeEntry.subtitle} placeholder="Optional subtitle" onChange={(event) => updateActiveEntry("subtitle", event.target.value)} />
               <StoryFormatToolbar
                 editorStyle={editorStyle}
-                onFormat={applyFormat}
                 onStyleChange={updateEditorStyle}
               />
               <textarea
                 className="writing-area"
-                ref={textareaRef}
                 style={{ fontFamily: editorFontFamily, fontSize: `${editorStyle.fontSize}px` }}
                 value={activeEntry.content}
                 placeholder="Write here..."
@@ -241,9 +220,9 @@ export default function StoryWorkspace({ oc }) {
   );
 }
 
-function StoryFormatToolbar({ editorStyle, onFormat, onStyleChange }) {
+function StoryFormatToolbar({ editorStyle, onStyleChange }) {
   return (
-    <div className="story-format-toolbar" aria-label="Story formatting toolbar">
+    <div className="story-format-toolbar" aria-label="Story style toolbar">
       <label className="compact-tool-field">
         <span>Font</span>
         <select value={editorStyle.fontFamily} onChange={(event) => onStyleChange("fontFamily", event.target.value)}>
@@ -256,12 +235,6 @@ function StoryFormatToolbar({ editorStyle, onFormat, onStyleChange }) {
           {STORY_FONT_SIZES.map((size) => <option key={size} value={size}>{size}px</option>)}
         </select>
       </label>
-      <div className="format-button-group">
-        <button type="button" onClick={() => onFormat("heading")}>H</button>
-        <button type="button" onClick={() => onFormat("italic")}><em>I</em></button>
-        <button type="button" onClick={() => onFormat("bullet")}>- List</button>
-        <button type="button" onClick={() => onFormat("number")}>1. List</button>
-      </div>
     </div>
   );
 }

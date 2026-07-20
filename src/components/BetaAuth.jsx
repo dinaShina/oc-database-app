@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { useState } from "react";
+import atlasLoreLogo from "../assets/atlas-lore-logo.png";
 import { requestPasswordReset, signInWithEmail, signUpWithEmail } from "../services/supabaseBeta.js";
 
 export default function BetaAuth({ onAuthenticated }) {
@@ -32,10 +33,13 @@ export default function BetaAuth({ onAuthenticated }) {
   return (
     <main className="beta-auth-page">
       <section className="beta-auth-card">
-        <div>
-          <p className="eyebrow">Private Beta</p>
-          <h1>Atlas Lore</h1>
-          <p className="muted-text">Sign in with your own tester account. Your characters are private and owned by your account.</p>
+        <div className="beta-brand-heading">
+          <span className="atlas-logo-mark beta-logo-mark" style={{ "--atlas-logo-url": `url(${atlasLoreLogo})` }} aria-hidden="true" />
+          <div>
+            <p className="eyebrow">Private Beta</p>
+            <h1>Atlas Lore</h1>
+            <p className="muted-text">Sign in with your own tester account. Your characters are private and owned by your account.</p>
+          </div>
         </div>
         <div className="segmented-control two-options">
           <button className={mode === "signin" ? "choice-button active" : "choice-button"} type="button" onClick={() => setMode("signin")}>Sign in</button>

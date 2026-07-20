@@ -168,7 +168,7 @@ function InspirationForm({ editing, formData, onAddColor, onCancel, onColorChang
 function ColorPaletteEditor({ colors, onAddColor, onColorChange, onRemoveColor }) {
   return (
     <section className="palette-editor">
-      <div className="section-heading-row"><h3>Colors</h3><button className="secondary-button" type="button" disabled={colors.length >= 8} onClick={onAddColor}>+ Add Color</button></div>
+      <div className="section-heading-row"><h3>Colors</h3>{colors.length < 8 ? <button className="secondary-button" type="button" onClick={onAddColor}>+ Add Color</button> : <span className="coming-soon-pill">Palette full</span>}</div>
       <div className="palette-editor-grid">
         {colors.map((color, index) => (
           <article className="palette-editor-row" key={index}>
@@ -199,8 +199,8 @@ function InspirationCard({ isFirst, isLast, item, onDelete, onEdit, onMoveDown, 
       {item.notes ? <p className="muted-text">{item.notes}</p> : null}
       {item.url && !usesImageUrl(item.type) ? <a href={item.url} target="_blank" rel="noreferrer">Open link</a> : null}
       <div className="card-actions inspiration-card-actions">
-        <button className="secondary-button" type="button" disabled={isFirst} onClick={onMoveUp}>Up</button>
-        <button className="secondary-button" type="button" disabled={isLast} onClick={onMoveDown}>Down</button>
+        {!isFirst ? <button className="secondary-button" type="button" onClick={onMoveUp}>Up</button> : null}
+        {!isLast ? <button className="secondary-button" type="button" onClick={onMoveDown}>Down</button> : null}
         <button className="secondary-button" type="button" onClick={onEdit}>Edit</button>
         <button className="delete-button" type="button" onClick={onDelete}>Delete</button>
       </div>

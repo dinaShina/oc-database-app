@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   INITIAL_TIMELINE,
   INITIAL_TIMELINE_EVENT,
@@ -469,8 +469,8 @@ function TimelineUndatedEvent({ event, isExpanded, isFirst, isLast, isSelected, 
         {description ? <span className={isExpanded ? "timeline-description-preview expanded" : "timeline-description-preview"}>{isExpanded || !isLong ? description : `${description.slice(0, 120).trim()}...`}</span> : null}
       </button>
       <div className="timeline-card-actions">
-        <button className="secondary-button" type="button" disabled={isFirst} onClick={() => onMove(event.id, -1)}>Up</button>
-        <button className="secondary-button" type="button" disabled={isLast} onClick={() => onMove(event.id, 1)}>Down</button>
+        {!isFirst ? <button className="secondary-button" type="button" onClick={() => onMove(event.id, -1)}>Up</button> : null}
+        {!isLast ? <button className="secondary-button" type="button" onClick={() => onMove(event.id, 1)}>Down</button> : null}
         {isLong ? <button className="secondary-button" type="button" onClick={() => onToggleExpanded(event.id)}>{isExpanded ? "Less" : "Read more"}</button> : null}
         <button className="secondary-button" type="button" onClick={() => onEdit(event)}>Edit</button>
       </div>

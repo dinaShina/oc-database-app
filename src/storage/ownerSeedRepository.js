@@ -1,4 +1,4 @@
-﻿import { OWNER_CHARACTERS, OWNER_INSPIRATION_ITEMS, OWNER_RELATIONSHIPS, OWNER_SEED_TOKEN, OWNER_TIMELINE_EVENTS, OWNER_TIMELINES, OWNER_WORLDS, OWNER_WRITING_ENTRIES } from "../data/ownerCharacters.js";
+import { OWNER_CHARACTERS, OWNER_INSPIRATION_ITEMS, OWNER_RELATIONSHIPS, OWNER_SEED_TOKEN, OWNER_TIMELINE_EVENTS, OWNER_TIMELINES, OWNER_WORLDS, OWNER_WRITING_ENTRIES } from "../data/ownerCharacters.js";
 import { getInspirationItems, saveInspirationItems } from "./inspirationRepository.js";
 import { loadFromStorage, saveToStorage } from "./localStorage.js";
 import { getWritingEntries, saveWritingEntries } from "./writingRepository.js";
@@ -40,7 +40,7 @@ export function restoreMissingOwnerSeeds({ inspirationItems = getInspirationItem
   const nextWritingEntries = mergeMissingById(writingEntries, OWNER_WRITING_ENTRIES);
   const nextTimelineData = {
     timelines: mergeMissingById(timelineData.timelines || [], OWNER_TIMELINES),
-    events: mergeMissingOrUneditedSeedById(timelineData.events || [], OWNER_TIMELINE_EVENTS)
+    events: mergeMissingById(timelineData.events || [], OWNER_TIMELINE_EVENTS)
   };
 
   const result = {
