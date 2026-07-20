@@ -9785,9 +9785,8 @@ textarea.writing-area {
   font-weight: 800;
   padding: 9px 12px;
 }
-/* Atlas Lore logo: keep the provided silhouette unchanged; only the fill color follows the theme. */
+/* Atlas Lore logo: preserve the full square image composition; only the black fill changes color. */
 .atlas-logo-mark {
-  --atlas-logo-ratio: 0.54;
   align-items: center;
   background: transparent;
   border: 0;
@@ -9795,11 +9794,11 @@ textarea.writing-area {
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 0;
-  height: 56px;
+  height: 64px;
   justify-content: center;
   overflow: visible;
   position: relative;
-  width: calc(56px * var(--atlas-logo-ratio));
+  width: 64px;
 }
 
 .atlas-logo-mark::before {
@@ -9814,24 +9813,24 @@ textarea.writing-area {
 
 .sidebar-brand-mark.atlas-logo-mark {
   color: var(--app-accent, #356b58);
-  height: 56px;
-  width: calc(56px * var(--atlas-logo-ratio));
+  height: 64px;
+  width: 64px;
 }
 
 .account-logo-mark {
-  height: 96px;
-  width: calc(96px * var(--atlas-logo-ratio));
+  height: 112px;
+  width: 112px;
 }
 
 .beta-brand-heading {
   align-items: center;
   display: flex;
-  gap: 14px;
+  gap: 18px;
 }
 
 .beta-logo-mark {
-  height: 82px;
-  width: calc(82px * var(--atlas-logo-ratio));
+  height: 104px;
+  width: 104px;
 }
 
 @media (max-width: 620px) {
@@ -9840,7 +9839,7 @@ textarea.writing-area {
   }
 
   .beta-logo-mark {
-    height: 70px;
-    width: calc(70px * var(--atlas-logo-ratio));
+    height: 84px;
+    width: 84px;
   }
 }

@@ -10,7 +10,7 @@ export const OWNER_SEED_INSTALLED_KEY = "atlasArchive.ownerSeedInstalled";
 export function enableOwnerSeedModeFromUrl() {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search || "");
-  const enabledForThisLoad = params.get("owner") === OWNER_SEED_TOKEN;
+  const enabledForThisLoad = Boolean(OWNER_SEED_TOKEN) && params.get("owner") === OWNER_SEED_TOKEN;
   if (!enabledForThisLoad) {
     saveToStorage(OWNER_SEED_MODE_KEY, { enabled: false, disabledAt: new Date().toISOString(), reason: "Seed restore requires an explicit owner URL token." });
     return false;
