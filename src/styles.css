@@ -9785,46 +9785,46 @@ textarea.writing-area {
   font-weight: 800;
   padding: 9px 12px;
 }
-/* Atlas Lore logo uses the current accent color so it follows every app theme. */
+/* Atlas Lore logo: use the provided silhouette directly, colored by the active theme. */
 .atlas-logo-mark {
   align-items: center;
-  background: color-mix(in srgb, var(--app-accent, #356b58) 12%, var(--app-surface-strong, #ffffff));
-  border: 1px solid color-mix(in srgb, var(--app-accent, #356b58) 30%, var(--app-border, #e5ddd3));
-  border-radius: 16px;
+  background: transparent;
+  border: 0;
   color: var(--app-accent, #356b58);
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 0;
-  height: 48px;
+  height: 54px;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  width: 48px;
+  width: 34px;
 }
 
 .atlas-logo-mark::before {
   background: currentColor;
   content: "";
   display: block;
-  height: 58%;
+  height: 100%;
   mask: var(--atlas-logo-url) center / contain no-repeat;
   -webkit-mask: var(--atlas-logo-url) center / contain no-repeat;
-  width: 58%;
+  width: 100%;
 }
 
 .sidebar-brand-mark.atlas-logo-mark {
   color: var(--app-accent, #356b58);
+  height: 50px;
+  width: 32px;
 }
 
 .account-logo-mark {
-  border-radius: 24px;
-  height: 76px;
-  width: 76px;
+  height: 86px;
+  width: 54px;
 }
 
 .account-logo-mark::before {
-  height: 58%;
-  width: 58%;
+  height: 100%;
+  width: 100%;
 }
 
 .beta-brand-heading {
@@ -9834,13 +9834,13 @@ textarea.writing-area {
 }
 
 .beta-logo-mark {
-  height: 58px;
-  width: 58px;
+  height: 72px;
+  width: 45px;
 }
 
 .beta-logo-mark::before {
-  height: 60%;
-  width: 60%;
+  height: 100%;
+  width: 100%;
 }
 
 @media (max-width: 620px) {
@@ -9849,7 +9849,7 @@ textarea.writing-area {
   }
 
   .beta-logo-mark {
-    height: 50px;
-    width: 50px;
+    height: 62px;
+    width: 39px;
   }
 }
