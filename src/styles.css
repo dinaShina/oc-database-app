@@ -5268,7 +5268,7 @@ button:active {
   border: 0;
   color: var(--workspace-text, var(--app-text));
   cursor: pointer;
-  min-height: 52px;
+  min-height: 96px;
   padding: 14px;
   text-align: left;
   width: 100%;
@@ -5901,7 +5901,7 @@ button:active {
   display: flex;
   font-size: 1rem;
   justify-content: space-between;
-  min-height: 52px;
+  min-height: 96px;
   padding: 14px 16px;
   text-align: left;
   width: 100%;
@@ -9335,8 +9335,8 @@ textarea.writing-area {
 /* Desktop hover sidebar polish and Atlas Lore branding */
 @media (min-width: 901px) {
   .desktop-preview-active {
-    --sidebar-collapsed-width: 76px;
-    --sidebar-expanded-width: 244px;
+    --sidebar-collapsed-width: 116px;
+    --sidebar-expanded-width: 292px;
     grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
     transition: grid-template-columns 180ms ease;
   }
@@ -9390,8 +9390,8 @@ textarea.writing-area {
     align-items: center;
     display: grid;
     gap: 12px;
-    grid-template-columns: 48px minmax(0, 1fr);
-    min-height: 52px;
+    grid-template-columns: 92px minmax(0, 1fr);
+    min-height: 96px;
     min-width: 0;
   }
 
@@ -9455,8 +9455,8 @@ textarea.writing-area {
     color: var(--app-text-muted, #596273);
     display: grid;
     gap: 12px;
-    grid-template-columns: 48px minmax(0, 1fr);
-    min-height: 52px;
+    grid-template-columns: 92px minmax(0, 1fr);
+    min-height: 96px;
     min-width: 0;
     padding: 4px;
     text-align: left;
@@ -9785,7 +9785,7 @@ textarea.writing-area {
   font-weight: 800;
   padding: 9px 12px;
 }
-/* Atlas Lore logo: preserve the full square image composition; only the black fill changes color. */
+/* Atlas Lore logo: original square PNG composition, only recolored by current theme. */
 .atlas-logo-mark {
   align-items: center;
   background: transparent;
@@ -9794,11 +9794,11 @@ textarea.writing-area {
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 0;
-  height: 64px;
+  height: 96px;
   justify-content: center;
   overflow: visible;
   position: relative;
-  width: 64px;
+  width: 96px;
 }
 
 .atlas-logo-mark::before {
@@ -9813,24 +9813,24 @@ textarea.writing-area {
 
 .sidebar-brand-mark.atlas-logo-mark {
   color: var(--app-accent, #356b58);
-  height: 64px;
-  width: 64px;
+  height: 92px;
+  width: 92px;
 }
 
 .account-logo-mark {
-  height: 112px;
-  width: 112px;
+  height: 150px;
+  width: 150px;
 }
 
 .beta-brand-heading {
   align-items: center;
   display: flex;
-  gap: 18px;
+  gap: 22px;
 }
 
 .beta-logo-mark {
-  height: 104px;
-  width: 104px;
+  height: 150px;
+  width: 150px;
 }
 
 @media (max-width: 620px) {
@@ -9839,7 +9839,18 @@ textarea.writing-area {
   }
 
   .beta-logo-mark {
-    height: 84px;
-    width: 84px;
+    height: 118px;
+    width: 118px;
   }
+}
+.desktop-preview-active .sidebar-brand-mark.atlas-logo-mark,
+.desktop-preview-active .app-sidebar:hover .sidebar-brand-mark.atlas-logo-mark,
+.desktop-preview-active .app-sidebar:focus-within .sidebar-brand-mark.atlas-logo-mark {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--app-accent, #356b58);
+  height: 92px;
+  width: 92px;
 }
