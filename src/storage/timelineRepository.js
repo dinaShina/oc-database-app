@@ -1,4 +1,5 @@
-﻿import { INITIAL_TIMELINE, INITIAL_TIMELINE_EVENT } from "../data/timelineSchema.js";
+import { INITIAL_TIMELINE, INITIAL_TIMELINE_EVENT } from "../data/timelineSchema.js";
+import { normalizeMonthInput, parseFlexibleDateInput, toIsoDate } from "../utils/dateFormat.js";
 import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:timelines";
@@ -113,6 +114,8 @@ function normalizeTimeline(timeline) {
 }
 
 function normalizeEvent(event) {
+  const parsedDateInput = parseFlexibleDateInput(event.dateInput || event.dateFull);
+  const normalizedMonth = normalizeMonthInput(event.dateMonth);
   const connectedCharacterIds = Array.isArray(event.connectedCharacterIds) ? event.connectedCharacterIds : [];
 
   return {
@@ -120,10 +123,11 @@ function normalizeEvent(event) {
     ...event,
     title: keepText(event.title),
     description: keepText(event.description),
-    dateDay: cleanToken(event.dateDay),
-    dateMonth: cleanToken(event.dateMonth),
-    dateYear: cleanToken(event.dateYear),
-    dateFull: cleanToken(event.dateFull),
+    dateDay: parsedDateInput?.day || cleanToken(event.dateDay),
+    dateMonth: parsedDateInput?.month || normalizedMonth || cleanToken(event.dateMonth),
+    dateYear: parsedDateInput?.year || cleanToken(event.dateYear),
+    dateFull: parsedDateInput ? toIsoDate(parsedDateInput) : cleanToken(event.dateFull),
+    dateInput: keepText(event.dateInput),
     time: cleanToken(event.time),
     connectedCharacterIds,
     connectedLocations: keepText(event.connectedLocations),

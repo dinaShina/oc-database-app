@@ -16,7 +16,7 @@ export default function Sidebar({ activeSection, hasUnsavedChanges = false, onNa
       {hasUnsavedChanges ? <p className="sidebar-unsaved-indicator">Unsaved Changes</p> : null}
       <nav className="sidebar-nav" aria-label="Workspace navigation">
         {NAV_ITEMS.map(([id, label, Icon]) => (
-          <button className={activeSection === id ? "sidebar-link active" : "sidebar-link"} key={id} type="button" onClick={() => onNavigate(id)}>
+          <button aria-current={activeSection === id ? "page" : undefined} className={activeSection === id ? "sidebar-link active" : "sidebar-link"} key={id} type="button" onClick={() => onNavigate(id)}>
             <span className="sidebar-icon" aria-hidden="true"><Icon /></span>
             <span className="sidebar-link-label">{label}</span>
           </button>

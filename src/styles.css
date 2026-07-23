@@ -10078,3 +10078,267 @@ textarea.writing-area {
     z-index: 80;
   }
 }
+
+/* Shared modal stacking and scroll lock bugfix */
+body:has(.dialog-backdrop) {
+  overflow: hidden;
+}
+
+.dialog-backdrop {
+  align-items: center;
+  background: rgba(17, 15, 13, 0.54);
+  inset: 0;
+  justify-content: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  position: fixed;
+  z-index: 5000 !important;
+}
+
+.dialog-backdrop :is(.large-modal, .confirm-dialog, .export-dialog, .legal-dialog, .timeline-event-modal, .customize-fullscreen-preview) {
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  position: relative;
+  z-index: 5001 !important;
+}
+
+.icon-close-button.is-dirty,
+.secondary-button.is-dirty,
+.cancel-button.is-dirty {
+  border-color: #c8792b;
+  color: #9a540f;
+}
+
+.readable-date-preview {
+  background: color-mix(in srgb, var(--accent-color, #2f6652) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color, #2f6652) 22%, transparent);
+  border-radius: 12px;
+  color: var(--text-color, #20252b);
+  margin: 0;
+  padding: 10px 12px;
+}
+
+@media (max-width: 767px) {
+  .dialog-backdrop {
+    padding: 12px;
+  }
+
+  .dialog-backdrop :is(.large-modal, .confirm-dialog, .export-dialog, .legal-dialog, .timeline-event-modal, .customize-fullscreen-preview) {
+    max-height: calc(100vh - 24px);
+  }
+}
+
+/* Atlas Lore final UI alignment and accessibility polish */
+:root {
+  --control-height: 42px;
+  --touch-target: 44px;
+  --nav-motion: 160ms ease;
+}
+
+:is(button, .sidebar-link, .mobile-nav-link, .workspace-tab, .tab-button, .timeline-switch, .icon-only-button, .icon-close-button, .floating-add-button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:is(.primary-button, .secondary-button, .delete-button, .danger-outline-button, .choice-button, .text-button, .timeline-switch, .workspace-tab, .tab-button, .icon-only-button, .icon-close-button, .floating-add-button) {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2, 8px);
+  justify-content: center;
+  line-height: 1.15;
+  min-height: var(--control-height);
+  text-align: center;
+}
+
+:is(.primary-button, .secondary-button, .danger-outline-button, .choice-button, .timeline-switch, .workspace-tab, .tab-button) :is(svg, .button-icon) {
+  flex: 0 0 auto;
+  height: 1.1em;
+  width: 1.1em;
+}
+
+:is(.dialog-actions, .form-actions, .card-actions, .horizontal-actions, .export-actions, .timeline-card-actions, .workspace-action-buttons, .modal-header) {
+  align-items: center;
+  gap: var(--space-3, 12px);
+}
+
+.icon-close-button,
+.icon-only-button,
+.floating-add-button {
+  flex: 0 0 auto;
+  min-width: var(--touch-target);
+  padding-inline: 0;
+}
+
+.icon-close-button {
+  height: 40px;
+  width: 40px;
+}
+
+:is(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--app-accent, #2f6652) 28%, transparent);
+  outline-offset: 3px;
+}
+
+.dialog-backdrop {
+  z-index: 5000 !important;
+}
+
+.dialog-backdrop > :is(section, form, article, div) {
+  box-shadow: 0 24px 70px rgba(22, 18, 14, 0.22);
+}
+
+.mobile-bottom-nav,
+.mobile-preview-active .mobile-bottom-nav {
+  align-items: center;
+  backdrop-filter: blur(18px);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  isolation: isolate;
+}
+
+.mobile-nav-link {
+  align-content: center;
+  align-items: center;
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  line-height: 1.05;
+  min-height: 56px;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  transition: color var(--nav-motion), transform var(--nav-motion), background-color var(--nav-motion), box-shadow var(--nav-motion);
+}
+
+.mobile-nav-link::before {
+  background: transparent;
+  border-radius: 14px;
+  content: "";
+  inset: 5px 4px;
+  opacity: 0;
+  position: absolute;
+  transform: scale(0.9);
+  transition: opacity var(--nav-motion), transform var(--nav-motion), background-color var(--nav-motion);
+  z-index: -1;
+}
+
+.mobile-nav-link.active {
+  background: transparent;
+  color: var(--app-accent, #2f6652);
+  transform: translateY(-2px);
+}
+
+.mobile-nav-link.active::before {
+  background: color-mix(in srgb, var(--app-accent, #2f6652) 15%, var(--app-surface-strong, #fffaf2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-accent, #2f6652) 25%, transparent), 0 6px 16px rgba(34, 27, 21, 0.08);
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mobile-nav-icon {
+  display: block;
+  flex: 0 0 auto;
+  height: 24px;
+  margin-inline: auto;
+  transform-origin: center;
+  transition: transform var(--nav-motion), opacity var(--nav-motion);
+  width: 24px;
+}
+
+.mobile-nav-link.active .mobile-nav-icon {
+  transform: translateY(-1px) scale(1.06);
+}
+
+.mobile-nav-link span:last-child {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 901px) {
+  .desktop-preview-active {
+    --sidebar-collapsed-width: 108px;
+    --sidebar-expanded-width: 292px;
+  }
+
+  .desktop-preview-active .app-sidebar {
+    gap: 14px;
+    min-height: 100vh;
+    padding-block: 16px;
+  }
+
+  .desktop-preview-active .sidebar-brand {
+    min-height: 92px;
+  }
+
+  .desktop-preview-active .sidebar-link {
+    align-items: center;
+    gap: 10px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 58px;
+    padding: 5px 8px;
+  }
+
+  .desktop-preview-active .sidebar-icon {
+    flex-basis: 44px;
+    height: 44px;
+    justify-self: center;
+    width: 44px;
+  }
+
+  .desktop-preview-active .sidebar-icon svg {
+    height: 25px;
+    width: 25px;
+  }
+
+  .desktop-preview-active .app-sidebar:not(:hover):not(:focus-within) .sidebar-link {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding-inline: 6px;
+  }
+
+  .desktop-preview-active .app-sidebar:not(:hover):not(:focus-within) .sidebar-icon {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --control-height: 40px;
+  }
+
+  .mobile-bottom-nav,
+  .mobile-preview-active .mobile-bottom-nav {
+    padding: 7px 8px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav-link {
+    min-height: 54px;
+    padding: 5px 2px;
+  }
+
+  .dialog-actions,
+  .form-actions,
+  .export-actions {
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .mobile-nav-link,
+  .mobile-nav-link.active,
+  .mobile-nav-link.active .mobile-nav-icon {
+    transform: none !important;
+  }
+}

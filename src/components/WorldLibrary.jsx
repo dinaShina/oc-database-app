@@ -58,7 +58,9 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
       persist(updateWorld(worlds, editingId, formData));
       syncWorldTimelineName(previousWorld?.name, formData.name);
     } else {
-      persist([createWorld(formData), ...worlds]);
+      const nextWorld = createWorld(formData);
+      persist([nextWorld, ...worlds]);
+      setActiveWorldId(nextWorld.id);
     }
 
     closeForm();

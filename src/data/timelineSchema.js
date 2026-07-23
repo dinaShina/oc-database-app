@@ -1,4 +1,4 @@
-﻿export const TIMELINE_TYPES = ["Character Timeline", "World Timeline", "Story Timeline"];
+export const TIMELINE_TYPES = ["Character Timeline", "World Timeline", "Story Timeline"];
 
 export const TIMELINE_EVENT_TYPES = [
   "birth",
@@ -40,6 +40,7 @@ export const INITIAL_TIMELINE_EVENT = {
   dateMonth: "",
   dateYear: "",
   dateFull: "",
+  dateInput: "",
   time: "",
   birthRelative: "not specified",
   connectedCharacterIds: [],
@@ -63,6 +64,7 @@ export const TIMELINE_EVENT_EXAMPLE = {
   dateMonth: "",
   dateYear: "",
   dateFull: "",
+  dateInput: "",
   time: "",
   birthRelative: "after birth",
   connectedCharacterIds: ["oc-1"],

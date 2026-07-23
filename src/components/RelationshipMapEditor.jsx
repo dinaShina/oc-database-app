@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   INITIAL_RELATIONSHIP_EDGE,
   INITIAL_RELATIONSHIP_NODE,
@@ -33,11 +33,20 @@ export default function RelationshipMapEditor({
   const [expandedNodeIds, setExpandedNodeIds] = useState([]);
   const [expandedEdgeIds, setExpandedEdgeIds] = useState([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [localGraph, setLocalGraph] = useState(null);
+  const touchPointersRef = useRef(new Map());
+  const pinchRef = useRef(null);
 
-  const graph = useMemo(
+  const savedGraph = useMemo(
     () => getGraphForOC(relationshipMaps, relationships, oc, ocs),
     [relationshipMaps, relationships, oc, ocs]
   );
+  const graph = localGraph || savedGraph;
+
+  useEffect(() => {
+    setLocalGraph(null);
+  }, [oc.id, relationshipMaps]);
 
   const nodes = graph.nodes;
   const edges = graph.edges;
@@ -45,7 +54,9 @@ export default function RelationshipMapEditor({
   const Wrapper = embedded ? "div" : "section";
 
   function persistGraph(nextGraph) {
-    const nextMaps = upsertRelationshipMap(relationshipMaps, oc.id, nextGraph);
+    setLocalGraph(nextGraph);
+    const latestMaps = replaceMapInCollection(relationshipMaps, oc.id, nextGraph);
+    const nextMaps = upsertRelationshipMap(latestMaps, oc.id, nextGraph);
     saveRelationshipMaps(nextMaps);
     onRelationshipMapsChange(nextMaps);
   }
@@ -185,8 +196,10 @@ export default function RelationshipMapEditor({
   }
 
   function startDrag(event, node) {
-    if (event.button !== 0) return;
+    if (event.button !== 0 && event.pointerType !== "touch") return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     event.stopPropagation();
+    setSelectedNodeId(node.id);
     const point = getCanvasPoint(event);
     if (!point) return;
     setDragging({
@@ -197,11 +210,23 @@ export default function RelationshipMapEditor({
   }
 
   function startCanvasPan(event) {
-    if (event.button !== 0 || event.target.closest("button, input, textarea, select, .graph-node")) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    trackTouchPointer(event);
+    if (touchPointersRef.current.size >= 2) {
+      startPinchGesture();
+      return;
+    }
+    if ((event.button !== 0 && event.pointerType !== "touch") || event.target.closest("button, input, textarea, select, .graph-node")) return;
+    setSelectedNodeId(null);
     setCanvasPanning({ startX: event.clientX, startY: event.clientY, originX: canvasPan.x, originY: canvasPan.y });
   }
 
   function moveDrag(event) {
+    trackTouchPointer(event);
+    if (touchPointersRef.current.size >= 2 && pinchRef.current) {
+      updatePinchGesture();
+      return;
+    }
     if (dragging) {
       const rect = canvasRef.current?.getBoundingClientRect();
       const point = getCanvasPoint(event);
@@ -225,7 +250,9 @@ export default function RelationshipMapEditor({
     }
   }
 
-  function stopDrag() {
+  function stopDrag(event) {
+    if (event?.pointerId !== undefined) touchPointersRef.current.delete(event.pointerId);
+    if (touchPointersRef.current.size < 2) pinchRef.current = null;
     setDragging(null);
     setCanvasPanning(null);
   }
@@ -676,4 +703,10 @@ function getDistance(a, b) {
 
 function getMidpoint(a, b) {
   return { x: ((a?.x || 0) + (b?.x || 0)) / 2, y: ((a?.y || 0) + (b?.y || 0)) / 2 };
+}
+function replaceMapInCollection(maps, ownerOcId, graph) {
+  const currentMaps = Array.isArray(maps) ? maps : [];
+  return currentMaps.some((map) => map.ownerOcId === ownerOcId)
+    ? currentMaps.map((map) => (map.ownerOcId === ownerOcId ? graph : map))
+    : [graph, ...currentMaps];
 }

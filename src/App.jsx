@@ -526,7 +526,23 @@ function MobileNavigation({ activeSection, onNavigate }) {
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
-      {items.map(([id, label, icon]) => <button className={activeSection === id ? "mobile-nav-link active" : "mobile-nav-link"} key={id} type="button" onClick={() => onNavigate(id)}><span className={`mobile-nav-icon ${icon}`} aria-hidden="true" /><span>{label}</span></button>)}
+      {items.map(([id, label, icon]) => {
+        const isActive = activeSection === id;
+
+        return (
+          <button
+            aria-current={isActive ? "page" : undefined}
+            aria-label={label}
+            className={isActive ? "mobile-nav-link active" : "mobile-nav-link"}
+            key={id}
+            type="button"
+            onClick={() => onNavigate(id)}
+          >
+            <span className={`mobile-nav-icon ${icon}`} aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }

@@ -10,6 +10,7 @@ import {
   WORLD_TYPES
 } from "../data/ocFields.js";
 import MediaInput from "./MediaInput.jsx";
+import { ENGLISH_MONTHS, formatPartialDate, normalizeMonthInput, parseFlexibleDateInput } from "../utils/dateFormat.js";
 
 const CLEAN_UNSAVED_STATE = { isDirty: false, save: null };
 const EDITABLE_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
@@ -51,6 +52,16 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
       ...current,
       [name]: type === "checkbox" ? checked : value
     }));
+  }
+
+  function updateFlexibleBirthDate(event) {
+    const parts = parseFlexibleDateInput(event.target.value);
+    setFormData((current) => ({ ...current, birthDateInput: event.target.value, ...(parts ? { birthDay: parts.day, birthMonth: parts.month, birthYear: parts.year } : {}) }));
+  }
+
+  function normalizeBirthMonth(event) {
+    const month = normalizeMonthInput(event.target.value);
+    if (month) setFormData((current) => ({ ...current, birthMonth: month }));
   }
 
   function selectGender(gender) {
@@ -180,9 +191,16 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
 
       <div className="field-grid birth-grid">
         <NumberInput label="Day" name="birthDay" min="1" max="31" value={formData.birthDay} onChange={updateField} />
-        <NumberInput label="Month" name="birthMonth" min="1" max="12" value={formData.birthMonth} onChange={updateField} />
+        <MonthInput label="Month" name="birthMonth" value={formData.birthMonth} onBlur={normalizeBirthMonth} onChange={updateField} />
         <NumberInput label="Year" name="birthYear" min="0" max="9999" value={formData.birthYear} onChange={updateField} />
       </div>
+
+      {formatPartialDate({ day: formData.birthDay, month: formData.birthMonth, year: formData.birthYear }) ? <p className="readable-date-preview">Birthdate: {formatPartialDate({ day: formData.birthDay, month: formData.birthMonth, year: formData.birthYear })}</p> : null}
+
+      <label className="field">
+        <span>Type full birthdate</span>
+        <input value={formData.birthDateInput || ""} placeholder="15 March 1899, March 15, 1899, 15/03/1899, 1899-03-15" onChange={updateFlexibleBirthDate} />
+      </label>
 
       <TextInput label="Current age" name="currentAge" value={formData.currentAge} placeholder="17, unknown, 200+, appears 25, immortal..." onChange={updateField} />
 
@@ -354,6 +372,18 @@ function TextInput({ label, name, value, placeholder = "", onChange }) {
   );
 }
 
+function MonthInput({ label, name, onBlur, onChange, value }) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <input name={name} list="month-name-options" value={value} placeholder="March or 03" onBlur={onBlur} onChange={onChange} />
+      <datalist id="month-name-options">
+        {ENGLISH_MONTHS.map((month, index) => <option key={month} value={String(index + 1).padStart(2, "0")}>{month}</option>)}
+        {ENGLISH_MONTHS.map((month) => <option key={`${month}-name`} value={month} />)}
+      </datalist>
+    </label>
+  );
+}
 function NumberInput({ label, max, min, name, onChange, value }) {
   return (
     <label className="field">

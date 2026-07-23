@@ -25,7 +25,7 @@ export function isOwnerSeedModeEnabled() {
 }
 
 export function shouldInstallOwnerSeeds() {
-  return !loadFromStorage(OWNER_SEED_INSTALLED_KEY, null)?.installed;
+  return hasOwnerSeedData() && !loadFromStorage(OWNER_SEED_INSTALLED_KEY, null)?.installed;
 }
 
 export function markOwnerSeedsInstalled(result = {}) {
@@ -71,6 +71,17 @@ export function restoreMissingOwnerSeeds({ inspirationItems = getInspirationItem
   return result;
 }
 
+function hasOwnerSeedData() {
+  return [
+    OWNER_CHARACTERS,
+    OWNER_WORLDS,
+    OWNER_RELATIONSHIPS,
+    OWNER_INSPIRATION_ITEMS,
+    OWNER_WRITING_ENTRIES,
+    OWNER_TIMELINES,
+    OWNER_TIMELINE_EVENTS
+  ].some((items) => Array.isArray(items) && items.length > 0);
+}
 function mergeMissingById(currentItems = [], seedItems = []) {
   const existingIds = new Set(currentItems.map((item) => item?.id).filter(Boolean));
   const missing = seedItems.filter((item) => item?.id && !existingIds.has(item.id)).map(cloneSeed);

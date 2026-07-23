@@ -13,7 +13,7 @@ import {
   updateTimelineEvent
 } from "../storage/timelineRepository.js";
 import { getWorldTitle } from "./OCList.jsx";
-import { formatDateWithMonthName, formatMonthName } from "../utils/dateFormat.js";
+import { ENGLISH_MONTHS, formatDateWithMonthName, formatMonthName, normalizeMonthInput, parseFlexibleDateInput, toIsoDate } from "../utils/dateFormat.js";
 
 const EVENTS_PER_ROW = 4;
 
@@ -292,6 +292,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
           editingEventId={editingEventId}
           ocs={ocs}
           onChange={updateEventField}
+          normalizeEventMonth={normalizeEventMonth}
           onClose={closeEventModal}
           onSubmit={handleEventSubmit}
           onToggleCharacter={toggleConnectedCharacter}
@@ -351,7 +352,7 @@ function TimelineModal({ formData, ocs, onChange, onClose, onSubmit, showClose, 
   );
 }
 
-function EventModal({ eventForm, editingEventId, ocs, onChange, onClose, onSubmit, onToggleCharacter, worlds }) {
+function EventModal({ eventForm, editingEventId, normalizeEventMonth, ocs, onChange, onClose, onSubmit, onToggleCharacter, worlds }) {
   return (
     <div className="dialog-backdrop" role="presentation">
       <form className="confirm-dialog timeline-event-modal" role="dialog" aria-modal="true" aria-labelledby="event-dialog-title" onSubmit={onSubmit}>
