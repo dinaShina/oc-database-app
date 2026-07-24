@@ -1,4 +1,4 @@
-﻿import { INITIAL_WORLD, WORLD_REFERENCE_TYPES, WORLD_TYPES } from "../data/worldSchema.js";
+import { INITIAL_WORLD, WORLD_REFERENCE_TYPES, WORLD_TYPES } from "../data/worldSchema.js";
 import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:worlds";
@@ -12,7 +12,7 @@ export function getWorlds() {
 }
 
 export function saveWorlds(worlds) {
-  saveToStorage(STORAGE_KEY, worlds.map((world) => normalizeWorld(world, { ensureId: true })));
+  return saveToStorage(STORAGE_KEY, worlds.map((world) => normalizeWorld(world, { ensureId: true })));
 }
 
 export function createWorld(formData) {

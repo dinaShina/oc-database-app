@@ -177,6 +177,7 @@ function retrySaveAfterStoragePressure(key, serialized, normalized, error) {
   try {
     localStorage.removeItem(`${key}.tmp`);
     purgeBackupsForKey(key);
+    purgeStorageOverhead();
     localStorage.setItem(key, serialized);
     touchStorageManifest(key, "write", { count: Array.isArray(normalized) ? normalized.length : undefined, error: "" });
     notifyStorageIssue(key, "Browser storage was full. Atlas Lore removed old local backups for this item and saved your latest change.", error, "recovered");
@@ -191,6 +192,18 @@ function retrySaveAfterStoragePressure(key, serialized, normalized, error) {
 
 function purgeBackupsForKey(key) {
   getBackupKeysForKey(key).forEach((backup) => localStorage.removeItem(backup.key));
+}
+
+function purgeStorageOverhead() {
+  try {
+    Object.keys(localStorage).forEach((storageKey) => {
+      const isAtlasKey = storageKey.startsWith("atlasArchive") || storageKey.startsWith("oc-database-app:") || storageKey.startsWith("atlas-lore:");
+      const isDisposable = storageKey.includes(".backup.") || storageKey.includes(".tmp") || storageKey.includes("restoreBackup") || storageKey.includes("preMigrationBackup") || storageKey.includes("storageBackup") || storageKey.includes("recovery.");
+      if (isAtlasKey && isDisposable) localStorage.removeItem(storageKey);
+    });
+  } catch (cleanupError) {
+    console.error("Could not clean local storage overhead:", cleanupError);
+  }
 }
 
 function notifyStorageIssue(key, message, error, status) {

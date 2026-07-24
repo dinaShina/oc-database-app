@@ -164,8 +164,17 @@ export default function App() {
   }, [unsavedEditor.isDirty]);
 
   function persistOCs(nextOCs, options = {}) {
+    if (!betaEnabled && isStorageHydrated) {
+      const saved = saveOCs(nextOCs, options);
+      if (!saved) {
+        const message = "Atlas Lore could not save this character change on this browser. Your local storage is full or blocked. Download a backup, remove large uploaded images, or use image links.";
+        setStorageWarning({ message, status: "failed", key: CHARACTER_STORAGE_KEY });
+        window.alert(message);
+        return false;
+      }
+    }
     setOcs(nextOCs);
-    if (!betaEnabled && isStorageHydrated) saveOCs(nextOCs, options);
+    return true;
   }
 
   async function loadBetaCharacters(session = authSession) {
@@ -201,13 +210,13 @@ export default function App() {
     if (betaEnabled) {
       try {
         const savedOC = await createUserCharacter(authSession, nextOC);
-        persistOCs([savedOC, ...ocs]);
+        if (!persistOCs([savedOC, ...ocs])) return false;
       } catch (error) {
         window.alert(error.message || "Could not save character.");
         return false;
       }
     } else {
-      persistOCs([nextOC, ...ocs]);
+      if (!persistOCs([nextOC, ...ocs])) return false;
     }
     setEditingOC(null);
     setShowCharacterForm(false);
@@ -226,7 +235,7 @@ export default function App() {
         return false;
       }
     }
-    persistOCs(nextOCs);
+    if (!persistOCs(nextOCs)) return false;
     setEditingOC(null);
     setShowCharacterForm(false);
     setUnsavedEditor(CLEAN_UNSAVED_STATE);
@@ -235,7 +244,7 @@ export default function App() {
 
   async function updateOCById(id, formData) {
     const nextOCs = updateOC(ocs, id, { ...formData, user_id: authSession?.user?.id || formData.user_id || "", visibility: formData.visibility || "private" });
-    persistOCs(nextOCs);
+    if (!persistOCs(nextOCs)) return false;
     if (betaEnabled) {
       try {
         await updateUserCharacter(authSession, nextOCs.find((item) => item.id === id));
@@ -315,7 +324,7 @@ export default function App() {
         return;
       }
     }
-    persistOCs(deleteOC(ocs, id), { allowEmpty: true });
+    if (!persistOCs(deleteOC(ocs, id), { allowEmpty: true })) return;
     const nextFamilyMembers = deleteFamilyForOC(familyMembers, id);
     const nextRelationships = deleteRelationshipsForOC(relationships, id);
     const nextRelationshipMaps = deleteRelationshipMapForOC(relationshipMaps, id);

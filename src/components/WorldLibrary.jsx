@@ -36,8 +36,13 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
   const activeWorld = worlds.find((world) => world.id === activeWorldId);
 
   function persist(nextWorlds) {
-    saveWorlds(nextWorlds);
+    const saved = saveWorlds(nextWorlds);
+    if (!saved) {
+      window.alert("Atlas Lore could not save this world change on this browser. Your local storage is full or blocked. Download a backup, remove large uploaded images, or use image links.");
+      return false;
+    }
     onWorldsChange(nextWorlds);
+    return true;
   }
 
   function updateField(event) {
@@ -55,11 +60,11 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
 
     if (editingId) {
       const previousWorld = worlds.find((world) => world.id === editingId);
-      persist(updateWorld(worlds, editingId, formData));
+      if (!persist(updateWorld(worlds, editingId, formData))) return;
       syncWorldTimelineName(previousWorld?.name, formData.name);
     } else {
       const nextWorld = createWorld(formData);
-      persist([nextWorld, ...worlds]);
+      if (!persist([nextWorld, ...worlds])) return;
       setActiveWorldId(nextWorld.id);
     }
 
@@ -99,7 +104,7 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
     if (world.id) return worlds.find((item) => item.id === world.id) || world;
     const nextWorld = createWorld({ name: world.name, worldType: world.worldType, description: world.description || "" });
     clearHiddenDerivedWorld(world);
-    persist([nextWorld, ...worlds]);
+    if (!persist([nextWorld, ...worlds])) return world;
     return nextWorld;
   }
 
@@ -128,7 +133,7 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
     const savedWorld = ensureSavedWorld(world);
     const nextWorld = duplicateWorldRecord(savedWorld);
     const duplicatedTimelineData = duplicateWorldTimelineData(savedWorld.name, nextWorld.name, timelineData);
-    persist([nextWorld, ...getLatestWorlds(savedWorld)]);
+    if (!persist([nextWorld, ...getLatestWorlds(savedWorld)])) return;
     if (duplicatedTimelineData !== timelineData) {
       saveTimelineData(duplicatedTimelineData);
       onTimelineDataChange(duplicatedTimelineData);
@@ -144,7 +149,7 @@ export default function WorldLibrary({ ocs, onTimelineDataChange, onWorldsChange
   function confirmDeleteWorld() {
     if (!pendingDeleteWorld) return;
     if (pendingDeleteWorld.id) {
-      persist(deleteWorld(worlds, pendingDeleteWorld.id));
+      if (!persist(deleteWorld(worlds, pendingDeleteWorld.id))) return;
       if (activeWorldId === pendingDeleteWorld.id) setActiveWorldId("");
     } else {
       hideDerivedWorld(pendingDeleteWorld);
