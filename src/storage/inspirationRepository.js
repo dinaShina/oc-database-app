@@ -1,4 +1,4 @@
-﻿import { getDefaultTypeForSection, getSectionForType, INITIAL_INSPIRATION_ITEM, INSPIRATION_TYPES } from "../data/inspirationSchema.js";
+import { getDefaultTypeForSection, getSectionForType, INITIAL_INSPIRATION_ITEM, INSPIRATION_TYPES } from "../data/inspirationSchema.js";
 import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:inspiration-items";
@@ -9,7 +9,7 @@ export function getInspirationItems() {
 }
 
 export function saveInspirationItems(items) {
-  saveToStorage(STORAGE_KEY, Array.isArray(items) ? items.map(normalizeItem) : []);
+  return saveToStorage(STORAGE_KEY, Array.isArray(items) ? items.map(normalizeItem) : []);
 }
 
 export function createInspirationItem(ocId, formData, order = 0) {

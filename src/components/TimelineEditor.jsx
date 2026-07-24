@@ -46,8 +46,13 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   const selectedEvent = activeEvents.find((event) => event.id === selectedEventId) || null;
 
   function persist(nextData) {
-    saveTimelineData(nextData);
+    const saved = saveTimelineData(nextData);
+    if (!saved) {
+      window.alert("Atlas Lore could not save this timeline change locally. Your browser storage may be full or blocked.");
+      return false;
+    }
     onTimelineDataChange(nextData);
+    return true;
   }
 
   function updateTimelineField(event) {
@@ -102,7 +107,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
     event.preventDefault();
     if (!timelineForm.title.trim()) return;
     const nextTimeline = createTimeline(timelineForm);
-    persist({ ...timelineData, timelines: [nextTimeline, ...timelineData.timelines] });
+    if (!persist({ ...timelineData, timelines: [nextTimeline, ...timelineData.timelines] })) return;
     setActiveTimelineId(nextTimeline.id);
     setTimelineForm({ ...INITIAL_TIMELINE, type: workspaceWorldName ? "World Timeline" : INITIAL_TIMELINE.type, connectedOcId: workspaceOcId, connectedWorld: workspaceWorldName });
     setIsTimelineModalOpen(false);
@@ -137,12 +142,12 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
     if (!activeTimelineIdSafe || !eventForm.title.trim()) return;
 
     if (editingEventId) {
-      persist({ ...timelineData, events: updateTimelineEvent(timelineData.events, editingEventId, eventForm) });
+      if (!persist({ ...timelineData, events: updateTimelineEvent(timelineData.events, editingEventId, eventForm) })) return;
       setSelectedEventId(editingEventId);
     } else {
       const order = timelineData.events.filter((item) => item.timelineId === activeTimelineIdSafe).length;
       const nextEvent = createTimelineEvent(activeTimelineIdSafe, eventForm, order);
-      persist({ ...timelineData, events: [...timelineData.events, nextEvent] });
+      if (!persist({ ...timelineData, events: [...timelineData.events, nextEvent] })) return;
       setSelectedEventId(nextEvent.id);
     }
 
@@ -151,7 +156,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
 
   function removeEvent(id) {
     if (!window.confirm("Delete this timeline event? This action cannot be undone.")) return;
-    persist({ ...timelineData, events: deleteTimelineEvent(timelineData.events, id) });
+    if (!persist({ ...timelineData, events: deleteTimelineEvent(timelineData.events, id) })) return;
     if (selectedEventId === id) setSelectedEventId("");
     if (editingEventId === id) closeEventModal();
   }

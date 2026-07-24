@@ -54,11 +54,16 @@ export default function RelationshipMapEditor({
   const Wrapper = embedded ? "div" : "section";
 
   function persistGraph(nextGraph) {
-    setLocalGraph(nextGraph);
     const latestMaps = replaceMapInCollection(relationshipMaps, oc.id, nextGraph);
     const nextMaps = upsertRelationshipMap(latestMaps, oc.id, nextGraph);
-    saveRelationshipMaps(nextMaps);
+    const saved = saveRelationshipMaps(nextMaps);
+    if (!saved) {
+      window.alert("Atlas Lore could not save this relationship map change locally. Your browser storage may be full or blocked.");
+      return false;
+    }
+    setLocalGraph(nextGraph);
     onRelationshipMapsChange(nextMaps);
+    return true;
   }
 
   function updateNodeForm(event) {
@@ -99,15 +104,15 @@ export default function RelationshipMapEditor({
     };
 
     if (editingNodeId) {
-      persistGraph({
+      if (!persistGraph({
         ...graph,
         nodes: nodes.map((node) => (node.id === editingNodeId ? { ...node, ...normalizedNode, id: node.id } : node))
-      });
+      })) return;
     } else {
-      persistGraph({
+      if (!persistGraph({
         ...graph,
         nodes: [{ ...normalizedNode, id: crypto.randomUUID() }, ...nodes]
-      });
+      })) return;
     }
 
     closeEditor();
@@ -149,15 +154,15 @@ export default function RelationshipMapEditor({
     };
 
     if (editingEdgeId) {
-      persistGraph({
+      if (!persistGraph({
         ...graph,
         edges: edges.map((edge) => (edge.id === editingEdgeId ? { ...edge, ...normalizedEdge, id: edge.id } : edge))
-      });
+      })) return;
     } else {
-      persistGraph({
+      if (!persistGraph({
         ...graph,
         edges: [{ ...normalizedEdge, id: crypto.randomUUID() }, ...edges]
-      });
+      })) return;
     }
 
     closeEditor();

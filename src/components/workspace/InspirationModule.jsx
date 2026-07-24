@@ -17,8 +17,13 @@ export default function InspirationModule({ inspirationItems, oc, onInspirationI
   );
 
   function persist(nextItems) {
-    saveInspirationItems(nextItems);
+    const saved = saveInspirationItems(nextItems);
+    if (!saved) {
+      window.alert("Atlas Lore could not save this inspiration change locally. Your browser storage may be full or blocked.");
+      return false;
+    }
     onInspirationItemsChange(nextItems);
+    return true;
   }
 
   function chooseType(type) {
@@ -74,14 +79,14 @@ export default function InspirationModule({ inspirationItems, oc, onInspirationI
     const hasContent = [formData.title, formData.url, formData.imageData, formData.quote, formData.content, formData.notes, formData.description].some((value) => String(value || "").trim()) || formData.colors?.length || formData.images?.length;
     if (!hasContent) return;
 
-    if (editingItem) persist(updateInspirationItem(inspirationItems, editingItem.id, formData));
-    else persist([createInspirationItem(oc.id, formData, visibleItems.length), ...inspirationItems]);
+    const saved = editingItem ? persist(updateInspirationItem(inspirationItems, editingItem.id, formData)) : persist([createInspirationItem(oc.id, formData, visibleItems.length), ...inspirationItems]);
+    if (!saved) return;
     cancelForm();
   }
 
   function removeItem(item) {
     if (!window.confirm("Delete this inspiration item? This action cannot be undone.")) return;
-    persist(deleteInspirationItem(inspirationItems, item.id));
+    if (!persist(deleteInspirationItem(inspirationItems, item.id))) return;
     if (editingItem?.id === item.id) cancelForm();
   }
 

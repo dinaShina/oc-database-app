@@ -1,4 +1,4 @@
-﻿import { loadFromStorage, saveToStorage } from "./localStorage.js";
+import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:relationship-maps";
 
@@ -7,7 +7,7 @@ export function getRelationshipMaps() {
 }
 
 export function saveRelationshipMaps(maps) {
-  saveToStorage(STORAGE_KEY, maps.map(normalizeMap));
+  return saveToStorage(STORAGE_KEY, maps.map(normalizeMap));
 }
 
 export function upsertRelationshipMap(maps, ownerOcId, graph) {

@@ -1,4 +1,4 @@
-﻿import { INITIAL_RELATIONSHIP } from "../data/relationshipSchema.js";
+import { INITIAL_RELATIONSHIP } from "../data/relationshipSchema.js";
 import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:relationships";
@@ -11,7 +11,7 @@ export function getRelationships() {
 }
 
 export function saveRelationships(relationships) {
-  saveToStorage(STORAGE_KEY, relationships);
+  return saveToStorage(STORAGE_KEY, relationships);
 }
 
 export function createRelationship(ownerOcId, formData) {

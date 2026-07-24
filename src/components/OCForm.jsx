@@ -118,17 +118,19 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
   function moveCustomSection(id, direction) {
     setFormData((current) => ({ ...current, customSections: moveItem(getCustomSections(current), id, direction) }));
   }
-  const saveCurrentForm = useCallback(() => {
+  const saveCurrentForm = useCallback(async () => {
     if (!formData.name.trim()) {
       window.alert("Please add a character name before saving.");
       return false;
     }
 
     if (editingOC) {
-      onUpdateOC(formData);
+      const saved = await Promise.resolve(onUpdateOC(formData));
+      if (saved === false) return false;
       initialSnapshotRef.current = serializeForm(formData);
     } else {
-      onCreateOC(formData);
+      const saved = await Promise.resolve(onCreateOC(formData));
+      if (saved === false) return false;
       const emptyForm = createEmptyForm();
       initialSnapshotRef.current = serializeForm(emptyForm);
       setFormData(emptyForm);
@@ -144,13 +146,13 @@ export default function OCForm({ editingOC, onCancelEdit, onCreateOC, onOpenChar
   }, [isDirty, onUnsavedStateChange, saveCurrentForm]);
 
   useEffect(() => {
-    function handleKeyDown(event) {
+    async function handleKeyDown(event) {
       const isSaveShortcut = (event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === "s";
       if (!isSaveShortcut) return;
       if (!isEditableTarget(event.target) && event.target !== document.body) return;
 
       event.preventDefault();
-      saveCurrentForm();
+      await saveCurrentForm();
     }
 
     window.addEventListener("keydown", handleKeyDown);

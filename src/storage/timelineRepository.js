@@ -14,7 +14,7 @@ export function getTimelineData() {
 }
 
 export function saveTimelineData(data) {
-  saveToStorage(STORAGE_KEY, {
+  return saveToStorage(STORAGE_KEY, {
     timelines: Array.isArray(data.timelines) ? data.timelines.map(normalizeTimeline) : [],
     events: Array.isArray(data.events) ? data.events.map(normalizeEvent) : []
   });

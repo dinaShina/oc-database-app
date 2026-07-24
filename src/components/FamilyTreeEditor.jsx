@@ -19,8 +19,13 @@ export default function FamilyTreeEditor({ embedded = false, familyMembers, oc, 
   );
 
   function persist(nextMembers) {
-    saveFamilyMembers(nextMembers);
+    const saved = saveFamilyMembers(nextMembers);
+    if (!saved) {
+      window.alert("Atlas Lore could not save this family tree change locally. Your browser storage may be full or blocked.");
+      return false;
+    }
     onFamilyMembersChange(nextMembers);
+    return true;
   }
 
   function updateField(event) {
@@ -42,8 +47,8 @@ export default function FamilyTreeEditor({ embedded = false, familyMembers, oc, 
     event.preventDefault();
     if (!formData.name.trim()) return;
 
-    if (editingId) persist(updateFamilyMember(familyMembers, editingId, formData));
-    else persist([createFamilyMember(oc.id, formData), ...familyMembers]);
+    const saved = editingId ? persist(updateFamilyMember(familyMembers, editingId, formData)) : persist([createFamilyMember(oc.id, formData), ...familyMembers]);
+    if (!saved) return;
 
     closeForm();
   }

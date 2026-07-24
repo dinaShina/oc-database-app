@@ -1,4 +1,4 @@
-﻿import { INITIAL_FAMILY_MEMBER } from "../data/relationshipSchema.js";
+import { INITIAL_FAMILY_MEMBER } from "../data/relationshipSchema.js";
 import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:family-members";
@@ -11,7 +11,7 @@ export function getFamilyMembers() {
 }
 
 export function saveFamilyMembers(members) {
-  saveToStorage(STORAGE_KEY, members);
+  return saveToStorage(STORAGE_KEY, members);
 }
 
 export function createFamilyMember(ownerOcId, formData) {

@@ -1,4 +1,4 @@
-﻿import { INITIAL_STORY_ENTRY } from "../data/writingSchema.js";
+import { INITIAL_STORY_ENTRY } from "../data/writingSchema.js";
 import { loadFromStorage, removeFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:writing-entries";
@@ -10,7 +10,7 @@ export function getWritingEntries() {
 }
 
 export function saveWritingEntries(entries) {
-  saveToStorage(STORAGE_KEY, Array.isArray(entries) ? entries.map(normalizeWritingEntry) : []);
+  return saveToStorage(STORAGE_KEY, Array.isArray(entries) ? entries.map(normalizeWritingEntry) : []);
 }
 
 export function createWritingEntry(formData) {
@@ -42,7 +42,7 @@ export function deleteWritingEntry(entries, id) {
 }
 
 export function saveRecoveredDraft(ocId, draft) {
-  saveToStorage(`${DRAFT_PREFIX}${ocId}`, draft);
+  return saveToStorage(`${DRAFT_PREFIX}${ocId}`, draft);
 }
 
 export function getRecoveredDraft(ocId) {

@@ -1,4 +1,4 @@
-﻿import { loadFromStorage, saveToStorage } from "./localStorage.js";
+import { loadFromStorage, saveToStorage } from "./localStorage.js";
 
 const STORAGE_KEY = "oc-database-app:workspace-configs";
 const ACTIVE_TAB_KEY = "oc-database-app:active-workspace-tabs";
@@ -20,7 +20,7 @@ export function getWorkspaceConfigs() {
 }
 
 export function saveWorkspaceConfigs(configs) {
-  saveToStorage(STORAGE_KEY, normalizeConfigs(configs));
+  return saveToStorage(STORAGE_KEY, normalizeConfigs(configs));
 }
 
 export function getWorkspaceConfigForOC(configs, ocId) {
@@ -51,7 +51,7 @@ export function getActiveWorkspaceTab(ocId) {
 export function saveActiveWorkspaceTab(ocId, tab) {
   if (!isKnownSection(tab)) return;
   const stored = loadFromStorage(ACTIVE_TAB_KEY, {});
-  saveToStorage(ACTIVE_TAB_KEY, { ...stored, [ocId]: tab });
+  return saveToStorage(ACTIVE_TAB_KEY, { ...stored, [ocId]: tab });
 }
 
 function normalizeConfigs(configs) {

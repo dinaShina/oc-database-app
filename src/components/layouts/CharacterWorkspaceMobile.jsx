@@ -80,9 +80,11 @@ export default function CharacterWorkspaceMobile({
     else action();
   }
 
-  function handleProfileUpdate(formData) {
-    onOCUpdate(oc.id, formData);
+  async function handleProfileUpdate(formData) {
+    const saved = await Promise.resolve(onOCUpdate(oc.id, formData));
+    if (saved === false) return false;
     setEditingProfile(false);
+    return true;
   }
 
   function setActiveWorkspaceTab(tab) {

@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useIsMobile from "../../hooks/useIsMobile.js";
 import { contrastRatio, getSafeWorkspaceStyle, isValidHex } from "../../utils/themeContrast.js";
 import MediaInput from "../MediaInput.jsx";
@@ -104,17 +104,18 @@ export default function SettingsModule({ forceMobile = false, mode = "appearance
     setFontError("");
   }
 
-  const saveCurrentSettings = useCallback(() => {
+  const saveCurrentSettings = useCallback(async () => {
     if (!areCustomColorsValid(formData)) { setFontError("One or more custom colors are invalid. Use valid hex colors before saving."); return false; }
     const nextFormData = { ...formData, accentColor: formData.paletteColorOne || formData.accentColor };
-    onUpdateOC(oc.id, nextFormData);
+    const saved = await Promise.resolve(onUpdateOC(oc.id, nextFormData));
+    if (saved === false) return false;
     initialSnapshotRef.current = serializeForm(nextFormData);
     onUnsavedStateChange?.(CLEAN_UNSAVED_STATE);
     return true;
   }, [formData, oc.id, onUnsavedStateChange, onUpdateOC]);
 
   useEffect(() => { onUnsavedStateChange?.({ isDirty, save: saveCurrentSettings }); }, [isDirty, onUnsavedStateChange, saveCurrentSettings]);
-  function submit(event) { event.preventDefault(); saveCurrentSettings(); }
+  async function submit(event) { event.preventDefault(); await saveCurrentSettings(); }
 
   if (mode === "settings") {
     return <WorkspacePanel title="Settings"><form className="sub-form character-settings-panel" onSubmit={submit}><div><p className="eyebrow">Character Settings</p><h3>Technical Options</h3><p className="muted-text">Character-specific technical options live here. Visual customization is in Customize.</p></div><label className="inline-check"><input name="isFavorite" type="checkbox" checked={Boolean(formData.isFavorite)} onChange={updateField} /><span>Favorite OC</span></label><div className="form-actions"><button className="primary-button inline-primary" type="submit">Save settings</button></div></form><button className="delete-button inline-primary" type="button" onClick={() => onDeleteOC(oc.id)}>Delete this OC</button></WorkspacePanel>;

@@ -8,7 +8,7 @@ export function getReferenceItems() {
 }
 
 export function saveReferenceItems(items) {
-  saveToStorage(STORAGE_KEY, Array.isArray(items) ? items.map(normalizeItem) : []);
+  return saveToStorage(STORAGE_KEY, Array.isArray(items) ? items.map(normalizeItem) : []);
 }
 
 export function createReferenceItem(ocId, formData) {

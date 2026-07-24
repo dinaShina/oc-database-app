@@ -53,11 +53,17 @@ export default function StoryWorkspace({ oc }) {
   }, [activeCategory, activeEntry, activeEntryId]);
 
   function persist(nextEntries) {
+    const saved = saveWritingEntries(nextEntries);
+    if (!saved) {
+      setSaveState("Save failed");
+      window.alert("Atlas Lore could not save this story locally. Your browser storage may be full or blocked.");
+      return false;
+    }
     setEntries(nextEntries);
-    saveWritingEntries(nextEntries);
     setSaveState("Autosaved");
     window.clearTimeout(persist.statusTimer);
     persist.statusTimer = window.setTimeout(() => setSaveState("Saved"), AUTOSAVE_LABEL_DELAY);
+    return true;
   }
 
   function createEntry(category = activeCategory, seed = {}) {

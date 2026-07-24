@@ -288,8 +288,8 @@ export default function App() {
     });
   }
 
-  function handleSaveAndContinue() {
-    const saved = unsavedEditor.save?.();
+  async function handleSaveAndContinue() {
+    const saved = await Promise.resolve(unsavedEditor.save?.());
     if (saved === false) return;
     const action = pendingNavigation;
     setPendingNavigation(null);
@@ -356,8 +356,7 @@ export default function App() {
     const world = worldRecords.find((item) => item.name === worldName);
     if (!world) return;
     const nextWorlds = updateWorld(worldRecords, world.id, { ...world, isFavorite: !world.isFavorite });
-    setWorldRecords(nextWorlds);
-    saveWorlds(nextWorlds);
+    if (saveWorlds(nextWorlds)) setWorldRecords(nextWorlds);
   }
 
   const worlds = useMemo(() => {
