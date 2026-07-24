@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FAMILY_RELATION_TYPES, INITIAL_FAMILY_MEMBER } from "../data/relationshipSchema.js";
 import MediaInput from "./MediaInput.jsx";
 import {
@@ -59,6 +59,11 @@ export default function FamilyTreeEditor({ embedded = false, familyMembers, oc, 
     setFormData(INITIAL_FAMILY_MEMBER);
     setIsFormOpen(false);
   }
+  function requestDeleteMember(member) {
+    if (!window.confirm(`Delete ${member.name || "this family member"}? This action cannot be undone.`)) return;
+    persist(deleteFamilyMember(familyMembers, member.id));
+  }
+
 
   const ocPicture = oc.profilePictureData || oc.profilePictureUrl;
   const Wrapper = embedded ? "div" : "section";
@@ -103,7 +108,7 @@ export default function FamilyTreeEditor({ embedded = false, familyMembers, oc, 
                 </div>
                 <div className="card-actions">
                   <button className="secondary-button" type="button" onClick={() => startEdit(member)}>Edit</button>
-                  <button className="delete-button" type="button" onClick={() => persist(deleteFamilyMember(familyMembers, member.id))}>Delete</button>
+                  <button className="delete-button" type="button" onClick={() => requestDeleteMember(member)}>Delete</button>
                 </div>
               </article>
             ))}

@@ -85,6 +85,7 @@ export default function StoryWorkspace({ oc }) {
   }
 
   function removeEntry(id) {
+    if (!window.confirm("Delete this story entry? This action cannot be undone.")) return;
     const nextEntries = deleteWritingEntry(entries, id);
     persist(nextEntries);
     if (activeEntryId === id) setActiveEntryId("");

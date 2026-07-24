@@ -22,7 +22,7 @@ import { deleteRelationshipMapForOC, getRelationshipMaps, saveRelationshipMaps }
 import { deleteRelationshipsForOC, getRelationships, saveRelationships } from "./storage/relationshipRepository.js";
 import { deleteTimelineReferencesForOC, getTimelineData, saveTimelineData } from "./storage/timelineRepository.js";
 import { getRecoverableStorageSources, getStorageManifest, getStorageSnapshot, getStorageStatusForKey, loadFromStorage, saveToStorage, STORAGE_ENGINE } from "./storage/localStorage.js";
-import { getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
+import { getActiveWorkspaceTab, getWorkspaceConfigs, saveWorkspaceConfigs } from "./storage/workspaceRepository.js";
 import { enableOwnerSeedModeFromUrl, markOwnerSeedsInstalled, restoreMissingOwnerSeeds, shouldInstallOwnerSeeds } from "./storage/ownerSeedRepository.js";
 import { APP_PALETTES, getAppThemeStyle } from "./utils/themeContrast.js";
 import atlasLoreLogo from "./assets/atlas-lore-logo-original.png";
@@ -47,7 +47,7 @@ export default function App() {
   const [referenceItems, setReferenceItems] = useState(() => getReferenceItems());
   const [worldRecords, setWorldRecords] = useState(() => getWorlds());
   const [editingOC, setEditingOC] = useState(null);
-  const [activeOCId, setActiveOCId] = useState(null);
+  const [activeOCId, setActiveOCId] = useState(() => getInitialActiveOCId());
   const [activeSection, setActiveSection] = useState(() => getInitialAppSection());
   const [fandomFilter, setFandomFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,6 +59,7 @@ export default function App() {
   const [ownerSeedMode] = useState(() => enableOwnerSeedModeFromUrl());
   const [workspaceConfigs, setWorkspaceConfigs] = useState(() => getWorkspaceConfigs());
   const [isStorageHydrated, setIsStorageHydrated] = useState(false);
+  const [storageWarning, setStorageWarning] = useState(null);
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => getSystemPrefersDark());
   const detectedMobile = useIsMobile();
   const resolvedThemeMode = appSettings.themeMode === "system" ? (systemPrefersDark ? "dark" : "light") : appSettings.themeMode || (appSettings.nightMood ? "dark" : "light");
@@ -70,6 +71,14 @@ export default function App() {
 
   useEffect(() => {
     setIsStorageHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    function handleStorageIssue(event) {
+      setStorageWarning(event.detail || { message: "Atlas Lore could not save this change locally." });
+    }
+    window.addEventListener("atlas-storage-error", handleStorageIssue);
+    return () => window.removeEventListener("atlas-storage-error", handleStorageIssue);
   }, []);
   useEffect(() => {
     if (!isStorageHydrated || !ownerSeedMode || betaEnabled || !shouldInstallOwnerSeeds()) return;
@@ -134,7 +143,7 @@ export default function App() {
   useEffect(() => {
     function handleAppRouteChange() {
       setActiveSection(getInitialAppSection());
-      setActiveOCId(null);
+      setActiveOCId(getInitialActiveOCId());
       setShowCharacterForm(false);
     }
     window.addEventListener("hashchange", handleAppRouteChange);
@@ -154,9 +163,9 @@ export default function App() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [unsavedEditor.isDirty]);
 
-  function persistOCs(nextOCs) {
+  function persistOCs(nextOCs, options = {}) {
     setOcs(nextOCs);
-    if (!betaEnabled && isStorageHydrated) saveOCs(nextOCs);
+    if (!betaEnabled && isStorageHydrated) saveOCs(nextOCs, options);
   }
 
   async function loadBetaCharacters(session = authSession) {
@@ -243,6 +252,7 @@ export default function App() {
   }
 
   function openOCWorkspace(ocId) {
+    updateCharacterWorkspaceRoute(ocId);
     const now = new Date().toISOString();
     setOcs((currentOCs) => {
       const oc = currentOCs.find((item) => item.id === ocId);
@@ -305,7 +315,7 @@ export default function App() {
         return;
       }
     }
-    persistOCs(deleteOC(ocs, id));
+    persistOCs(deleteOC(ocs, id), { allowEmpty: true });
     const nextFamilyMembers = deleteFamilyForOC(familyMembers, id);
     const nextRelationships = deleteRelationshipsForOC(relationships, id);
     const nextRelationshipMaps = deleteRelationshipMapForOC(relationshipMaps, id);
@@ -448,6 +458,8 @@ export default function App() {
           {betaStatus ? <p className="beta-status-line">{betaStatus}</p> : null}
         </header>
 
+        {storageWarning ? <StorageWarningBanner message={storageWarning.message} onBackup={downloadEmergencyBackup} onDismiss={() => setStorageWarning(null)} /> : null}
+
         {activeOC ? (
           <CharacterWorkspaceLayout familyMembers={familyMembers} inspirationItems={inspirationItems} oc={activeOC} ocs={ocs} onBack={() => requestNavigation(() => { setActiveOCId(null); updateAppRoute(activeSection); })} onDeleteOC={handleDeleteOC} onFamilyMembersChange={setFamilyMembers} onInspirationItemsChange={setInspirationItems} onOCUpdate={updateOCById} onReferenceItemsChange={setReferenceItems} onRelationshipMapsChange={setRelationshipMaps} onRelationshipsChange={setRelationships} onRequestNavigation={requestNavigation} onTimelineDataChange={setTimelineData} onUnsavedStateChange={setUnsavedEditor} referenceItems={referenceItems} relationshipMaps={relationshipMaps} relationships={relationships} timelineData={timelineData} workspaceConfigs={workspaceConfigs} onWorkspaceConfigsChange={updateWorkspaceConfigs} />
         ) : activeSection === "dashboard" ? (
@@ -484,6 +496,21 @@ export default function App() {
     setAppSettings(nextSettings);
     saveAppSettings(nextSettings);
   }
+}
+
+function StorageWarningBanner({ message, onBackup, onDismiss }) {
+  return (
+    <section className="storage-warning-banner" role="alert">
+      <div>
+        <strong>Local storage needs attention</strong>
+        <p>{message}</p>
+      </div>
+      <div className="storage-warning-actions">
+        <button className="primary-button inline-primary" type="button" onClick={onBackup}>Download Backup</button>
+        <button className="secondary-button" type="button" onClick={onDismiss}>Dismiss</button>
+      </div>
+    </section>
+  );
 }
 
 function DeveloperPreviewSwitch({ appSettings, detectedMobile, isMobile, onSettingsChange }) {
@@ -805,11 +832,29 @@ function SettingsGroupCard({ defaultOpen = false, group, onOpen }) {
     </details>
   );
 }
+function getInitialActiveOCId() {
+  if (typeof window === "undefined") return null;
+  const match = window.location.hash.match(/^#character\/([^/]+)(?:\/[^/]+)?$/);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+function updateCharacterWorkspaceRoute(ocId) {
+  if (typeof window === "undefined" || !ocId) return;
+  const tab = getActiveWorkspaceTab(ocId) || "Profile";
+  const nextPath = `${buildAppHref("")}#character/${encodeURIComponent(ocId)}/${toWorkspaceRouteSlug(tab)}`;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (current !== nextPath) window.history.pushState(null, "", nextPath);
+}
+
+function toWorkspaceRouteSlug(tab) {
+  return String(tab || "Profile").toLowerCase().replace(/\s+/g, "-");
+}
 function getInitialAppSection() {
   if (typeof window === "undefined") return "dashboard";
   const route = getCurrentAppRoute();
   if (route.startsWith("account") || route.startsWith("settings/account")) return "account";
   if (route.startsWith("settings")) return "settings";
+  if (route.startsWith("character/")) return "library";
   if (route.startsWith("worlds")) return "worlds";
   if (route.startsWith("favorites")) return "favorites";
   if (route.startsWith("characters") || route.startsWith("library")) return "library";
@@ -999,6 +1044,7 @@ function getLegalTitle(page) {
   if (page === "terms") return "Terms / Beta Rules";
   return "Contact";
 }
+
 
 
 

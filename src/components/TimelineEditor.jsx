@@ -57,7 +57,22 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
 
   function updateEventField(event) {
     const { name, value } = event.target;
-    setEventForm((current) => ({ ...current, [name]: value }));
+    setEventForm((current) => {
+      if (name === "dateInput") return updateFlexibleEventDate(current, value);
+      if (name === "dateFull") {
+        const parsed = parseFlexibleDateInput(value);
+        return parsed ? { ...current, dateFull: value, dateInput: value, dateDay: parsed.day || "", dateMonth: parsed.month || "", dateYear: parsed.year || current.dateYear } : { ...current, dateFull: value };
+      }
+      if (name === "dateMonth") return { ...current, dateMonth: normalizeMonthInput(value) || value };
+      return { ...current, [name]: value };
+    });
+  }
+
+  function normalizeEventMonth(event) {
+    const { value } = event.target;
+    const normalized = normalizeMonthInput(value);
+    if (!normalized && value) return;
+    setEventForm((current) => ({ ...current, dateMonth: normalized }));
   }
 
   function toggleConnectedCharacter(ocId) {
@@ -135,6 +150,7 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   }
 
   function removeEvent(id) {
+    if (!window.confirm("Delete this timeline event? This action cannot be undone.")) return;
     persist({ ...timelineData, events: deleteTimelineEvent(timelineData.events, id) });
     if (selectedEventId === id) setSelectedEventId("");
     if (editingEventId === id) closeEventModal();
@@ -303,6 +319,19 @@ export default function TimelineEditor({ embedded = false, ocs, onBack, onTimeli
   );
 }
 
+
+function updateFlexibleEventDate(current, value) {
+  const parsed = parseFlexibleDateInput(value);
+  if (!parsed) return { ...current, dateInput: value };
+  return {
+    ...current,
+    dateInput: value,
+    dateDay: parsed.day || "",
+    dateMonth: parsed.month || "",
+    dateYear: parsed.year || current.dateYear,
+    dateFull: parsed.day && parsed.month && parsed.year ? toIsoDate(parsed) : current.dateFull
+  };
+}
 function TimelineModal({ formData, ocs, onChange, onClose, onSubmit, showClose, worlds }) {
   return (
     <div className="dialog-backdrop" role="presentation">
@@ -368,18 +397,19 @@ function EventModal({ eventForm, editingEventId, normalizeEventMonth, ocs, onCha
           <TextInput label="Title *" name="title" value={eventForm.title} onChange={onChange} required />
           <TextInput label="Year or approximate range" name="dateYear" placeholder="1899 or c. 1895-1896" value={eventForm.dateYear} onChange={onChange} />
           <label className="field">
+            <span>Flexible date</span>
+            <input name="dateInput" list="timeline-month-names" placeholder="March 15, 1899" value={eventForm.dateInput || ""} onChange={onChange} />
+            <datalist id="timeline-month-names">
+              {ENGLISH_MONTHS.map((month) => <option key={month} value={month} />)}
+            </datalist>
+          </label>
+          <label className="field">
             <span>Optional full date</span>
             <input name="dateFull" type="date" value={eventForm.dateFull} onChange={onChange} />
           </label>
           <label className="field">
             <span>Month if known</span>
-            <select name="dateMonth" value={eventForm.dateMonth} onChange={onChange}>
-              <option value="">No month selected</option>
-              {Array.from({ length: 12 }, (_, index) => {
-                const month = String(index + 1).padStart(2, "0");
-                return <option key={month} value={month}>{formatMonthName(month)}</option>;
-              })}
-            </select>
+            <input name="dateMonth" list="timeline-month-names" placeholder="March" value={eventForm.dateMonth} onBlur={normalizeEventMonth} onChange={onChange} />
           </label>
           <label className="field">
             <span>Event type</span>

@@ -1,4 +1,4 @@
-﻿const STORAGE_MANIFEST_KEY = "atlasArchive.storageManifest";
+const STORAGE_MANIFEST_KEY = "atlasArchive.storageManifest";
 const LEGACY_MANIFEST_KEY = "oc-database-app:storage-manifest";
 const STORAGE_BACKUP_PREFIX = "atlasArchive.storageBackup.";
 const STORAGE_RECOVERY_PREFIX = "atlasArchive.recovery.";
@@ -41,9 +41,11 @@ export function parseStoredValue(key) {
 }
 
 export function saveToStorage(key, value, options = {}) {
+  let normalized;
+  let serialized;
   try {
-    const normalized = normalizeStoredValue(value);
-    const serialized = JSON.stringify(normalized);
+    normalized = normalizeStoredValue(value);
+    serialized = JSON.stringify(normalized);
     JSON.parse(serialized);
     const tempKey = `${key}.tmp`;
     localStorage.setItem(tempKey, serialized);
@@ -57,7 +59,9 @@ export function saveToStorage(key, value, options = {}) {
     touchStorageManifest(key, "write", { count: Array.isArray(normalized) ? normalized.length : undefined, error: "" });
     return true;
   } catch (error) {
+    if (serialized) return retrySaveAfterStoragePressure(key, serialized, normalized, error);
     touchStorageManifest(key, "write-error", { error: error.message || "Unknown storage error" });
+    notifyStorageIssue(key, "Atlas Lore could not prepare this data for local saving.", error, "failed");
     console.error(`Could not save ${key}:`, error);
     return false;
   }
@@ -169,6 +173,38 @@ function rotateBackups(key, rawValue) {
   localStorage.setItem(getBackupKey(key, 1), JSON.stringify({ key, createdAt: new Date().toISOString(), rawValue }));
 }
 
+function retrySaveAfterStoragePressure(key, serialized, normalized, error) {
+  try {
+    localStorage.removeItem(`${key}.tmp`);
+    purgeBackupsForKey(key);
+    localStorage.setItem(key, serialized);
+    touchStorageManifest(key, "write", { count: Array.isArray(normalized) ? normalized.length : undefined, error: "" });
+    notifyStorageIssue(key, "Browser storage was full. Atlas Lore removed old local backups for this item and saved your latest change.", error, "recovered");
+    return true;
+  } catch (retryError) {
+    touchStorageManifest(key, "write-error", { error: retryError.message || error.message || "Unknown storage error" });
+    notifyStorageIssue(key, "Atlas Lore could not save this change locally. Your browser storage is full. Download a backup, remove very large uploaded images, or use image links.", retryError, "failed");
+    console.error(`Could not save ${key}:`, retryError);
+    return false;
+  }
+}
+
+function purgeBackupsForKey(key) {
+  getBackupKeysForKey(key).forEach((backup) => localStorage.removeItem(backup.key));
+}
+
+function notifyStorageIssue(key, message, error, status) {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  window.dispatchEvent(new CustomEvent("atlas-storage-error", {
+    detail: {
+      key,
+      message,
+      status,
+      error: error?.message || String(error || "")
+    }
+  }));
+}
+
 function getBackupKey(key, index) {
   return `${key}.backup.${index}`;
 }
@@ -247,3 +283,4 @@ function normalizeStoredValue(value) {
 function normalizeStoredString(value) {
   return value.replace(/\\r\\n/g, "\n").replace(/\\n/g, "\n").replace(/\\r/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
+

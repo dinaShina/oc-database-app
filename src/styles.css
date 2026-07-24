@@ -10342,3 +10342,50 @@ body:has(.dialog-backdrop) {
     transform: none !important;
   }
 }
+
+.storage-warning-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4, 16px);
+  margin: 0 0 var(--space-5, 24px);
+  padding: var(--space-4, 16px);
+  border: 1px solid color-mix(in srgb, var(--danger, #b45353) 28%, var(--border-color, #ded6ca));
+  border-radius: var(--radius-card, 16px);
+  background: color-mix(in srgb, var(--danger, #b45353) 9%, var(--surface-card, #fffaf4));
+  box-shadow: var(--shadow-soft, 0 12px 32px rgba(45, 35, 25, 0.08));
+  color: var(--text-primary, #2f2923);
+}
+
+.storage-warning-banner strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-primary, #2f2923);
+}
+
+.storage-warning-banner p,
+.media-storage-note {
+  margin: 0;
+}
+
+.storage-warning-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2, 8px);
+}
+
+@media (max-width: 767px) {
+  .storage-warning-banner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .storage-warning-actions {
+    justify-content: stretch;
+  }
+
+  .storage-warning-actions button {
+    flex: 1 1 140px;
+  }
+}

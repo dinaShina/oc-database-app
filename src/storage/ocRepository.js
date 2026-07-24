@@ -71,16 +71,7 @@ export function deleteOC(ocs, id) {
 
 function loadCharactersFromStableStorage() {
   const current = loadFromStorage(CHARACTER_STORAGE_KEY, null);
-  if (Array.isArray(current) && current.length > 0) return current;
-  if (Array.isArray(current) && current.length === 0) {
-    const legacy = getBestLegacyCharacters();
-    if (legacy.length > 0) {
-      saveToStorage(`${CHARACTER_STORAGE_KEY}.preMigrationBackup.${Date.now()}`, current);
-      saveToStorage(CHARACTER_STORAGE_KEY, mergeCharacters(current, legacy));
-      return legacy;
-    }
-    return current;
-  }
+  if (Array.isArray(current)) return current;
   const legacy = getBestLegacyCharacters();
   if (legacy.length > 0) {
     saveToStorage(CHARACTER_STORAGE_KEY, legacy);

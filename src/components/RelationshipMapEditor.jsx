@@ -129,6 +129,7 @@ export default function RelationshipMapEditor({
 
   function deleteNode(nodeId) {
     if (nodeId === "main") return;
+    if (!window.confirm("Delete this relationship node? Connected lines will also be removed.")) return;
     persistGraph({
       ...graph,
       nodes: nodes.filter((node) => node.id !== nodeId),
@@ -191,6 +192,7 @@ export default function RelationshipMapEditor({
     setIsEditorOpen(false);
   }
   function deleteEdge(edgeId) {
+    if (!window.confirm("Delete this relationship line? This action cannot be undone.")) return;
     persistGraph({ ...graph, edges: edges.filter((edge) => edge.id !== edgeId) });
     if (editingEdgeId === edgeId) cancelEdgeEdit();
   }

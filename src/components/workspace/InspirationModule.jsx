@@ -80,6 +80,7 @@ export default function InspirationModule({ inspirationItems, oc, onInspirationI
   }
 
   function removeItem(item) {
+    if (!window.confirm("Delete this inspiration item? This action cannot be undone.")) return;
     persist(deleteInspirationItem(inspirationItems, item.id));
     if (editingItem?.id === item.id) cancelForm();
   }
